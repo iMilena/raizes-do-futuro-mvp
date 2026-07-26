@@ -145,7 +145,7 @@ function Painel({ tab, setTab }) {
         <NavJornada tab={tab} setTab={setTab} />
 
         <footer>
-          <span>Plataforma Raízes do Futuro · Youth Challenge Blockchain — UNICEF Brasil · ambiente de demonstração em testnet (Solana devnet · Sepolia via Rede Recy)</span>
+          <span>Plataforma Raízes do Futuro · Youth Challenge Blockchain — UNICEF Brasil · cofre multisig real na Solana devnet · jornada do app simulada</span>
           <span style={{ display: 'flex', gap: 8 }}>
             <button className="acao sec" onClick={ligarGravacao}>🎥 Modo gravação</button>
             <button className="acao sec" onClick={resetar}>Resetar demo</button>

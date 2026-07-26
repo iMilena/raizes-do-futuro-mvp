@@ -61,7 +61,7 @@ const PASSOS = [
   },
   {
     rot: 'Comprovação da família',
-    narracao: 'No celular, a família de Maria de Lourdes envia a foto da consulta pediátrica das duas crianças. O documento fica em ambiente seguro — nunca na rede.',
+    narracao: 'No celular, a família de Maria de Lourdes envia a foto da consulta pediátrica das duas crianças. A foto não sai do aparelho: o app calcula o hash dela e só esse código vai ao registro.',
     tab: 'familia', foco: 'compromissos', dur: 3800,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: FAMILIA_DEMO, condicaoId: CONDICAO_DEMO });

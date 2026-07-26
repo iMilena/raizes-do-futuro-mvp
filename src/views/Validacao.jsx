@@ -72,7 +72,7 @@ export default function Validacao() {
         <div className={'card destaque' + focoComp}>
           <h3>2 · Comprovações de saúde/educação (dupla checagem)</h3>
           <p className="mini">
-            Documentos ficam no ambiente seguro (off-chain). Ao validar, só o hash vai à rede e o cofre multisig
+            O comprovante nunca sai do aparelho da família: o app calcula o SHA-256 e só o hash é registrado. Ao validar, o cofre multisig
             <b> cria uma proposta</b> de transferência — que ainda precisa de 2 das 3 assinaturas para executar.
           </p>
           <div className="cofre-livre">
@@ -90,7 +90,7 @@ export default function Validacao() {
                 <b>{f.resp}</b> — {c.tipo} <span className="tag info">{c.mes}</span>
                 <div className="mini">{f.criancas} criança(s) · bônus previsto: {fmt(valor)}</div>
                 {c.evidHash && (
-                  <div className="hash" title="SHA-256 real do documento — o arquivo permanece no ambiente seguro">
+                  <div className="hash" title="SHA-256 real do documento, calculado no aparelho da família — o arquivo não foi enviado a lugar nenhum">
                     🔐 evidência sha256: {trunc(c.evidHash, 14, 14)}{c.arquivo ? ` · ${c.arquivo}` : ''}
                   </div>
                 )}

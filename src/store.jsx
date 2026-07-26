@@ -282,7 +282,7 @@ function reducer(state, action) {
       const f = s.familias.find(f => f.id === action.familiaId);
       const c = f?.condicoes.find(c => c.id === action.condicaoId);
       if (c && c.status === 'pendente') {
-        c.status = 'comprovada'; // documento fica no ambiente seguro (off-chain)
+        c.status = 'comprovada'; // só o hash chega aqui; o arquivo fica no aparelho da família
         if (action.evidHash) { c.evidHash = action.evidHash; c.arquivo = action.arquivo || ''; }
       }
       return s;
@@ -367,9 +367,16 @@ export function StoreProvider({ children }) {
   }, [state]);
 
   /* ------------------------------------------------------------------------
-     Sincronização opcional multi-aparelho (Supabase REST).
+     Sincronização opcional multi-aparelho (Supabase REST) — GRAU DEMO.
      Ativa apenas se public/supabase.json existir com { url, anonKey } —
      ver SUPABASE.md. Sem o arquivo, o app funciona 100% local.
+
+     ⚠️ A SUBSTITUIR: grava o estado inteiro num blob, com last-write-wins.
+     Dois aparelhos editando ao mesmo tempo e um perde o trabalho, e uma
+     gravação atrasada pode apagar transações já registradas. O modelo correto
+     (tabelas por entidade, transações append-only, saldo derivado de soma)
+     está em supabase/schema.sql + src/nuvem.js, com o plano de migração no
+     topo do nuvem.js.
   ------------------------------------------------------------------------ */
   const [cfgSync, setCfgSync] = useState(null);
   const stateRef = useRef(state);
