@@ -91,7 +91,7 @@ function Painel({ tab, setTab }) {
               <img className="logo-emblema" src="./emblema.png" alt="Raízes do Futuro" />
               <div>
                 <h1>Raízes do Futuro</h1>
-                <p>Plataforma de impacto — do resíduo à proteção da infância · Boipeba, BA · Solana + Rede Recy · cofre multisig 2-de-3 · carteira Picnic</p>
+                <p>Do resíduo à proteção da infância · Boipeba, BA</p>
               </div>
             </div>
             <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>❔ Como funciona</button>
@@ -113,13 +113,15 @@ function Painel({ tab, setTab }) {
       </header>
 
       <div className="shell">
-        {tab === 'dashboard' && <Dashboard />}
-        {tab === 'coleta' && <Coleta />}
-        {tab === 'validacao' && <Validacao />}
-        {tab === 'mercado' && <Mercado />}
-        {tab === 'fundo' && <Fundo />}
-        {tab === 'carteira' && <Carteira />}
-        {tab === 'familia' && <PaginaFamilia />}
+        <div key={tab} className="vista">
+          {tab === 'dashboard' && <Dashboard />}
+          {tab === 'coleta' && <Coleta />}
+          {tab === 'validacao' && <Validacao />}
+          {tab === 'mercado' && <Mercado />}
+          {tab === 'fundo' && <Fundo />}
+          {tab === 'carteira' && <Carteira />}
+          {tab === 'familia' && <PaginaFamilia />}
+        </div>
 
         <NavJornada tab={tab} setTab={setTab} />
 

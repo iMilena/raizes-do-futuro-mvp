@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
+import React, { createContext, useContext, useEffect, useReducer, useRef, useState } from 'react';
 
 const KEY = 'raizes-mvp-v2';
 
@@ -28,7 +28,6 @@ export const TIPOS_TX = {
   'RESERVA': { rot: 'Bônus reservado — nunca perdido', cor: '#f2c14e' },
   'CARTEIRA': { rot: 'Conta da família conectada', cor: '#1cabe2' },
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
-  'ANCORAGEM': { rot: 'Relatório ancorado na Rede Recy (registro real)', cor: '#0f7a6c' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -71,34 +70,6 @@ export const trunc = (s, a = 6, b = 6) => (!s ? '' : s.length <= a + b + 1 ? s :
 
 export const fmt = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-/* ---------- rastreio do produto (QR no chaveiro) ---------- */
-/* alfabeto sem O/0/I/1 para ninguém errar ao ditar o código por telefone */
-const ALFA_CODIGO = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-
-/** Código curto e legível impresso na etiqueta: RF-XXXX */
-export function codigoRastreio(semente) {
-  const h = hex(String(semente));
-  let out = '';
-  for (let i = 0; i < 4; i++) out += ALFA_CODIGO[parseInt(h.slice(i * 2, i * 2 + 2), 16) % 32];
-  return 'RF-' + out;
-}
-
-/** Coletas validadas que forneceram o material deste produto (as mais recentes). */
-function coletasDeOrigem(state, materiais) {
-  const filtro = Array.isArray(materiais) && materiais.length ? materiais : null;
-  return state.coletas
-    .filter(c => c.status === 'validada' && (!filtro || filtro.includes(c.material)))
-    .slice(-2)
-    .map(c => c.id);
-}
-
-export const vendaPorRastreio = (state, codigo) =>
-  state.vendas.find(v => v.rastreio && v.rastreio.toUpperCase() === String(codigo || '').toUpperCase());
-
-/** URL absoluta que vai dentro do QR — precisa ser absoluta para o celular abrir. */
-export const urlRastreio = codigo =>
-  `${location.origin}${location.pathname}#/rastreio/${codigo}`;
-
 SIGNATARIOS.forEach(s => { s.endereco = solAddr('signatario-' + s.id); });
 
 /* ------------------------------------------------------------- transações ---- */
@@ -127,36 +98,18 @@ function aplicarSplit(state, venda) {
   state.caixas.renda += venda.valor * SPLIT.renda;
   state.caixas.fundo += venda.valor * SPLIT.fundo;
   state.caixas.operacao += venda.valor * SPLIT.operacao;
-  // vendaId liga esta transação à peça vendida: é o que a página de rastreio usa
-  // para mostrar ao turista em qual registro a compra dele entrou
-  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
-}
-
-/** "Vacinação em dia (2 crianças)" → "vacinação em dia" (para o extrato da família). */
-function simplificar(tipo) {
-  return tipo.replace(/\s*\([^)]*\)\s*$/, '').replace(/≥.*$/, 'em dia').trim().toLowerCase();
+  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor);
 }
 
 /** Executa uma proposta que atingiu o limiar: transfere o bônus para a família. */
 function executarProposta(state, p) {
   const f = state.familias.find(f => f.id === p.familiaId);
   const c = f?.condicoes.find(c => c.id === p.condicaoId);
-  if (!f) return;
-  // salvaguarda: sem saldo ou sem conta na hora de executar, o bônus volta a reservado —
-  // nunca fica preso numa proposta assinada que não executa, e nunca é perdido
-  if (state.caixas.fundo < p.valor || !f.carteira) {
-    p.status = 'reservada';
-    if (c) c.status = 'validada-aguardando';
-    pushTx(state, 'RESERVA',
-      `Proposta #${p.id} atingiu o limiar mas não executou — ${fmt(p.valor)} reservado para ${f.resp} (${!f.carteira ? 'sem conta conectada' : 'cofre sem saldo'}); liberação retroativa garantida`,
-      0, { propostaId: p.id });
-    return;
-  }
+  if (!f || state.caixas.fundo < p.valor) return;
   state.caixas.fundo -= p.valor;
   state.caixas.fundoLiberado += p.valor;
   f.saldo += p.valor;
-  // extrato é lido pela família: linguagem do dia a dia, sem jargão do programa
-  f.extrato.push({ ts: Date.now(), desc: c ? `Bônus de ${c.mes.toLowerCase()} — ${simplificar(c.tipo)}` : 'Bônus por compromisso cumprido', valor: p.valor });
+  f.extrato.push({ ts: Date.now(), desc: `Bônus Fundo Infância — ${c ? `${c.tipo} (${c.mes})` : 'compromisso cumprido'}`, valor: p.valor });
   if (c) c.status = 'liberada';
   p.status = 'executada';
   const tx = pushTx(state, 'LIBERAÇÃO',
@@ -184,7 +137,7 @@ function seed() {
       { id: 1, periodo: 'Julho 2026 — quinzena 1', kg: 105, acoes: 2, signature: solSig('rel-1'), data: '2026-07-15' },
     ],
     vendas: [
-      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16', materiais: ['Vidro'], rastreio: codigoRastreio('rastreio-1-luminaria'), origem: [2] },
+      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16' },
       { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
@@ -236,7 +189,7 @@ function seed() {
   state.caixas.fundo -= bonusMaria;
   state.caixas.fundoLiberado += bonusMaria;
   state.familias[0].saldo += bonusMaria;
-  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho — vacinação em dia', valor: bonusMaria });
+  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus Fundo Infância — Vacinação em dia (Julho)', valor: bonusMaria });
   pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} → conta Picnic de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
 
   pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo — Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
@@ -247,9 +200,7 @@ function seed() {
 }
 
 /* ---------------------------------------------------------------- reducer ---- */
-/* seed e reducer são exportados para permitir testar o fluxo sem subir a UI */
-export { seed as estadoInicial };
-export function reducer(state, action) {
+function reducer(state, action) {
   const s = structuredClone(state);
   switch (action.type) {
     case 'RESET':
@@ -278,32 +229,8 @@ export function reducer(state, action) {
       return s;
     }
 
-    case 'ANCORAR_RELATORIO': {
-      // registro REAL na Rede Recy, feito pelo proxy. Guardamos só o que é
-      // público: hash do relatório, id da transação e link para conferir.
-      const rel = s.relatorios.find(r => r.id === action.id);
-      if (rel && action.ancoragem?.txId) {
-        rel.ancoragem = {
-          rede: action.ancoragem.rede || 'Recy Testnet',
-          hash: action.ancoragem.hash,
-          txId: action.ancoragem.txId,
-          url: action.ancoragem.url || null,
-          ts: action.ancoragem.ts || Date.now(),
-        };
-        pushTx(s, 'ANCORAGEM',
-          `Relatório "${rel.periodo}" ancorado na ${rel.ancoragem.rede}: ${rel.kg} kg — SHA-256 ${rel.ancoragem.hash.slice(0, 16)}…`,
-          0, { relatorioId: rel.id, real: true, txExterna: rel.ancoragem.txId, urlExterna: rel.ancoragem.url });
-      }
-      return s;
-    }
-
     case 'NOVA_VENDA': {
       const venda = { id: s.nextId++, ...action.payload, data: new Date().toISOString().slice(0, 10) };
-      // produto físico leva etiqueta com QR: o turista escaneia e vê de onde veio o material
-      if (venda.tipo === 'produto') {
-        venda.rastreio = codigoRastreio('rastreio-' + venda.id + '-' + venda.descricao);
-        venda.origem = coletasDeOrigem(s, venda.materiais);
-      }
       s.vendas.push(venda);
       aplicarSplit(s, venda);
       return s;
@@ -331,7 +258,10 @@ export function reducer(state, action) {
     case 'ENVIAR_COMPROVACAO': {
       const f = s.familias.find(f => f.id === action.familiaId);
       const c = f?.condicoes.find(c => c.id === action.condicaoId);
-      if (c && c.status === 'pendente') c.status = 'comprovada'; // documento fica no ambiente seguro (off-chain)
+      if (c && c.status === 'pendente') {
+        c.status = 'comprovada'; // documento fica no ambiente seguro (off-chain)
+        if (action.evidHash) { c.evidHash = action.evidHash; c.arquivo = action.arquivo || ''; }
+      }
       return s;
     }
 
@@ -344,7 +274,8 @@ export function reducer(state, action) {
         if (f.carteira && disponivelCofre(s) >= valor) {
           c.status = 'aguardando-assinaturas';
           s.propostas.push(p);
-          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp} — ${c.tipo} validada pelo Instituto Vivá (hash off-chain)`, 0, { propostaId: p.id });
+          const evid = c.evidHash ? `evidência sha256:${c.evidHash.slice(0, 12)}…` : 'hash off-chain';
+          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp} — ${c.tipo} validada pelo Instituto Vivá (${evid})`, 0, { propostaId: p.id });
         } else {
           c.status = 'validada-aguardando';
           p.status = 'reservada';
@@ -371,7 +302,7 @@ export function reducer(state, action) {
       const v = Math.min(action.valor, f?.saldo ?? 0);
       if (f && v > 0) {
         f.saldo -= v;
-        f.extrato.push({ ts: Date.now(), desc: 'Retirada pelo Pix', valor: -v });
+        f.extrato.push({ ts: Date.now(), desc: 'Retirada via Pix (conversão para reais)', valor: -v });
         pushTx(s, 'SAQUE', `Conversão ${MOEDA}→BRL via Pix — ${fmt(v)} para a família de ${f.resp} (ponte ${PROVIDER_CARTEIRA})`, v);
       }
       return s;
@@ -385,8 +316,16 @@ export function reducer(state, action) {
 /* --------------------------------------------------------------- provider ---- */
 const Ctx = createContext(null);
 
+/** Versionamento para a sincronização multi-aparelho: cada ação incrementa v. */
+function reducerRaiz(state, action) {
+  if (action.type === 'SUBSTITUIR_ESTADO') return action.estado;
+  const s = reducer(state, action);
+  if (s !== state) s.v = (state?.v || 0) + 1;
+  return s;
+}
+
 export function StoreProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, null, () => {
+  const [state, dispatch] = useReducer(reducerRaiz, null, () => {
     try {
       const saved = localStorage.getItem(KEY);
       if (saved) {
@@ -399,7 +338,62 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* sem persistência */ }
   }, [state]);
-  return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>;
+
+  /* ------------------------------------------------------------------------
+     Sincronização opcional multi-aparelho (Supabase REST).
+     Ativa apenas se public/supabase.json existir com { url, anonKey } —
+     ver SUPABASE.md. Sem o arquivo, o app funciona 100% local.
+  ------------------------------------------------------------------------ */
+  const [cfgSync, setCfgSync] = useState(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  useEffect(() => {
+    fetch('./supabase.json')
+      .then(r => (r.ok ? r.json() : null))
+      .then(c => { if (c?.url && c?.anonKey) setCfgSync(c); })
+      .catch(() => {});
+  }, []);
+
+  // carrega o estado remoto e fica de olho em versões mais novas
+  useEffect(() => {
+    if (!cfgSync) return;
+    const H = { apikey: cfgSync.anonKey, Authorization: 'Bearer ' + cfgSync.anonKey };
+    const puxar = async () => {
+      try {
+        const r = await fetch(`${cfgSync.url}/rest/v1/estado?id=eq.1&select=dados`, { headers: H });
+        if (!r.ok) return;
+        const linhas = await r.json();
+        const remoto = linhas?.[0]?.dados;
+        if (remoto?.cofre && (remoto.v || 0) > (stateRef.current.v || 0)) {
+          dispatch({ type: 'SUBSTITUIR_ESTADO', estado: remoto });
+        }
+      } catch (e) { /* offline: segue local */ }
+    };
+    puxar();
+    const id = setInterval(puxar, 7000);
+    return () => clearInterval(id);
+  }, [cfgSync]);
+
+  // grava alterações locais (com debounce)
+  useEffect(() => {
+    if (!cfgSync) return;
+    const t = setTimeout(() => {
+      fetch(`${cfgSync.url}/rest/v1/estado?on_conflict=id`, {
+        method: 'POST',
+        headers: {
+          apikey: cfgSync.anonKey,
+          Authorization: 'Bearer ' + cfgSync.anonKey,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify({ id: 1, dados: state }),
+      }).catch(() => {});
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [state, cfgSync]);
+
+  return <Ctx.Provider value={{ state, dispatch, sincronizado: !!cfgSync }}>{children}</Ctx.Provider>;
 }
 
 export const useStore = () => useContext(Ctx);

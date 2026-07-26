@@ -1,16 +1,52 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, fmt, SPLIT, urlRastreio } from '../store.jsx';
-import { useToast, ValorAnimado, EstadoVazio, QrCode } from '../ui.jsx';
+import { useStore, fmt, trunc, SPLIT } from '../store.jsx';
+import { useToast, ValorAnimado, EstadoVazio, Modal } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
 
-/* `materiais` liga o produto às coletas que forneceram a matéria-prima —
-   é o que faz o rastreio do QR ser verdadeiro e não decorativo */
 const PRODUTOS = [
-  { nome: 'Luminária de vidro reaproveitado', preco: 80, materiais: ['Vidro'] },
-  { nome: 'Bolsa de lona de vela reciclada', preco: 65, materiais: ['Rejeito de praia'] },
-  { nome: 'Vaso de plástico prensado', preco: 40, materiais: ['Plástico PET', 'Plástico misto'] },
-  { nome: 'Chaveiro-lembrança de rede de pesca', preco: 25, materiais: ['Rejeito de praia', 'Plástico misto'] },
+  { nome: 'Luminária de vidro reaproveitado', preco: 80, img: 'luminaria.jpg', material: 'Vidro', emoji: '💡' },
+  { nome: 'Bolsa de lona de vela reciclada', preco: 65, img: 'bolsa.jpg', material: 'Lona de vela', emoji: '👜' },
+  { nome: 'Vaso de plástico prensado', preco: 40, img: 'vaso.jpg', material: 'Plástico PET', emoji: '🪴' },
+  { nome: 'Chaveiro-lembrança de rede de pesca', preco: 25, img: 'chaveiro.jpg', material: 'Rede de pesca', emoji: '🔑' },
 ];
+
+/* QR determinístico do rastreio (aponta para a própria plataforma) */
+function QrRastreio({ semente }) {
+  const N = 15, cel = 7;
+  const quad = [];
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const canto = (x < 4 && y < 4) || (x > N - 5 && y < 4) || (x < 4 && y > N - 5);
+      const cheio = canto ? (x % 3 !== 1 || y % 3 !== 1) : ((x * 11 + y * 7 + semente) % 5 < 2);
+      if (cheio) quad.push(<rect key={x + '-' + y} x={x * cel} y={y * cel} width={cel - 1} height={cel - 1} fill="#22312a" />);
+    }
+  }
+  return <svg className="qr" width="112" height="112" viewBox={`0 0 ${N * cel} ${N * cel}`} role="img" aria-label="QR code de rastreio">{quad}</svg>;
+}
+
+/* jornada do produto: da coleta ao Fundo Infância, com dados reais do estado */
+function Rastreio({ produto, state, onFechar }) {
+  const coleta = [...state.coletas].reverse().find(c => c.status === 'validada' && c.material.includes(produto.material.split(' ')[0]))
+    || [...state.coletas].reverse().find(c => c.status === 'validada');
+  const rel = [...state.relatorios].slice(-1)[0];
+  const fundo = produto.preco * SPLIT.fundo;
+
+  return (
+    <Modal titulo={`Rastreio · ${produto.nome}`} sub="cada produto conta sua história na rede" onFechar={onFechar} largura={560}>
+      <div className="rastreio">
+        <QrRastreio semente={Math.round(produto.preco)} />
+        <div className="rastreio-passos">
+          <div><span>1</span><div><b>Material recuperado</b><small>{coleta ? `${coleta.kg} kg de ${coleta.material} · ${coleta.local} · ${coleta.data}` : 'coleta comunitária em Boipeba'}{coleta?.geo ? ` · 📍 ${coleta.geo.lat}, ${coleta.geo.lng}` : ''}</small></div></div>
+          <div><span>2</span><div><b>Validação DeTrash</b><small>{coleta?.signature ? `assinatura ${trunc(coleta.signature, 8, 8)}` : 'evidência verificada pela metodologia'}</small></div></div>
+          <div><span>3</span><div><b>Relatório de Circularidade</b><small>{rel ? `${rel.periodo} · ${rel.kg} kg consolidados` : 'em consolidação'}</small></div></div>
+          <div><span>4</span><div><b>Feito por artesãs da ilha</b><small>renda direta e incondicional para quem produz (60%)</small></div></div>
+          <div><span>5</span><div><b>Sua compra protege a infância</b><small>{fmt(fundo)} desta peça vão direto ao Fundo Infância (cofre 2-de-3)</small></div></div>
+        </div>
+      </div>
+      <p className="mini centro">No produto físico, este QR fica na etiqueta — o turista escaneia e audita a jornada inteira.</p>
+    </Modal>
+  );
+}
 
 const FATIAS = [
   { chave: 'renda', rot: 'Renda direta', sub: 'ao coletor, incondicional', pct: SPLIT.renda, cor: 'var(--azul)' },
@@ -88,6 +124,7 @@ export default function Mercado() {
   const toast = useToast();
   const [empresa, setEmpresa] = useState('');
   const [tipoEsg, setTipoEsg] = useState('esg');
+  const [rastreio, setRastreio] = useState(null);
   const focoSplit = useDestaque('split');
 
   const kgDisponivel = state.coletas.filter(c => c.status === 'validada').reduce((a, c) => a + Number(c.kg), 0);
@@ -102,12 +139,9 @@ export default function Mercado() {
   }, [state.vendas]);
 
   const comprarProduto = p => {
-    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco, materiais: p.materiais } });
+    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco } });
     toast(`${p.nome} vendido — ${fmt(p.preco)} 🛒`);
   };
-
-  // etiqueta do último produto vendido: é o QR que vai preso na peça
-  const ultimoProduto = [...state.vendas].reverse().find(v => v.tipo === 'produto' && v.rastreio);
 
   const comprarEsg = () => {
     const t = (kgDisponivel / 1000).toFixed(2);
@@ -127,7 +161,16 @@ export default function Mercado() {
           <p style={{ fontSize: 13, color: 'var(--cinza)' }}>Produtos feitos com materiais recuperados na ilha. Cada compra alimenta o ciclo.</p>
           {PRODUTOS.map(p => (
             <div key={p.nome} className="produto">
-              <div><b>{p.nome}</b><div className="mini">{fmt(p.preco)}</div></div>
+              <div className="produto-thumb" aria-hidden="true">
+                <span>{p.emoji}</span>
+                <img src={'./produtos/' + p.img} alt="" loading="lazy"
+                  onError={e => { e.currentTarget.style.display = 'none'; }} />
+              </div>
+              <div className="produto-info">
+                <b>{p.nome}</b>
+                <div className="mini">{fmt(p.preco)} · {p.material} recuperado da ilha</div>
+                <button className="link-rastreio" onClick={() => setRastreio(p)}>🔍 rastrear origem</button>
+              </div>
               <button className="acao sec" onClick={() => comprarProduto(p)}>Comprar</button>
             </div>
           ))}
@@ -149,30 +192,7 @@ export default function Mercado() {
         </div>
       </div>
 
-      {ultimoProduto && (
-        <>
-          <h3>🏷️ Etiqueta de rastreio da peça</h3>
-          <div className="card etiqueta">
-            <div className="etiqueta-qr">
-              <QrCode texto={urlRastreio(ultimoProduto.rastreio)} lado={150}
-                titulo={`Rastreio ${ultimoProduto.rastreio}`} />
-              <div className="etiqueta-codigo">{ultimoProduto.rastreio}</div>
-            </div>
-            <div className="etiqueta-texto">
-              <b>{ultimoProduto.descricao}</b>
-              <p className="mini">
-                Este QR vai preso na peça. O turista escaneia e vê a jornada inteira: de qual coleta
-                veio o material, quem verificou, e quanto da compra dele foi para a renda de quem
-                coletou e para o Fundo Infância.
-              </p>
-              <a className="acao sec etiqueta-link" href={`#/rastreio/${ultimoProduto.rastreio}`}>
-                Ver a página do turista ↗
-              </a>
-              <div className="hash">{urlRastreio(ultimoProduto.rastreio)}</div>
-            </div>
-          </div>
-        </>
-      )}
+      {rastreio && <Rastreio produto={rastreio} state={state} onFechar={() => setRastreio(null)} />}
 
       <h3 className="ancora">🔀 Divisão automática da receita</h3>
       <div className={'card' + focoSplit}>

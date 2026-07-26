@@ -1,0 +1,13 @@
+Coloque aqui as fotos reais dos produtos (a plataforma usa automaticamente):
+
+  luminaria.jpg   -> Luminária de vidro reaproveitado
+  bolsa.jpg       -> Bolsa de lona de vela reciclada
+  vaso.jpg        -> Vaso de plástico prensado
+  chaveiro.jpg    -> Chaveiro-lembrança de rede de pesca
+
+E na pasta public/ (um nível acima):
+
+  boipeba.jpg     -> foto panorâmica da ilha (fundo do painel de impacto)
+
+Formato: JPG/PNG, quadradas de ~600x600 px para produtos; 1600px de largura para a boipeba.jpg.
+Sem as fotos, o app mostra os ícones ilustrativos — nada quebra.

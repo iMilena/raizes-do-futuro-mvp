@@ -71,30 +71,47 @@ header.top p{margin:6px 0 20px;opacity:.88;font-size:13.5px;max-width:640px;line
 }
 .btn-tour:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
 
-/* abas = etapas da jornada (ícone + rótulo + subtítulo numerado) */
-nav.tabs{display:flex;gap:6px;flex-wrap:wrap;position:relative}
-nav.tabs button{
-  border:none;border-radius:14px 14px 0 0;
-  background:rgba(255,255,255,.12);color:#fff;
-  padding:10px 14px;font-family:inherit;
-  cursor:pointer;transition:background .15s,transform .12s;
-  position:relative;display:flex;align-items:center;gap:9px;text-align:left;
+/* abas = etapas da jornada, em barra de vidro com pílulas */
+header.top{border-radius:0 0 26px 26px;padding-bottom:22px;margin-bottom:12px}
+nav.tabs{
+  display:flex;gap:5px;flex-wrap:wrap;position:relative;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+  border-radius:18px;padding:6px;backdrop-filter:blur(8px);
+  width:fit-content;max-width:100%;
 }
-nav.tabs button:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
-nav.tabs .tab-ico{font-size:19px;line-height:1}
+nav.tabs button{
+  border:none;border-radius:13px;flex:0 0 auto;
+  background:transparent;color:#fff;
+  padding:8px 12px;font-family:inherit;
+  cursor:pointer;transition:background .18s,transform .12s,box-shadow .18s;
+  position:relative;display:flex;align-items:center;gap:8px;text-align:left;
+}
+nav.tabs button:hover{background:rgba(255,255,255,.18)}
+nav.tabs .tab-ico{font-size:18px;line-height:1}
 nav.tabs .tab-txt{display:flex;flex-direction:column;line-height:1.25}
-nav.tabs .tab-rot{font-size:12.5px;font-weight:800}
-nav.tabs .tab-sub{font-size:9.5px;opacity:.75;font-weight:600;white-space:nowrap}
+nav.tabs .tab-rot{font-size:12.5px;font-weight:800;white-space:nowrap}
+nav.tabs .tab-sub{font-size:9.5px;opacity:.72;font-weight:600;white-space:nowrap}
 nav.tabs button.on{
-  background:var(--areia);color:var(--verde-escuro);
-  box-shadow:0 -6px 16px rgba(0,0,0,.10);
+  background:#fdfbf4;color:var(--verde-escuro);
+  box-shadow:0 4px 14px rgba(0,0,0,.22);
 }
 nav.tabs button.on .tab-rot{font-weight:900}
 nav.tabs button.on .tab-sub{color:var(--terracota,#bd5b2a);opacity:1}
-nav.tabs button.on:after{
-  content:"";position:absolute;left:12px;right:12px;top:5px;height:3px;
-  border-radius:2px;background:linear-gradient(90deg,var(--verde),var(--azul));
+
+/* telas médias: esconde subtítulos para caber em uma linha */
+@media (max-width:1080px){
+  nav.tabs .tab-sub{display:none}
+  nav.tabs button{padding:9px 11px}
 }
+/* celular: uma linha com rolagem suave */
+@media (max-width:640px){
+  nav.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:auto}
+  nav.tabs::-webkit-scrollbar{display:none}
+}
+
+/* transição de entrada ao trocar de etapa */
+.vista{animation:vista-entra .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes vista-entra{0%{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
 h2{color:var(--verde-escuro);font-size:21px;font-weight:900;margin:30px 0 10px;letter-spacing:.2px}
 h3{font-size:15px;font-weight:800;margin:20px 0 8px}
@@ -576,6 +593,42 @@ nav.tabs button.tour-alvo{animation:tour-anel 1.5s ease-in-out infinite}
 .zap-msg.digitando span:nth-child(3){animation-delay:.4s}
 @keyframes digita{0%,60%,to{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 
+/* ---- evidências reais (foto + hash) ---- */
+.foto-previa{
+  display:flex;gap:12px;align-items:center;margin-top:10px;
+  background:var(--verde-claro);border-radius:12px;padding:10px 12px;
+}
+.foto-previa img{width:64px;height:64px;object-fit:cover;border-radius:10px;box-shadow:var(--sombra)}
+.foto-previa>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.foto-previa b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foto-previa .mini{margin:0}
+
+/* ---- produtos com foto + rastreio ---- */
+.produto{align-items:center}
+.produto-thumb{
+  position:relative;width:52px;height:52px;flex:0 0 52px;border-radius:12px;overflow:hidden;
+  background:linear-gradient(150deg,var(--verde-claro),var(--azul-claro));
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:var(--sombra);
+}
+.produto-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.produto-info{flex:1;min-width:0}
+.link-rastreio{
+  background:none;border:none;padding:0;margin-top:2px;cursor:pointer;font-family:inherit;
+  font-size:11px;font-weight:800;color:var(--azul-escuro);
+}
+.link-rastreio:hover{text-decoration:underline}
+.rastreio{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.rastreio .qr{margin:0;flex:0 0 auto}
+.rastreio-passos{flex:1;min-width:240px;display:grid;gap:10px}
+.rastreio-passos>div{display:flex;gap:10px;align-items:flex-start}
+.rastreio-passos span{
+  flex:0 0 24px;height:24px;border-radius:50%;background:var(--grad-acao);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;
+}
+.rastreio-passos b{font-size:13px;display:block}
+.rastreio-passos small{font-size:11.5px;color:var(--cinza);line-height:1.4}
+
 /* ---- modo gravação ---- */
 body.gravando footer,
 body.gravando .btn-tour,
@@ -609,7 +662,11 @@ body.gravando .so-sim{display:none!important}
 /* ================================================ dashboard ---- */
 .hero-dash{
   margin-top:24px;
-  background:var(--grad-hero);
+  /* se public/boipeba.jpg existir, a foto da ilha aparece sob o gradiente */
+  background:
+    linear-gradient(120deg,rgba(13,79,48,.93),rgba(21,105,62,.88) 45%,rgba(14,124,158,.86)),
+    url('/boipeba.jpg') center/cover no-repeat,
+    var(--grad-hero);
   border-radius:22px;color:#fff;
   padding:22px 26px;
   display:flex;align-items:center;gap:24px;flex-wrap:wrap;

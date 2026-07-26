@@ -1,0 +1,5 @@
+{
+  "_instrucoes": "Preencha com os dados do seu projeto Supabase (ver SUPABASE.md) e salve como public/supabase.json",
+  "url": "https://SEUPROJETO.supabase.co",
+  "anonKey": "COLE_AQUI_A_ANON_PUBLIC_KEY"
+}

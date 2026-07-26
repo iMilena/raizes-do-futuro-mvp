@@ -1,0 +1,16 @@
+{
+  "name": "Raízes do Futuro — Boipeba",
+  "short_name": "Raízes",
+  "description": "Do resíduo à proteção da infância. Plataforma de impacto de Boipeba, BA.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f4ec",
+  "theme_color": "#1b7a43",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "./emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "./emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "maskable" }
+  ]
+}

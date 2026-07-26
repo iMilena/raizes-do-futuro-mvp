@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useStore, fmt, BONUS_POR_CRIANCA } from '../store.jsx';
+import React, { useEffect, useRef, useState } from 'react';
+import { useStore, fmt, trunc, BONUS_POR_CRIANCA } from '../store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
+import { sha256Arquivo } from '../evidencia.js';
 
 /* ---------------------------------------------------------------------------
    App da Família — a tela que a família usa no celular.
@@ -276,6 +277,8 @@ export default function PaginaFamilia({ standalone = false }) {
   const [onboardOk, setOnboardOk] = useState(false);
   const [sacando, setSacando] = useState(false);
   const [ajuda, setAjuda] = useState(false);
+  const [condAlvo, setCondAlvo] = useState(null);
+  const compRef = useRef(null);
 
   const focoSaldo = useDestaque('saldo');
   const focoSaque = useDestaque('saque');
@@ -286,9 +289,29 @@ export default function PaginaFamilia({ standalone = false }) {
   const f = state.familias.find(x => x.id === efetivoId);
   const logado = rodando || (entrou && !!f);
 
+  // no modo demo, o passo automático envia sem arquivo; ao vivo, abre a câmera/galeria
   const enviar = c => {
-    dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
-    toast('Foto do comprovante enviada 📎');
+    if (rodando) {
+      dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
+      toast('Foto do comprovante enviada 📎');
+      return;
+    }
+    setCondAlvo(c.id);
+    compRef.current?.click();
+  };
+
+  const aoEscolherComprovante = async e => {
+    const arq = e.target.files?.[0];
+    if (!arq || !condAlvo) return;
+    try {
+      const hash = await sha256Arquivo(arq);
+      dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: condAlvo, evidHash: hash, arquivo: arq.name });
+      toast(`Comprovante protegido e enviado 📎 (código ${trunc(hash, 6, 6)})`);
+    } catch (err) {
+      toast('Não foi possível ler a foto', 'alerta');
+    }
+    setCondAlvo(null);
+    if (compRef.current) compRef.current.value = '';
   };
 
   const conteudo = (
@@ -370,6 +393,11 @@ export default function PaginaFamilia({ standalone = false }) {
                     {c.status === 'pendente' && (
                       <button className="acao bloco" onClick={() => enviar(c)}>📎 Enviar foto do comprovante</button>
                     )}
+                    {c.evidHash && (
+                      <p className="mini" title="A foto fica no seu aparelho — só este código vai ao registro">
+                        🔐 comprovante protegido · código {trunc(c.evidHash, 6, 6)}
+                      </p>
+                    )}
                     <p className="mini">A renda do seu trabalho não depende disso — aqui é só o bônus a mais.</p>
                   </div>
                 );
@@ -398,6 +426,10 @@ export default function PaginaFamilia({ standalone = false }) {
       {logado && f?.carteira && (
         <button className="fab-ajuda" onClick={() => setAjuda(a => !a)}>💬 Falar com o Instituto Vivá</button>
       )}
+
+      {/* input escondido: câmera/galeria para o comprovante */}
+      <input ref={compRef} type="file" accept="image/*,application/pdf" capture="environment"
+        style={{ display: 'none' }} onChange={aoEscolherComprovante} />
     </div>
   );
 
