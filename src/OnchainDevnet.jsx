@@ -77,8 +77,8 @@ export default function OnchainDevnet() {
 
       <p className="mini" style={{ marginBottom: 0 }}>
         ✍️ A liberação acima foi <b>assinada de verdade</b> por Instituto Vivá + DeTrash e executada pelo programa
-        SPL Token — clique nos links para auditar no Solana Explorer. As telas abaixo continuam em modo simulado
-        para demonstrar a jornada completa.
+        SPL Token — clique nos links para auditar no Solana Explorer. As telas abaixo demonstram a jornada
+        operacional completa da plataforma.
       </p>
     </div>
   );

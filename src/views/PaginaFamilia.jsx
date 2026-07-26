@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore, fmt, BONUS_POR_CRIANCA } from '../store.jsx';
-import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
+import { useToast, Badge, EstadoVazio, ValorAnimado, Confete } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
 
 /* ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ function Onboarding({ familia, onDone }) {
 
   const concluir = () => {
     dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, provider: provider || 'Picnic' });
-    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo 📲' : ' na Picnic 🧺'} 🎉`);
+    toast(`Conta da família criada com ${provider === 'Solana' ? 'sua carteira Solana ◎' : 'Picnic 🧺'} 🎉`);
     celebrar();
     setPronto(true);
   };
@@ -103,11 +103,6 @@ function Onboarding({ familia, onDone }) {
     <div className="fam-onb">
       {medalha && <span className="medalha-voa" aria-hidden="true">🌟</span>}
       {pronto && <Confete />}
-
-      <BarraProgresso
-        pct={pronto ? 100 : ((missao + 1) / MISSOES.length) * 100}
-        rot={pronto ? 'Concluído!' : `Missão ${missao + 1} de ${MISSOES.length}`}
-      />
 
       <div className="missoes-trilha" role="list">
         {MISSOES.map((m, i) => (
@@ -128,9 +123,9 @@ function Onboarding({ familia, onDone }) {
               <small>Aplicativo brasileiro, simples, com retirada em reais pelo Pix</small></span>
           </button>
           <button className={'btn-conexao' + (provider === 'Solana' ? ' sel' : '')} onClick={() => setProvider('Solana')}>
-            <span className="ic" aria-hidden="true">📲</span>
-            <span><b>Já tenho uma conta digital</b><br />
-              <small>Receber o dinheiro no aplicativo que você já usa hoje</small></span>
+            <span className="ic" aria-hidden="true">◎</span>
+            <span><b>Já tenho uma carteira Solana</b><br />
+              <small>Phantom, Solflare ou outra — conectar a conta que você já usa</small></span>
           </button>
           <div className="conceito" style={{ marginTop: 10 }}>
             💡 Seu dinheiro fica num <b>cofre digital</b> que ninguém pode desviar — nem a gente.
@@ -258,7 +253,7 @@ function AjudaZap({ onFechar }) {
   }, []);
   return (
     <div className="card" style={{ marginTop: 10 }}>
-      <b>💬 Instituto Vivá — atendimento (simulado)</b>
+      <b>💬 Instituto Vivá — atendimento pelo WhatsApp</b>
       <div className="zap" style={{ marginTop: 8 }}>
         <div className="zap-msg familia">Oi! Como faço para enviar o comprovante da escola?</div>
         {!digitou
@@ -279,7 +274,6 @@ export default function PaginaFamilia({ standalone = false }) {
   const [pin, setPin] = useState('');
   const [entrou, setEntrou] = useState(false);
   const [onboardOk, setOnboardOk] = useState(false);
-  const [onbFam, setOnbFam] = useState(null); // família que está no meio das missões
   const [sacando, setSacando] = useState(false);
   const [ajuda, setAjuda] = useState(false);
 
@@ -291,14 +285,6 @@ export default function PaginaFamilia({ standalone = false }) {
   const efetivoId = rodando ? familiaDemo : Number(famId);
   const f = state.familias.find(x => x.id === efetivoId);
   const logado = rodando || (entrou && !!f);
-
-  // As missões começam quando a família entra sem conta e só terminam quando ela toca
-  // em "Abrir minha conta". Sem esta trava, criar a conta desmontaria o onboarding na
-  // hora e a tela final (badge 🏅 + confete) nunca apareceria.
-  useEffect(() => {
-    if (logado && f && !f.carteira) setOnbFam(f.id);
-  }, [logado, f]);
-  const noOnboarding = logado && f && onbFam === f.id && !onboardOk;
 
   const enviar = c => {
     dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
@@ -316,7 +302,7 @@ export default function PaginaFamilia({ standalone = false }) {
           </div>
         </div>
         {logado && !rodando && (
-          <button className="fam-sair" onClick={() => { setEntrou(false); setPin(''); setOnboardOk(false); setOnbFam(null); setSacando(false); }}>sair</button>
+          <button className="fam-sair" onClick={() => { setEntrou(false); setPin(''); setOnboardOk(false); setSacando(false); }}>sair</button>
         )}
       </div>
 
@@ -328,7 +314,7 @@ export default function PaginaFamilia({ standalone = false }) {
             <Mascote fala="Bem-vinda de volta! Escolha sua família e digite o PIN para entrar." />
             <div className="card">
               <label>Quem é você?<span className="so-sim"> (simulação)</span></label>
-              <select value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); setOnbFam(null); }}>
+              <select value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); }}>
                 <option value="">Escolha a família…</option>
                 {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp}</option>)}
               </select>
@@ -342,17 +328,17 @@ export default function PaginaFamilia({ standalone = false }) {
         )}
 
         {/* primeira vez: onboarding gamificado */}
-        {noOnboarding && (
+        {logado && f && !f.carteira && !onboardOk && (
           <Onboarding familia={f} onDone={() => setOnboardOk(true)} />
         )}
 
         {/* conta da família */}
-        {logado && f && f.carteira && !noOnboarding && (
+        {logado && f && f.carteira && (
           <>
             <div className={'card saldo-card' + focoSaldo}>
               <span className="saldo-rot">Você tem</span>
               <ValorAnimado valor={f.saldo} className="saldo-numero" />
-              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Picnic' ? 'Picnic 🧺' : 'do seu aplicativo 📲'}</span>
+              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Picnic' ? 'Picnic 🧺' : 'Solana ◎'}</span>
               <div className={focoSaque}>
                 <button className="acao grande" disabled={f.saldo <= 0} onClick={() => setSacando(true)}>
                   💸 Retirar dinheiro

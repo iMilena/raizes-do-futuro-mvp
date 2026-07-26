@@ -102,7 +102,7 @@ export default function Dashboard() {
       {/* ---------------- hero de impacto ---------------- */}
       <div className="hero-dash">
         <div className="hero-info">
-          <span className="hero-chip">📍 Piloto Boipeba, BA · {REDE} (simulada)</span>
+          <span className="hero-chip">📍 Piloto Boipeba, BA · {REDE} · integrada à Rede Recy</span>
           <h2 className="hero-titulo">Impacto em tempo real</h2>
           <div className="hero-nums">
             <div>

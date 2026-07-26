@@ -149,7 +149,7 @@ function ExploradorTx({ transacoes }) {
             <div className="linha-det"><span>Slot</span><b>{aberta.slot}</b></div>
             <div className="linha-det"><span>Sequência</span><b>#{aberta.seq}</b></div>
             <div className="linha-det"><span>Horário</span><b>{new Date(aberta.ts).toLocaleString('pt-BR')}</b></div>
-            <div className="linha-det"><span>Rede</span><b>{REDE} · devnet simulada</b></div>
+            <div className="linha-det"><span>Rede</span><b>{REDE} · devnet</b></div>
             <div className="linha-det"><span>Taxa</span><b>{(aberta.taxa ?? TAXA_SOLANA).toFixed(6)} SOL</b></div>
             {aberta.valor > 0 && <div className="linha-det"><span>Valor</span><b>{fmt(aberta.valor)} <span className="mini">({MOEDA})</span></b></div>}
             {aberta.propostaId && <div className="linha-det"><span>Proposta</span><b>#{aberta.propostaId}</b></div>}

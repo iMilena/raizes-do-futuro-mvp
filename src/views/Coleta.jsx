@@ -33,7 +33,7 @@ export default function Coleta() {
           <label>Local</label>
           <input value={form.local} onChange={e => setForm({ ...form, local: e.target.value })} placeholder="Ex.: Praia de Cueira" />
           <label>Evidência fotográfica</label>
-          <input type="file" disabled title="Simulado no MVP" />
+          <input type="file" disabled title="Disponível no aplicativo de campo" />
           <p className="mini">📷 No app real, fotos e geolocalização compõem a evidência (metodologia DeTrash).</p>
           <button className="acao" disabled={!ok} onClick={enviar}>Enviar para validação</button>
         </div>
