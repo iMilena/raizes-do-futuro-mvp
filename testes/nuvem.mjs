@@ -267,8 +267,10 @@ if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
 
   /* baixa e compara */
   const remoto = await nuvem.carregar();
-  const meu = f => f.id > N;
-  const famRemoto = remoto.familias.filter(meu);
+  /* filtra pelos ids EXATOS desta execução — `id > N` pegava famílias de
+     execuções anteriores, cujo N era outro */
+  const meusIds = new Set(s.familias.map(f => f.id));
+  const famRemoto = remoto.familias.filter(f => meusIds.has(f.id));
   ok(famRemoto.length === s.familias.length, `famílias voltaram (${famRemoto.length}/${s.familias.length})`);
 
   const local1 = s.familias.find(f => f.id === pAberta.familiaId);
@@ -284,8 +286,14 @@ if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
   ok(exec?.status === 'executada', 'proposta voltou como executada');
   ok((exec?.assinaturas || []).length === 2, `voltou com 2 assinaturas (${(exec?.assinaturas || []).length})`);
 
-  const txRT = remoto.transacoes.filter(t => String(t.signature).startsWith('rt' + N + '-'));
-  ok(txRT.length === s.transacoes.length, `transações voltaram (${txRT.length}/${s.transacoes.length})`);
+  /* assertiva precisa: toda signature local tem de existir na nuvem. Contar por
+     prefixo não serve — as transações criadas pelo reducer recebem signature
+     derivada do conteúdo, sem prefixo de teste. */
+  const sigsRemoto = new Set(remoto.transacoes.map(t => t.signature));
+  const faltando = s.transacoes.map(t => t.signature).filter(x => !sigsRemoto.has(x));
+  ok(faltando.length === 0,
+    `todas as ${s.transacoes.length} transações locais chegaram à nuvem${faltando.length ? ' — faltam ' + faltando.length : ''}`);
+  const txRT = remoto.transacoes.filter(t => sigsRemoto.has(t.signature) && s.transacoes.some(l => l.signature === t.signature));
   ok(txRT.every(t => !/Maria de Lourdes|José Raimundo|Ana Cláudia/.test(t.desc)),
     'nenhuma descrição de transação na nuvem contém nome de família');
   ok(txRT.some(t => /RT-\d+/.test(t.desc)), 'as descrições usam o código pseudônimo');

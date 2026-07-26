@@ -142,6 +142,14 @@ try {
   await cdp('Runtime.enable');
   await cdp('Page.enable');
 
+  /* Esta suíte testa o app LOCAL-FIRST, em isolamento: bloqueia o
+     public/supabase.json para o estado vir sempre da seed e as asserções serem
+     determinísticas. A sincronização com a nuvem é coberta pelas suítes `nuvem`
+     (garantias do esquema) e `aparelhos` (dois aparelhos, um offline) — misturar
+     as duas coisas aqui tornaria o resultado dependente de dado compartilhado. */
+  await cdp('Network.enable');
+  await cdp('Network.setBlockedURLs', { urls: ['*supabase.json*', '*supabase.co*'] });
+
   /* ---------- 0. tour de primeira visita ---------- */
   secao('0. Tour de primeira visita do painel');
   await irParaPrimeiraVisita(ALVO);

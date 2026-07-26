@@ -246,7 +246,7 @@ ok(s.transacoes.every(t => t.taxa > 0 && t.taxa < 0.001), 'toda tx tem taxa em S
 
 /* ---------- 13. deltas de sincronização ---------- */
 secao('13. Deltas de sincronização (o que sobe para a nuvem)');
-const { calcularDeltas, mesclar, nuvemAdiante } = await import(
+const { calcularDeltas, mesclar, nuvemDifere } = await import(
   pathToFileURL(process.env.SYNC_BUNDLE ?? new URL('./.tmp/sinc.mjs', import.meta.url).pathname).href);
 
 const base = estadoInicial();
@@ -300,8 +300,8 @@ const remoto = {
 const mesclado = mesclar(base, remoto);
 ok(mesclado.familias[0].resp === base.familias[0].resp, 'merge recupera o nome do cadastro local');
 ok(mesclado.familias[0].saldo === 7, 'merge usa o saldo que veio da nuvem');
-ok(nuvemAdiante(base, remoto) === true, 'detecta que a nuvem está à frente');
-ok(nuvemAdiante(remoto, base) === false, 'e que o local está à frente');
+ok(nuvemDifere(base, remoto) === true, 'detecta que a nuvem difere do local');
+ok(nuvemDifere(base, base) === false, 'e que estados iguais não disparam merge');
 
 console.log(`\n${'='.repeat(52)}`);
 console.log(falhas === 0 ? `✅ ${total} verificações, todas passaram` : `❌ ${falhas} de ${total} falharam`);

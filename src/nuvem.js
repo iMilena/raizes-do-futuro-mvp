@@ -55,12 +55,30 @@ async function req(caminho, opcoes = {}) {
 
 const ler = (tabela, query = '') => req(`${tabela}?${query || 'select=*'}`);
 
-/** INSERT que não falha se a linha já existe — usado nas tabelas append-only. */
-const inserir = (tabela, linhas) => req(tabela, {
-  method: 'POST',
-  headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
-  body: JSON.stringify(Array.isArray(linhas) ? linhas : [linhas]),
-});
+/**
+ * INSERT que não falha se a linha já existe — usado nas tabelas append-only.
+ *
+ * Duas armadilhas aprendidas na prática:
+ *
+ * 1. `resolution=ignore-duplicates` só resolve conflito na CHAVE PRIMÁRIA. Para
+ *    uma constraint unique (as de idempotência de dinheiro) é preciso declarar
+ *    as colunas em `on_conflict`, senão o PostgREST devolve 409.
+ * 2. Mesmo assim tratamos 23505 como sucesso: a linha já está lá, que é o
+ *    estado desejado. Sem isso, um 409 travaria a fila reenviando para sempre.
+ */
+const inserir = async (tabela, linhas, onConflict) => {
+  const caminho = onConflict ? `${tabela}?on_conflict=${onConflict}` : tabela;
+  try {
+    return await req(caminho, {
+      method: 'POST',
+      headers: { Prefer: 'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify(Array.isArray(linhas) ? linhas : [linhas]),
+    });
+  } catch (e) {
+    if (/23505|duplicate key/i.test(String(e.message))) return null; // já registrado
+    throw e;
+  }
+};
 
 /** UPSERT dirigido a uma linha — usado nas entidades operacionais. */
 const gravar = (tabela, linhas) => req(tabela, {
@@ -204,7 +222,7 @@ export const atualizarProposta = (id, campos) => atualizar('propostas', `id=eq.$
 
 /** Append-only: a PK (proposta, signatário) faz a idempotência no banco. */
 export const registrarAssinatura = (propostaId, signatario) =>
-  inserir('assinaturas', { proposta_id: propostaId, signatario });
+  inserir('assinaturas', { proposta_id: propostaId, signatario }, 'proposta_id,signatario');
 
 /** Append-only: `signature` é unique, então reenvio não duplica. */
 export const registrarTransacao = t => inserir('transacoes', {
@@ -217,8 +235,8 @@ export const registrarTransacao = t => inserir('transacoes', {
 
 /** Movimento de caixa. Nunca gravamos saldo — só o que entrou ou saiu. */
 export const registrarMovimento = (caixa, valor, motivo, transacaoSig) =>
-  inserir('movimentos', { caixa, valor, motivo, transacao_sig: transacaoSig });
+  inserir('movimentos', { caixa, valor, motivo, transacao_sig: transacaoSig }, 'transacao_sig,caixa');
 
 /** Linha do extrato da família. Idem: o saldo dela é a soma disto. */
 export const registrarExtrato = (familiaId, descricao, valor, transacaoSig) =>
-  inserir('extrato', { familia_id: familiaId, descricao, valor, transacao_sig: transacaoSig });
+  inserir('extrato', { familia_id: familiaId, descricao, valor, transacao_sig: transacaoSig }, 'transacao_sig,familia_id');

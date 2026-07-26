@@ -163,7 +163,7 @@ export default function Dashboard() {
         {feed.length === 0 && <EstadoVazio icone="🌱" titulo="Nenhuma atividade ainda" />}
         <div className="feed">
           {feed.map(t => (
-            <div className="feed-item" key={t.seq}>
+            <div className="feed-item" key={t.signature}>
               <i style={{ background: tipoTx(t.tipo).cor }} />
               <div className="feed-meio">
                 <b style={{ color: tipoTx(t.tipo).cor }}>{t.tipo}</b>

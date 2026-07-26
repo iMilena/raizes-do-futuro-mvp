@@ -264,9 +264,11 @@ export function mesclar(local, remoto) {
   return {
     ...local,
     ...remoto,
-    // slot e nextId seguem o maior dos dois: são contadores monotônicos
+    /* slot segue o maior dos dois: é contador monotônico.
+       `nextId` não aparece aqui de propósito — ids agora nascem de novoId()
+       (relógio + aleatório), justamente para não depender de contador local
+       compartilhado entre aparelhos. Ver store.jsx. */
     slot: Math.max(local?.slot || 0, remoto.transacoes?.length ? remoto.transacoes[remoto.transacoes.length - 1].slot : 0),
-    nextId: Math.max(local?.nextId || 100, ...remoto.transacoes.map(t => 0), ...(remoto.vendas || []).map(v => v.id + 1), ...(remoto.propostas || []).map(p => p.id + 1)),
     cofre: local?.cofre || remoto.cofre,
     familias: (remoto.familias || []).map(f => ({
       ...f,
@@ -275,6 +277,31 @@ export function mesclar(local, remoto) {
   };
 }
 
-/** A nuvem está à frente? Transações são append-only, então contá-las basta. */
-export const nuvemAdiante = (local, remoto) =>
-  Boolean(remoto) && (remoto.transacoes?.length || 0) > (local?.transacoes?.length || 0);
+/**
+ * Impressão digital do estado: só as contagens que mudam quando alguém trabalha.
+ *
+ * Existe porque a primeira versão comparava só o número de transações — e
+ * `NOVA_COLETA` **não gera transação** (ela só nasce na validação). Resultado: a
+ * coleta que o coletor registrava no celular nunca chegava ao notebook do
+ * Instituto Vivá, que é justamente o caso que a sincronização precisa cobrir.
+ * Encontrado pelo teste de dois aparelhos.
+ */
+export const impressao = e => !e ? '' : [
+  e.transacoes?.length || 0,
+  e.coletas?.length || 0,
+  e.relatorios?.length || 0,
+  e.vendas?.length || 0,
+  e.propostas?.length || 0,
+  (e.propostas || []).reduce((a, p) => a + (p.assinaturas?.length || 0), 0),
+  (e.familias || []).reduce((a, f) => a + (f.condicoes?.length || 0) + (f.extrato?.length || 0), 0),
+  (e.familias || []).filter(f => f.carteira).length,
+  Math.round(Number(e.caixas?.fundo || 0) * 100),
+].join('.');
+
+/**
+ * Vale trazer o estado remoto? Só quando ele DIFERE do local — em qualquer
+ * direção. Quem chama já garantiu que a fila está vazia, senão isto descartaria
+ * trabalho ainda não enviado.
+ */
+export const nuvemDifere = (local, remoto) =>
+  Boolean(remoto) && impressao(remoto) !== impressao(local);

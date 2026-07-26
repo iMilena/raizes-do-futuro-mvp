@@ -106,6 +106,20 @@ function aplicarSplit(state, venda) {
   pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
 }
 
+/**
+ * Id novo, único entre aparelhos.
+ *
+ * Não pode ser contador local (`nextId++`): dois aparelhos offline alocam o
+ * MESMO id para coisas diferentes, e o upsert por chave primária faz um apagar
+ * o registro do outro na base compartilhada. Aconteceu no teste de dois
+ * aparelhos — uma coleta sobrescreveu outra em silêncio.
+ *
+ * Milissegundo + sufixo aleatório cabe em bigint e torna a colisão irrelevante
+ * na escala do piloto.
+ */
+function novoId() {
+  return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+}
 /* ---------------------------- rastreio do produto (QR na etiqueta) ---------- */
 /* alfabeto sem O/0/I/1: ninguém erra ao ditar o código por telefone */
 const ALFA_CODIGO = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -233,7 +247,7 @@ function seed() {
       { id: 1, familiaId: 2, condicaoId: 3, valor: BONUS_POR_CRIANCA * 3, assinaturas: ['viva'], status: 'aguardando', signature: null },
       { id: 2, familiaId: 3, condicaoId: 4, valor: BONUS_POR_CRIANCA * 1, assinaturas: [], status: 'reservada', signature: null },
     ],
-    nextId: 100,
+    nextId: 100, // mantido só para estados salvos antes de novoId(); não é mais usado
   };
 
   /* história registrada na cadeia (na ordem em que aconteceu) */
@@ -268,7 +282,7 @@ function reducer(state, action) {
       return seed();
 
     case 'NOVA_COLETA': {
-      s.coletas.push({ id: s.nextId++, ...action.payload, status: 'pendente', signature: null });
+      s.coletas.push({ id: novoId(), ...action.payload, status: 'pendente', signature: null });
       return s;
     }
 
@@ -305,12 +319,12 @@ function reducer(state, action) {
       const validadas = s.coletas.filter(c => c.status === 'validada');
       const kg = validadas.reduce((a, c) => a + Number(c.kg), 0);
       const tx = pushTx(s, 'CIRCULARIDADE', `Relatório de Circularidade emitido: ${kg} kg validados (${action.periodo})`, 0);
-      s.relatorios.push({ id: s.nextId++, periodo: action.periodo, kg, acoes: validadas.length, signature: tx.signature, data: new Date().toISOString().slice(0, 10) });
+      s.relatorios.push({ id: novoId(), periodo: action.periodo, kg, acoes: validadas.length, signature: tx.signature, data: new Date().toISOString().slice(0, 10) });
       return s;
     }
 
     case 'NOVA_VENDA': {
-      const venda = { id: s.nextId++, ...action.payload, data: new Date().toISOString().slice(0, 10) };
+      const venda = { id: novoId(), ...action.payload, data: new Date().toISOString().slice(0, 10) };
       // peça física leva etiqueta com QR: o turista escaneia e vê de onde veio o material
       if (venda.tipo === 'produto') {
         venda.rastreio = codigoRastreio('rastreio-' + venda.id + '-' + venda.descricao);
@@ -355,7 +369,7 @@ function reducer(state, action) {
       const c = f?.condicoes.find(c => c.id === action.condicaoId);
       if (f && c && c.status === 'comprovada') {
         const valor = BONUS_POR_CRIANCA * f.criancas;
-        const p = { id: s.nextId++, familiaId: f.id, condicaoId: c.id, valor, assinaturas: [], status: 'aguardando', signature: null };
+        const p = { id: novoId(), familiaId: f.id, condicaoId: c.id, valor, assinaturas: [], status: 'aguardando', signature: null };
         if (f.carteira && disponivelCofre(s) >= valor) {
           c.status = 'aguardando-assinaturas';
           s.propostas.push(p);
@@ -450,7 +464,7 @@ export function StoreProvider({ children }) {
       setNuvemAtiva(true);
       try {
         const remoto = await nuvem.carregar();
-        if (vivo && sinc.nuvemAdiante(stateRef.current, remoto)) {
+        if (vivo && sinc.nuvemDifere(stateRef.current, remoto)) {
           const mesclado = sinc.mesclar(stateRef.current, remoto);
           anteriorRef.current = mesclado; // não reenviar o que veio de lá
           dispatch({ type: 'SUBSTITUIR_ESTADO', estado: mesclado });
@@ -484,10 +498,10 @@ export function StoreProvider({ children }) {
       setFila(r.restantes);
       if (r.restantes > 0) return;
       try {
-        const total = await nuvem.contarTransacoes();
-        if (total == null || total <= stateRef.current.transacoes.length) return;
+        // sempre baixa e compara por impressão digital: contar transações não
+        // servia, porque coleta nova não gera transação (ver sincronizacao.js)
         const remoto = await nuvem.carregar();
-        if (sinc.nuvemAdiante(stateRef.current, remoto)) {
+        if (sinc.nuvemDifere(stateRef.current, remoto)) {
           const mesclado = sinc.mesclar(stateRef.current, remoto);
           anteriorRef.current = mesclado;
           dispatch({ type: 'SUBSTITUIR_ESTADO', estado: mesclado });

@@ -122,7 +122,7 @@ function ExploradorTx({ transacoes }) {
         {lista.map(t => {
           const meta = tipoTx(t.tipo);
           return (
-            <button className="tx" key={t.seq} onClick={() => setAberta(t)} style={{ '--cor-tx': meta.cor }}>
+            <button className="tx" key={t.signature} onClick={() => setAberta(t)} style={{ '--cor-tx': meta.cor }}>
               <div className="tx-slot">
                 <span className="slot-num">{t.slot}</span>
                 <span className="mini">slot</span>

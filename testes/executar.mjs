@@ -119,6 +119,17 @@ try {
     registrar('nuvem', rodar('nuvem.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }) ? 'ok' : 'falhou');
   }
 
+  if (querem('aparelhos')) {
+    console.log('\n── dois aparelhos, um offline ' + '─'.repeat(28));
+    const edge = temEdge();
+    if (!edge) {
+      console.log('  ⏭️  pulado: precisa do Microsoft Edge');
+      registrar('aparelhos', 'pulado');
+    } else {
+      servidor = servidor || await subirServidor();
+      registrar('aparelhos', rodar('dois-aparelhos.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+    }
+  }
   if (querem('navegador')) {
     console.log('\n── app no navegador ' + '─'.repeat(38));
     const edge = temEdge();
