@@ -1,0 +1,71 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>verificando…</title>
+<body style="font-family:monospace;padding:16px">
+<h3>Verificação do encoder de QR</h3>
+<div id="saida"></div>
+
+<script src="qr-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const CASOS = [
+  'RF-7K2M',
+  'http://localhost:5173/#/rastreio/RF-7K2M',
+  'https://raizes-do-futuro.pages.dev/#/rastreio/RF-9X4Q',
+  'Raízes do Futuro — chaveiro RF-7K2M',
+  'https://raizes-do-futuro.pages.dev/#/rastreio/RF-ABCD1234567890',
+];
+
+function desenhar(qr, escala = 6, quiet = 4) {
+  const lado = qr.lado + quiet * 2;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = lado * escala;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = '#fff';
+  cx.fillRect(0, 0, cv.width, cv.height);
+  cx.fillStyle = '#000';
+  for (let l = 0; l < qr.lado; l++) {
+    for (let c = 0; c < qr.lado; c++) {
+      if (qr.mods[l][c]) cx.fillRect((c + quiet) * escala, (l + quiet) * escala, escala, escala);
+    }
+  }
+  return cv;
+}
+
+const resultados = [];
+try {
+  if (typeof jsQR !== 'function') throw new Error('decodificador jsQR não carregou do CDN');
+
+  for (const texto of CASOS) {
+    let linha = { texto, ok: false };
+    try {
+      const qr = QRLIB.gerarQR(texto, 'M');
+      const cv = desenhar(qr);
+      const img = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height);
+      const lido = jsQR(img.data, img.width, img.height);
+      linha = {
+        texto,
+        versao: qr.versao,
+        nivel: qr.nivel,
+        mascara: qr.mascara,
+        lado: qr.lado,
+        decodificado: lido ? lido.data : null,
+        ok: Boolean(lido && lido.data === texto),
+      };
+      const div = document.createElement('div');
+      div.style.margin = '10px 0';
+      div.textContent = (linha.ok ? '✓ ' : '✗ ') + `v${qr.versao}-${qr.nivel} m${qr.mascara} (${qr.lado}×${qr.lado}) → ` + JSON.stringify(linha.decodificado);
+      document.getElementById('saida').appendChild(div);
+      document.getElementById('saida').appendChild(cv);
+    } catch (e) {
+      linha.erro = String(e && e.message || e);
+    }
+    resultados.push(linha);
+  }
+} catch (e) {
+  resultados.push({ erro: String(e && e.message || e) });
+}
+
+window.__resultado = resultados;
+document.title = 'pronto';
+</script>

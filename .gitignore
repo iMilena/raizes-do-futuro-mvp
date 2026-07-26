@@ -16,3 +16,6 @@ onchain/chaves/
 
 *.log
 .DS_Store
+
+# temporarios dos testes
+testes/.tmp*/

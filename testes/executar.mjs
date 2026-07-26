@@ -1,0 +1,141 @@
+/* ---------------------------------------------------------------------------
+   Runner dos testes do Raízes do Futuro.
+
+     npm test                 roda tudo o que é possível no ambiente
+     npm test -- fluxo        só o reducer (rápido, sem navegador)
+     npm test -- navegador    só o app no navegador
+     npm test -- qr           só o encoder de QR
+
+   Cuida da infraestrutura para quem roda não precisar pensar nela:
+     · empacota src/store.jsx (tem JSX, o Node não lê direto)
+     · sobe o servidor de desenvolvimento se ainda não estiver no ar, e derruba no fim
+     · pula com aviso claro — em vez de falhar — quando o ambiente não tem
+       o que a suíte exige (Edge para o navegador, internet para o QR)
+--------------------------------------------------------------------------- */
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const AQUI = dirname(fileURLToPath(import.meta.url));
+const RAIZ = resolve(AQUI, '..');
+const TMP = join(AQUI, '.tmp');
+const ALVO = 'http://localhost:5173';
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
+const pedidas = process.argv.slice(2).filter(a => !a.startsWith('-'));
+const querem = nome => pedidas.length === 0 || pedidas.includes(nome);
+
+const bin = nome => join(RAIZ, 'node_modules', '.bin', process.platform === 'win32' ? nome + '.cmd' : nome);
+
+/* ------------------------------------------------------- pré-requisitos ---- */
+function empacotarStore() {
+  mkdirSync(TMP, { recursive: true });
+  const saida = join(TMP, 'store.mjs');
+  const r = spawnSync(bin('esbuild'), [
+    join(RAIZ, 'src', 'store.jsx'),
+    '--bundle', '--format=esm', '--platform=node',
+    '--loader:.jsx=jsx', '--jsx=automatic',
+    '--log-level=warning', '--outfile=' + saida,
+  ], { encoding: 'utf8', shell: process.platform === 'win32' });
+  if (r.status !== 0) {
+    console.error('não foi possível empacotar o store:\n' + (r.stderr || r.stdout));
+    process.exit(1);
+  }
+  return saida;
+}
+
+async function noAr(url) {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 1500);
+    const r = await fetch(url, { signal: c.signal });
+    clearTimeout(t);
+    return r.ok;
+  } catch { return false; }
+}
+
+async function subirServidor() {
+  if (await noAr(ALVO)) return { jaEstava: true, parar: () => {} };
+  console.log('  · subindo o servidor de desenvolvimento…');
+  const p = spawn(bin('vite'), [], { cwd: RAIZ, stdio: 'ignore', shell: process.platform === 'win32' });
+  for (let i = 0; i < 40; i++) {
+    await espera(400);
+    if (await noAr(ALVO)) return { jaEstava: false, parar: () => { try { p.kill(); } catch { /* já morreu */ } } };
+  }
+  try { p.kill(); } catch { /* idem */ }
+  throw new Error('o servidor não respondeu em http://localhost:5173');
+}
+
+const temEdge = () => [
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+].find(existsSync);
+
+async function temInternet() {
+  return noAr('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/package.json');
+}
+
+/* ------------------------------------------------------------- execução ---- */
+function rodar(arquivo, env = {}) {
+  const r = spawnSync(process.execPath, [join(AQUI, arquivo)], {
+    stdio: 'inherit', env: { ...process.env, ...env }, cwd: RAIZ,
+  });
+  return r.status === 0;
+}
+
+const resultados = [];
+const registrar = (nome, estado) => resultados.push({ nome, estado });
+
+console.log('\n🌱 Raízes do Futuro — testes\n');
+
+let servidor = null;
+try {
+  const store = empacotarStore();
+
+  if (querem('fluxo')) {
+    console.log('── fluxo (reducer, sem navegador) ' + '─'.repeat(24));
+    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store }) ? 'ok' : 'falhou');
+  }
+
+  if (querem('qr')) {
+    console.log('\n── encoder de QR (decodificador independente) ' + '─'.repeat(12));
+    const edge = temEdge();
+    if (!edge) {
+      console.log('  ⏭️  pulado: precisa do Microsoft Edge para rasterizar e decodificar');
+      registrar('qr', 'pulado');
+    } else if (!(await temInternet())) {
+      console.log('  ⏭️  pulado: sem internet para baixar o decodificador de referência');
+      registrar('qr', 'pulado');
+    } else {
+      registrar('qr', rodar('qr.mjs', { EDGE: edge }) ? 'ok' : 'falhou');
+    }
+  }
+
+  if (querem('navegador')) {
+    console.log('\n── app no navegador ' + '─'.repeat(38));
+    const edge = temEdge();
+    if (!edge) {
+      console.log('  ⏭️  pulado: precisa do Microsoft Edge (suíte usa o DevTools Protocol)');
+      registrar('navegador', 'pulado');
+    } else {
+      servidor = await subirServidor();
+      registrar('navegador', rodar('navegador.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+    }
+  }
+} catch (e) {
+  console.error('\n✗ ' + e.message);
+  registrar('infraestrutura', 'falhou');
+} finally {
+  if (servidor && !servidor.jaEstava) servidor.parar();
+  try { rmSync(TMP, { recursive: true, force: true }); } catch { /* ignora */ }
+}
+
+console.log('\n' + '═'.repeat(58));
+for (const r of resultados) {
+  const marca = { ok: '✅', falhou: '❌', pulado: '⏭️ ' }[r.estado];
+  console.log(`  ${marca} ${r.nome}`);
+}
+const falhou = resultados.some(r => r.estado === 'falhou');
+console.log(falhou ? '\n❌ há suíte(s) falhando\n' : '\n✅ tudo verde\n');
+process.exit(falhou ? 1 : 0);

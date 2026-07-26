@@ -101,15 +101,38 @@ function aplicarSplit(state, venda) {
   pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor);
 }
 
+/** "Vacinação em dia (2 crianças)" → "vacinação em dia" (extrato lido pela família). */
+function simplificar(tipo) {
+  return String(tipo).replace(/\s*\([^)]*\)\s*$/, '').replace(/≥.*$/, 'em dia').trim().toLowerCase();
+}
+
 /** Executa uma proposta que atingiu o limiar: transfere o bônus para a família. */
 function executarProposta(state, p) {
   const f = state.familias.find(f => f.id === p.familiaId);
   const c = f?.condicoes.find(c => c.id === p.condicaoId);
-  if (!f || state.caixas.fundo < p.valor) return;
+  if (!f) return;
+
+  // Salvaguarda da regra "nunca perdido": se na hora de executar faltar saldo ou
+  // conta, a proposta volta a reservada. Sem isto ela ficaria presa em
+  // "aguardando" com as 2 assinaturas já dadas, e o bônus sumiria do radar.
+  if (state.caixas.fundo < p.valor || !f.carteira) {
+    p.status = 'reservada';
+    if (c) c.status = 'validada-aguardando';
+    pushTx(state, 'RESERVA',
+      `Proposta #${p.id} atingiu o limiar mas não executou — ${fmt(p.valor)} reservado para ${f.resp} (${!f.carteira ? 'sem conta conectada' : 'cofre sem saldo'}); liberação retroativa garantida`,
+      0, { propostaId: p.id });
+    return;
+  }
+
   state.caixas.fundo -= p.valor;
   state.caixas.fundoLiberado += p.valor;
   f.saldo += p.valor;
-  f.extrato.push({ ts: Date.now(), desc: `Bônus Fundo Infância — ${c ? `${c.tipo} (${c.mes})` : 'compromisso cumprido'}`, valor: p.valor });
+  // extrato é lido pela família: linguagem do dia a dia, sem jargão do programa
+  f.extrato.push({
+    ts: Date.now(),
+    desc: c ? `Bônus de ${c.mes.toLowerCase()} — ${simplificar(c.tipo)}` : 'Bônus por compromisso cumprido',
+    valor: p.valor,
+  });
   if (c) c.status = 'liberada';
   p.status = 'executada';
   const tx = pushTx(state, 'LIBERAÇÃO',
@@ -189,7 +212,7 @@ function seed() {
   state.caixas.fundo -= bonusMaria;
   state.caixas.fundoLiberado += bonusMaria;
   state.familias[0].saldo += bonusMaria;
-  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus Fundo Infância — Vacinação em dia (Julho)', valor: bonusMaria });
+  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho — vacinação em dia', valor: bonusMaria });
   pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} → conta Picnic de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
 
   pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo — Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
@@ -302,7 +325,7 @@ function reducer(state, action) {
       const v = Math.min(action.valor, f?.saldo ?? 0);
       if (f && v > 0) {
         f.saldo -= v;
-        f.extrato.push({ ts: Date.now(), desc: 'Retirada via Pix (conversão para reais)', valor: -v });
+        f.extrato.push({ ts: Date.now(), desc: 'Retirada pelo Pix', valor: -v });
         pushTx(s, 'SAQUE', `Conversão ${MOEDA}→BRL via Pix — ${fmt(v)} para a família de ${f.resp} (ponte ${PROVIDER_CARTEIRA})`, v);
       }
       return s;
@@ -312,6 +335,10 @@ function reducer(state, action) {
       return state;
   }
 }
+
+/* seed e reducer são exportados para os testes exercitarem as regras de
+   negócio sem subir a UI (ver testes/fluxo.mjs) */
+export { seed as estadoInicial, reducer };
 
 /* --------------------------------------------------------------- provider ---- */
 const Ctx = createContext(null);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from './store.jsx';
 import { ToastProvider, useToast } from './ui.jsx';
 import { DemoProvider, DemoNarrador } from './demo.jsx';
@@ -20,6 +20,25 @@ const TABS = [
   ['carteira', '👨‍👩‍👧', 'Família (operação)', 'visão do agente'],
   ['familia', '📱', 'App da Família', 'como a família vê'],
 ];
+
+/** Anuncia cada nova transação registrada na rede simulada. */
+function AvisosDeRede() {
+  const { state } = useStore();
+  const toast = useToast();
+  const nRef = useRef(state.transacoes.length);
+
+  useEffect(() => {
+    const n = state.transacoes.length;
+    if (n > nRef.current) {
+      const tx = state.transacoes[n - 1];
+      toast(`Transação registrada no slot ${tx.slot} · ${tx.tipo}`, 'info', 2800);
+    }
+    nRef.current = n;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.transacoes.length]);
+
+  return null;
+}
 
 /* navegação sequencial da jornada, no rodapé de cada tela */
 function NavJornada({ tab, setTab }) {
@@ -162,6 +181,7 @@ export default function App() {
     return (
       <ToastProvider>
         <DemoProvider setTab={() => {}}>
+          <AvisosDeRede />
           <div className="rota-familia">
             <PaginaFamilia standalone />
             <a className="voltar-painel" href="#" onClick={() => setRota('')}>← Voltar ao painel do projeto</a>
@@ -174,6 +194,7 @@ export default function App() {
   return (
     <ToastProvider>
       <DemoProvider setTab={setTab}>
+        <AvisosDeRede />
         <Painel tab={tab} setTab={setTab} />
       </DemoProvider>
     </ToastProvider>
