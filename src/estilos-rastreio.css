@@ -1,0 +1,88 @@
+/* ---------------------------------------------------------------------------
+   Estilos das features de rastreio e ancoragem, em arquivo próprio.
+
+   Ficam separados de styles.css de propósito: styles.css é o design system
+   geral e é reescrito por inteiro quando o visual muda, o que já apagou estas
+   regras duas vezes. Aqui elas sobrevivem a um redesign.
+
+   Usa as variáveis do design system (--verde, --areia, --borda…), então
+   acompanha a paleta automaticamente.
+--------------------------------------------------------------------------- */
+
+/* ---------- ancoragem real na Rede Recy (único registro não simulado) ---------- */
+.ancorado {
+  margin-top: 8px; padding: 9px 12px; border-radius: 12px; font-size: 12.5px;
+  background: #e7f5f2; border-left: 3px solid #0f7a6c;
+}
+.ancorado b { color: #0f7a6c; }
+.ancorado .tag { margin-left: 6px; }
+.ancorado .hash { margin-top: 2px; }
+.ancorado a { color: #0f7a6c; font-weight: 800; font-size: 12px; }
+.nao-ancorado {
+  margin-top: 8px; padding: 8px 11px; border-radius: 12px;
+  background: var(--areia, #f7f4ec); border-left: 3px solid var(--borda, #e2e8e0); line-height: 1.45;
+}
+
+/* ---------- etiqueta do produto (QR escaneável de verdade) ---------- */
+.qr { display: block; background: #fff; border-radius: 8px; }
+.etiqueta { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.etiqueta-qr { text-align: center; flex: 0 0 auto; }
+.etiqueta-codigo {
+  font-family: Consolas, monospace; font-weight: 900; font-size: 16px;
+  letter-spacing: 2px; margin-top: 6px; color: var(--verde-escuro, #0d5530);
+}
+.etiqueta-texto { flex: 1; min-width: 240px; }
+.etiqueta-texto b { font-size: 14.5px; }
+.etiqueta-link { display: inline-block; margin: 10px 0 6px; text-decoration: none; }
+
+/* ---------- página pública de rastreio (o que o turista vê) ---------- */
+.rastreio-tela { max-width: 520px; margin: 0 auto; min-height: 100vh; }
+.rastreio-topo {
+  background: var(--grad-hero, linear-gradient(135deg, #0d4f30, #15693e 45%, #0e7c9e));
+  color: #fff; padding: 20px 16px;
+}
+.rastreio-corpo { padding: 16px 14px 44px; }
+.rastreio-cabeca { border-top: 4px solid var(--verde, #1b7a43); text-align: center; }
+.rastreio-codigo {
+  font-family: Consolas, monospace; font-size: 12px; font-weight: 900;
+  letter-spacing: 3px; color: var(--cinza, #66756b);
+}
+.rastreio-qr { margin-top: 18px; }
+.rastreio-qr .qr { margin: 10px auto; }
+
+/* linha do tempo da jornada do material */
+.etapas { position: relative; margin-top: 4px; }
+.etapa { display: flex; gap: 12px; position: relative; padding-bottom: 14px; }
+.etapa::before {
+  content: ''; position: absolute; left: 16px; top: 34px; bottom: 0;
+  width: 2px; background: var(--borda, #e2e8e0);
+}
+.etapa.ultima::before { display: none; }
+.etapa-marca { flex: 0 0 34px; z-index: 1; }
+.etapa-num {
+  display: flex; width: 34px; height: 34px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--verde-claro, #e3f3e9);
+  align-items: center; justify-content: center; font-size: 16px;
+  box-shadow: var(--sombra, 0 6px 18px rgba(16, 50, 35, .07));
+}
+.etapa-corpo {
+  flex: 1; background: #fff; border: 1px solid var(--borda, #e2e8e0);
+  border-radius: 14px; padding: 11px 13px; min-width: 0;
+  box-shadow: var(--sombra, 0 6px 18px rgba(16, 50, 35, .07));
+}
+.etapa-corpo b { font-size: 13.5px; }
+.etapa-corpo .mini { margin: 3px 0 0; }
+
+/* para onde foi o dinheiro da compra */
+.divisao { display: grid; gap: 10px; margin-top: 10px; }
+.divisao-linha {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  gap: 6px; font-size: 13px; padding-bottom: 6px;
+}
+.divisao-linha b { font-variant-numeric: tabular-nums; }
+.divisao-linha i { grid-column: 1 / -1; height: 7px; border-radius: 4px; display: block; }
+
+@media (max-width: 620px) {
+  .etiqueta { gap: 14px; }
+  .etiqueta-texto { min-width: 180px; }
+}
