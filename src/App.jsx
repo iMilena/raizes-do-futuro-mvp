@@ -13,13 +13,13 @@ import PaginaFamilia from './views/PaginaFamilia.jsx';
 import Rastreio from './views/Rastreio.jsx';
 
 const TABS = [
-  ['dashboard', '📊 Dashboard'],
-  ['coleta', '🧹 Coletor'],
-  ['validacao', '✅ Instituto Vivá'],
-  ['mercado', '🛒 Mercado'],
-  ['fundo', '🔗 Cofre Multisig'],
-  ['carteira', '👨‍👩‍👧 Família (operação)'],
-  ['familia', '📱 App da Família'],
+  ['dashboard', '📊', 'Dashboard', 'visão geral do piloto'],
+  ['coleta', '🧹', 'Coletor', 'registrar coleta'],
+  ['validacao', '✅', 'Instituto Vivá', 'validar & aprovar'],
+  ['mercado', '🛒', 'Mercado', 'turista & empresa'],
+  ['fundo', '🔗', 'Cofre Multisig', 'Solana · 2-de-3'],
+  ['carteira', '👨‍👩‍👧', 'Família (operação)', 'visão do agente'],
+  ['familia', '📱', 'App da Família', 'como a família vê'],
 ];
 
 /** Anuncia cada nova transação registrada na rede simulada. */
@@ -41,6 +41,29 @@ function AvisosDeRede() {
   return null;
 }
 
+/* navegação sequencial da jornada, no rodapé de cada tela */
+function NavJornada({ tab, setTab }) {
+  const i = TABS.findIndex(t => t[0] === tab);
+  const ant = TABS[i - 1];
+  const prox = TABS[i + 1];
+  return (
+    <div className="nav-jornada">
+      {ant ? (
+        <button className="nav-passo" onClick={() => setTab(ant[0])}>
+          <small>← etapa anterior</small>
+          <b>{ant[1]} {ant[2]}</b>
+        </button>
+      ) : <span />}
+      {prox ? (
+        <button className="nav-passo dir" onClick={() => setTab(prox[0])}>
+          <small>próxima etapa →</small>
+          <b>{prox[1]} {prox[2]}</b>
+        </button>
+      ) : <span />}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------ painel ---- */
 function Painel({ tab, setTab }) {
   const { dispatch } = useStore();
@@ -48,6 +71,9 @@ function Painel({ tab, setTab }) {
   const [tourAberto, setTourAberto] = useState(() => !tourVisto());
   const [tourIdx, setTourIdx] = useState(0);
   const [gravando, setGravando] = useState(false);
+
+  // trocar de etapa sempre começa do topo da tela
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [tab]);
 
   // modo gravação: esconde tudo que denuncia a simulação (para gravar o pitch)
   useEffect(() => {
@@ -91,11 +117,15 @@ function Painel({ tab, setTab }) {
             <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>❔ Como funciona</button>
           </div>
           <nav className="tabs">
-            {TABS.map(([id, rot]) => (
+            {TABS.map(([id, ico, rot, sub], i) => (
               <button key={id}
                 className={(tab === id ? 'on' : '') + (alvo === id ? ' tour-alvo' : '')}
                 onClick={() => setTab(id)}>
-                {rot}
+                <span className="tab-ico">{ico}</span>
+                <span className="tab-txt">
+                  <span className="tab-rot">{rot}</span>
+                  <span className="tab-sub">{i + 1} · {sub}</span>
+                </span>
               </button>
             ))}
           </nav>
@@ -110,6 +140,8 @@ function Painel({ tab, setTab }) {
         {tab === 'fundo' && <Fundo />}
         {tab === 'carteira' && <Carteira />}
         {tab === 'familia' && <PaginaFamilia />}
+
+        <NavJornada tab={tab} setTab={setTab} />
 
         <footer>
           <span>Youth Challenge Blockchain — UNICEF Brasil · protótipo demonstrativo · blockchain simulada (produção: cofre multisig na Solana + carteira Picnic)</span>

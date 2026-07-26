@@ -71,22 +71,28 @@ header.top p{margin:6px 0 20px;opacity:.88;font-size:13.5px;max-width:640px;line
 }
 .btn-tour:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
 
-/* abas = etapas da jornada */
+/* abas = etapas da jornada (ícone + rótulo + subtítulo numerado) */
 nav.tabs{display:flex;gap:6px;flex-wrap:wrap;position:relative}
 nav.tabs button{
-  border:none;border-radius:12px 12px 0 0;
-  background:rgba(255,255,255,.13);color:#fff;
-  padding:11px 15px 12px;font-size:13px;font-weight:700;font-family:inherit;
+  border:none;border-radius:14px 14px 0 0;
+  background:rgba(255,255,255,.12);color:#fff;
+  padding:10px 14px;font-family:inherit;
   cursor:pointer;transition:background .15s,transform .12s;
-  position:relative;
+  position:relative;display:flex;align-items:center;gap:9px;text-align:left;
 }
-nav.tabs button:hover{background:rgba(255,255,255,.3);transform:translateY(-2px)}
+nav.tabs button:hover{background:rgba(255,255,255,.28);transform:translateY(-2px)}
+nav.tabs .tab-ico{font-size:19px;line-height:1}
+nav.tabs .tab-txt{display:flex;flex-direction:column;line-height:1.25}
+nav.tabs .tab-rot{font-size:12.5px;font-weight:800}
+nav.tabs .tab-sub{font-size:9.5px;opacity:.75;font-weight:600;white-space:nowrap}
 nav.tabs button.on{
-  background:var(--areia);color:var(--verde-escuro);font-weight:900;
+  background:var(--areia);color:var(--verde-escuro);
   box-shadow:0 -6px 16px rgba(0,0,0,.10);
 }
+nav.tabs button.on .tab-rot{font-weight:900}
+nav.tabs button.on .tab-sub{color:var(--terracota,#bd5b2a);opacity:1}
 nav.tabs button.on:after{
-  content:"";position:absolute;left:14px;right:14px;top:6px;height:3px;
+  content:"";position:absolute;left:12px;right:12px;top:5px;height:3px;
   border-radius:2px;background:linear-gradient(90deg,var(--verde),var(--azul));
 }
 
@@ -685,6 +691,55 @@ body.gravando .so-sim{display:none!important}
   .jornada-seta{display:none}
   .jornada-etapa{min-width:78px}
   .feed-meio span{white-space:normal}
+}
+
+/* ---- painéis por dimensão de impacto ---- */
+.dim{
+  margin-top:20px;border-radius:20px;padding:16px 16px 18px;
+  border:1px solid var(--borda);position:relative;overflow:hidden;
+}
+.dim-ambiental{--dim:#0e7c9e;background:linear-gradient(160deg,#eaf6fb,#fdfefe 55%)}
+.dim-economico{--dim:#a97613;background:linear-gradient(160deg,#fdf6e5,#fffefb 55%)}
+.dim-social{--dim:#bd5b2a;background:linear-gradient(160deg,#fdeee4,#fffdfc 55%)}
+.dim-confianca{--dim:#7c5cf0;background:linear-gradient(160deg,#f1ecfe,#fefeff 55%)}
+.dim:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--dim)}
+.dim-topo{display:flex;align-items:center;gap:12px;margin:0 0 13px 4px}
+.dim-ico{
+  width:42px;height:42px;flex:0 0 42px;border-radius:13px;
+  background:#fff;box-shadow:var(--sombra);border:1px solid var(--borda);
+  display:flex;align-items:center;justify-content:center;font-size:21px;
+}
+.dim-tit{display:flex;flex-direction:column;line-height:1.3}
+.dim-tit b{font-size:16px;font-weight:900;color:var(--dim)}
+.dim-tit span{font-size:12px;color:var(--cinza);font-weight:600}
+.dim .card.kpi{border:none;box-shadow:var(--sombra);position:relative;overflow:hidden}
+.dim .kpi .num{color:var(--dim)}
+.dim .barra>div{background:var(--dim)}
+.dim .kpi-pct{color:var(--dim)}
+.kpi-ico{
+  position:absolute;right:10px;top:8px;font-size:26px;opacity:.5;
+  filter:grayscale(.1);pointer-events:none;
+}
+
+/* ---- navegação sequencial da jornada ---- */
+.nav-jornada{
+  display:flex;justify-content:space-between;gap:12px;margin-top:34px;
+}
+.nav-passo{
+  background:#fff;border:1.5px solid var(--borda);border-radius:14px;
+  padding:10px 16px;cursor:pointer;font-family:inherit;color:inherit;text-align:left;
+  display:flex;flex-direction:column;gap:2px;min-width:180px;
+  transition:border-color .15s,transform .12s,box-shadow .15s;
+}
+.nav-passo:hover{border-color:var(--verde);transform:translateY(-2px);box-shadow:var(--sombra)}
+.nav-passo small{font-size:10.5px;color:var(--cinza);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.nav-passo b{font-size:14px;color:var(--verde-escuro)}
+.nav-passo.dir{text-align:right;align-items:flex-end}
+
+@media (max-width:620px){
+  nav.tabs .tab-sub{display:none}
+  nav.tabs .tab-ico{font-size:16px}
+  .nav-passo{min-width:0;flex:1}
 }
 
 /* ---- cofre real na devnet ---- */

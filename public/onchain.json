@@ -1,0 +1,35 @@
+{
+  "rede": "devnet",
+  "geradoEm": "2026-07-26T20:54:38.723Z",
+  "moeda": "cRED (1 = R$ 1,00)",
+  "mint": "D9J8cMSyimjt9QoHP1w1pcEu4tuevLKcW9vZUTegnjWY",
+  "multisig": {
+    "endereco": "6tBWXEPUNHBEAvLXY3RJ1ectEPHa7H87oLrP4xD4cPi4",
+    "limiar": "2 de 3"
+  },
+  "signatarios": {
+    "institutoViva": "BWP8kCKXrumuQZZCAMXEnLrTgc7vJoiva7RFA7WSGMtR",
+    "deTrash": "6T1P65aWJ1aH5JXxjrndZ9FeMBzZVBxpRhQnDGn2kik8",
+    "representanteComunitario": "6Ai6feMuZi346XrVLyNoKfhv2jmtUCMERZSKS9H8oMJq"
+  },
+  "contas": {
+    "cofre": "HmWPhnp5JA48SGH5YgS3mktitMXH4caWsqyKRCFVpxBD",
+    "familiaMaria": "DgUqGQGgyyyGcKMjvAfBQ7kWgh5QcPuLV1dWNWVwxHiH"
+  },
+  "saldos": {
+    "cofre": 585,
+    "familiaMaria": 60
+  },
+  "transacoes": {
+    "depositoFundo": "59tJ9tu8oi3ZEjJ1QTFJ8eRSAzLNx7JYKTnufFUqVberHtKMpevPwg2ELruVdkxBtBU8CWonf6mGUsgwNzoQEeJ3",
+    "liberacaoBonusMultisig": "5a1v34R8Tqpk1du9UAJdexypcUFou5ARHSCTy6nFshS6YtvAL1ebYtrFXcCHpo5cGXdrHeDJvFy7tMepYRgHgzY4"
+  },
+  "links": {
+    "mint": "https://explorer.solana.com/address/D9J8cMSyimjt9QoHP1w1pcEu4tuevLKcW9vZUTegnjWY?cluster=devnet",
+    "multisig": "https://explorer.solana.com/address/6tBWXEPUNHBEAvLXY3RJ1ectEPHa7H87oLrP4xD4cPi4?cluster=devnet",
+    "cofre": "https://explorer.solana.com/address/HmWPhnp5JA48SGH5YgS3mktitMXH4caWsqyKRCFVpxBD?cluster=devnet",
+    "familiaMaria": "https://explorer.solana.com/address/DgUqGQGgyyyGcKMjvAfBQ7kWgh5QcPuLV1dWNWVwxHiH?cluster=devnet",
+    "depositoFundo": "https://explorer.solana.com/tx/59tJ9tu8oi3ZEjJ1QTFJ8eRSAzLNx7JYKTnufFUqVberHtKMpevPwg2ELruVdkxBtBU8CWonf6mGUsgwNzoQEeJ3?cluster=devnet",
+    "liberacaoBonusMultisig": "https://explorer.solana.com/tx/5a1v34R8Tqpk1du9UAJdexypcUFou5ARHSCTy6nFshS6YtvAL1ebYtrFXcCHpo5cGXdrHeDJvFy7tMepYRgHgzY4?cluster=devnet"
+  }
+}

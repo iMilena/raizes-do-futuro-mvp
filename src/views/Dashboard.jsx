@@ -27,9 +27,10 @@ function AnelProgresso({ pct }) {
 }
 
 /* ---------- KPI com meta ---------- */
-function Kpi({ num, valor, rot, meta, pct }) {
+function Kpi({ num, valor, rot, meta, pct, icone }) {
   return (
     <div className="card kpi">
+      {icone && <span className="kpi-ico" aria-hidden="true">{icone}</span>}
       {valor != null ? <ValorAnimado valor={valor} className="num" /> : <div className="num">{num}</div>}
       <div className="rot">{rot}</div>
       {meta && (
@@ -39,6 +40,22 @@ function Kpi({ num, valor, rot, meta, pct }) {
       )}
       {pct != null && <div className="barra"><div style={{ width: Math.min(100, pct) + '%' }} /></div>}
     </div>
+  );
+}
+
+/* ---------- painel por dimensão de impacto ---------- */
+function Dimensao({ classe, icone, titulo, resumo, children }) {
+  return (
+    <section className={'dim ' + classe}>
+      <header className="dim-topo">
+        <span className="dim-ico" aria-hidden="true">{icone}</span>
+        <div className="dim-tit">
+          <b>{titulo}</b>
+          {resumo && <span>{resumo}</span>}
+        </div>
+      </header>
+      <div className="grid g4">{children}</div>
+    </section>
   );
 }
 
@@ -162,37 +179,37 @@ export default function Dashboard() {
       </div>
 
       {/* ---------------- metas por dimensão ---------------- */}
-      <h3 className="secao-dash">🌊 Ambiental</h3>
-      <div className="grid g4">
-        <Kpi num={(kg / 1000).toLocaleString('pt-BR')} rot="toneladas validadas" meta="12 t" pct={kg / METAS.kg * 100} />
-        <Kpi num={validadas.length} rot="ações de coleta validadas" meta="24 ações" pct={validadas.length / 24 * 100} />
-        <Kpi num={state.relatorios.length} rot="Relatórios de Circularidade" meta="6 relatórios" pct={state.relatorios.length / 6 * 100} />
-        <Kpi num={pendentesColeta} rot="coletas aguardando validação" />
-      </div>
+      <Dimensao classe="dim-ambiental" icone="🌊" titulo="Ambiental"
+        resumo={`${(kg / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} t de resíduos fora da praia e da natureza`}>
+        <Kpi icone="⚖️" num={(kg / 1000).toLocaleString('pt-BR')} rot="toneladas validadas" meta="12 t" pct={kg / METAS.kg * 100} />
+        <Kpi icone="🧹" num={validadas.length} rot="ações de coleta validadas" meta="24 ações" pct={validadas.length / 24 * 100} />
+        <Kpi icone="📄" num={state.relatorios.length} rot="Relatórios de Circularidade" meta="6 relatórios" pct={state.relatorios.length / 6 * 100} />
+        <Kpi icone="⏳" num={pendentesColeta} rot="coletas aguardando validação" />
+      </Dimensao>
 
-      <h3 className="secao-dash">💰 Econômico</h3>
-      <div className="grid g4">
-        <Kpi valor={receita} rot="receita total gerada" meta="R$ 42 mil" pct={receita / METAS.receita * 100} />
-        <Kpi valor={state.caixas.renda} rot="renda direta (60%, incondicional)" />
-        <Kpi valor={state.caixas.fundo} rot="cofre Fundo Infância (25%)" meta={`livre: ${fmt(disponivelCofre(state))}`} />
-        <Kpi num={state.vendas.length} rot="vendas realizadas" />
-      </div>
+      <Dimensao classe="dim-economico" icone="💰" titulo="Econômico"
+        resumo={`${fmt(receita)} movimentados por turismo responsável e ESG`}>
+        <Kpi icone="📈" valor={receita} rot="receita total gerada" meta="R$ 42 mil" pct={receita / METAS.receita * 100} />
+        <Kpi icone="🤲" valor={state.caixas.renda} rot="renda direta (60%, incondicional)" />
+        <Kpi icone="🔐" valor={state.caixas.fundo} rot="cofre Fundo Infância (25%)" meta={`livre: ${fmt(disponivelCofre(state))}`} />
+        <Kpi icone="🛒" num={state.vendas.length} rot="vendas realizadas" />
+      </Dimensao>
 
-      <h3 className="secao-dash">🧒 Social</h3>
-      <div className="grid g4">
-        <Kpi num={state.familias.length} rot="famílias participantes" meta="30 famílias" pct={state.familias.length / METAS.familias * 100} />
-        <Kpi num={criancas} rot="crianças acompanhadas" meta="60 crianças" pct={criancas / METAS.criancas * 100} />
-        <Kpi valor={state.caixas.fundoLiberado} rot="bônus liberados às famílias" />
-        <Kpi num={`${condOk}/${condicoes.length}`} rot="condições cumpridas e liberadas" />
-      </div>
+      <Dimensao classe="dim-social" icone="🧒" titulo="Social"
+        resumo={`${criancas} crianças com saúde e escola acompanhadas`}>
+        <Kpi icone="👨‍👩‍👧" num={state.familias.length} rot="famílias participantes" meta="30 famílias" pct={state.familias.length / METAS.familias * 100} />
+        <Kpi icone="🎒" num={criancas} rot="crianças acompanhadas" meta="60 crianças" pct={criancas / METAS.criancas * 100} />
+        <Kpi icone="🎁" valor={state.caixas.fundoLiberado} rot="bônus liberados às famílias" />
+        <Kpi icone="✅" num={`${condOk}/${condicoes.length}`} rot="condições cumpridas e liberadas" />
+      </Dimensao>
 
-      <h3 className="secao-dash">🔗 Confiança digital ({REDE})</h3>
-      <div className="grid g4">
-        <Kpi num={state.transacoes.length} rot="transações rastreáveis" meta={`slot atual: ${state.slot}`} />
-        <Kpi num={comCarteira + '/' + state.familias.length} rot={`famílias com conta ${PROVIDER_CARTEIRA}`} />
-        <Kpi num={propostasAbertas} rot="propostas aguardando assinatura" meta="limiar 2 de 3" />
-        <Kpi valor={reservado} rot="bônus reservado (nunca perdido)" />
-      </div>
+      <Dimensao classe="dim-confianca" icone="🔗" titulo={`Confiança digital (${REDE})`}
+        resumo="cada centavo rastreável, nenhuma organização decide sozinha">
+        <Kpi icone="🧾" num={state.transacoes.length} rot="transações rastreáveis" meta={`slot atual: ${state.slot}`} />
+        <Kpi icone="🧺" num={comCarteira + '/' + state.familias.length} rot={`famílias com conta ${PROVIDER_CARTEIRA}`} />
+        <Kpi icone="🗳️" num={propostasAbertas} rot="propostas aguardando assinatura" meta="limiar 2 de 3" />
+        <Kpi icone="🔒" valor={reservado} rot="bônus reservado (nunca perdido)" />
+      </Dimensao>
 
       {condicoes.length === 0 && (
         <EstadoVazio icone="👨‍👩‍👧" titulo="Nenhuma família cadastrada com compromissos"
