@@ -98,8 +98,43 @@ function aplicarSplit(state, venda) {
   state.caixas.renda += venda.valor * SPLIT.renda;
   state.caixas.fundo += venda.valor * SPLIT.fundo;
   state.caixas.operacao += venda.valor * SPLIT.operacao;
-  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor);
+  // vendaId liga esta transação à peça vendida: é o que a página de rastreio usa
+  // para mostrar ao turista em qual registro a compra dele entrou
+  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
 }
+
+/* ---------------------------- rastreio do produto (QR na etiqueta) ---------- */
+/* alfabeto sem O/0/I/1: ninguém erra ao ditar o código por telefone */
+const ALFA_CODIGO = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+/** Código curto e legível impresso na etiqueta da peça: RF-XXXX */
+export function codigoRastreio(semente) {
+  const h = hex(String(semente));
+  let out = '';
+  for (let i = 0; i < 4; i++) out += ALFA_CODIGO[parseInt(h.slice(i * 2, i * 2 + 2), 16) % 32];
+  return 'RF-' + out;
+}
+
+/**
+ * Coletas validadas que forneceram o material desta peça.
+ * Prefere as do mesmo material; se nenhuma casar (lona de vela, rede de pesca),
+ * cai para as últimas validadas — o turista sempre vê uma origem concreta, e a
+ * página deixa claro quando o vínculo é do lote e não da peça.
+ */
+function coletasDeOrigem(state, materiais) {
+  const validadas = state.coletas.filter(c => c.status === 'validada');
+  const lista = Array.isArray(materiais) ? materiais.filter(Boolean) : [];
+  const casaMaterial = validadas.filter(c =>
+    lista.some(m => c.material.toLowerCase().includes(String(m).toLowerCase().split(' ')[0])));
+  return (casaMaterial.length ? casaMaterial : validadas).slice(-2).map(c => c.id);
+}
+
+export const vendaPorRastreio = (state, codigo) =>
+  state.vendas.find(v => v.rastreio && v.rastreio.toUpperCase() === String(codigo || '').toUpperCase());
+
+/** URL absoluta que vai dentro do QR — precisa ser absoluta para o celular abrir. */
+export const urlRastreio = codigo =>
+  `${location.origin}${location.pathname}#/rastreio/${codigo}`;
 
 /** "Vacinação em dia (2 crianças)" → "vacinação em dia" (extrato lido pela família). */
 function simplificar(tipo) {
@@ -160,7 +195,7 @@ function seed() {
       { id: 1, periodo: 'Julho 2026 — quinzena 1', kg: 105, acoes: 2, signature: solSig('rel-1'), data: '2026-07-15' },
     ],
     vendas: [
-      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16' },
+      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16', materiais: ['Vidro'], rastreio: codigoRastreio('rastreio-1-luminaria'), origem: [2] },
       { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
@@ -254,6 +289,11 @@ function reducer(state, action) {
 
     case 'NOVA_VENDA': {
       const venda = { id: s.nextId++, ...action.payload, data: new Date().toISOString().slice(0, 10) };
+      // peça física leva etiqueta com QR: o turista escaneia e vê de onde veio o material
+      if (venda.tipo === 'produto') {
+        venda.rastreio = codigoRastreio('rastreio-' + venda.id + '-' + venda.descricao);
+        venda.origem = coletasDeOrigem(s, venda.materiais);
+      }
       s.vendas.push(venda);
       aplicarSplit(s, venda);
       return s;

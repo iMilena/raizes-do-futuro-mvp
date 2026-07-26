@@ -10,6 +10,7 @@ import Mercado from './views/Mercado.jsx';
 import Fundo from './views/Fundo.jsx';
 import Carteira from './views/Carteira.jsx';
 import PaginaFamilia from './views/PaginaFamilia.jsx';
+import PaginaRastreio from './views/Rastreio.jsx';
 
 const TABS = [
   ['dashboard', '📊', 'Dashboard', 'visão geral do piloto'],
@@ -175,6 +176,18 @@ export default function App() {
     window.addEventListener('hashchange', aoMudar);
     return () => window.removeEventListener('hashchange', aoMudar);
   }, []);
+
+  // rota pública do rastreio: o turista escaneia o QR da peça e cai aqui, sem painel nenhum
+  if (rota.startsWith('#/rastreio/')) {
+    const codigo = decodeURIComponent(rota.slice('#/rastreio/'.length)).trim();
+    return (
+      <ToastProvider>
+        <DemoProvider setTab={() => {}}>
+          <PaginaRastreio codigo={codigo} />
+        </DemoProvider>
+      </ToastProvider>
+    );
+  }
 
   // rota standalone da família: abre só o app do celular, sem o painel
   if (rota.startsWith('#/familia')) {

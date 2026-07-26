@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, fmt, trunc, SPLIT } from '../store.jsx';
-import { useToast, ValorAnimado, EstadoVazio, Modal } from '../ui.jsx';
+import { useStore, fmt, trunc, SPLIT, urlRastreio } from '../store.jsx';
+import { useToast, ValorAnimado, EstadoVazio, Modal, QrCode } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
 
 const PRODUTOS = [
@@ -11,30 +11,35 @@ const PRODUTOS = [
 ];
 
 /* QR determinístico do rastreio (aponta para a própria plataforma) */
-function QrRastreio({ semente }) {
-  const N = 15, cel = 7;
-  const quad = [];
-  for (let y = 0; y < N; y++) {
-    for (let x = 0; x < N; x++) {
-      const canto = (x < 4 && y < 4) || (x > N - 5 && y < 4) || (x < 4 && y > N - 5);
-      const cheio = canto ? (x % 3 !== 1 || y % 3 !== 1) : ((x * 11 + y * 7 + semente) % 5 < 2);
-      if (cheio) quad.push(<rect key={x + '-' + y} x={x * cel} y={y * cel} width={cel - 1} height={cel - 1} fill="#22312a" />);
-    }
-  }
-  return <svg className="qr" width="112" height="112" viewBox={`0 0 ${N * cel} ${N * cel}`} role="img" aria-label="QR code de rastreio">{quad}</svg>;
-}
-
-/* jornada do produto: da coleta ao Fundo Infância, com dados reais do estado */
+/* jornada do produto: da coleta ao Fundo Infância, com dados reais do estado.
+   Quando a peça já foi vendida, o QR é REAL e aponta para a página pública do
+   turista (#/rastreio/CÓDIGO); antes disso não há código para escanear, e a
+   tela diz isso em vez de mostrar um quadriculado decorativo. */
 function Rastreio({ produto, state, onFechar }) {
-  const coleta = [...state.coletas].reverse().find(c => c.status === 'validada' && c.material.includes(produto.material.split(' ')[0]))
+  const venda = [...state.vendas].reverse()
+    .find(v => v.tipo === 'produto' && v.descricao === produto.nome && v.rastreio);
+
+  const daVenda = (venda?.origem || []).map(id => state.coletas.find(c => c.id === id)).filter(Boolean);
+  const coleta = daVenda[daVenda.length - 1]
+    || [...state.coletas].reverse().find(c => c.status === 'validada' && c.material.includes(produto.material.split(' ')[0]))
     || [...state.coletas].reverse().find(c => c.status === 'validada');
   const rel = [...state.relatorios].slice(-1)[0];
-  const fundo = produto.preco * SPLIT.fundo;
+  const fundo = (venda?.valor ?? produto.preco) * SPLIT.fundo;
 
   return (
     <Modal titulo={`Rastreio · ${produto.nome}`} sub="cada produto conta sua história na rede" onFechar={onFechar} largura={560}>
       <div className="rastreio">
-        <QrRastreio semente={Math.round(produto.preco)} />
+        {venda ? (
+          <div className="centro">
+            <QrCode texto={urlRastreio(venda.rastreio)} lado={128} titulo={`Rastreio ${venda.rastreio}`} />
+            <div className="etiqueta-codigo">{venda.rastreio}</div>
+          </div>
+        ) : (
+          <div className="sem-etiqueta">
+            <span aria-hidden="true">🏷️</span>
+            <small>a etiqueta com QR é gerada quando a peça é vendida</small>
+          </div>
+        )}
         <div className="rastreio-passos">
           <div><span>1</span><div><b>Material recuperado</b><small>{coleta ? `${coleta.kg} kg de ${coleta.material} · ${coleta.local} · ${coleta.data}` : 'coleta comunitária em Boipeba'}{coleta?.geo ? ` · 📍 ${coleta.geo.lat}, ${coleta.geo.lng}` : ''}</small></div></div>
           <div><span>2</span><div><b>Validação DeTrash</b><small>{coleta?.signature ? `assinatura ${trunc(coleta.signature, 8, 8)}` : 'evidência verificada pela metodologia'}</small></div></div>
@@ -43,7 +48,14 @@ function Rastreio({ produto, state, onFechar }) {
           <div><span>5</span><div><b>Sua compra protege a infância</b><small>{fmt(fundo)} desta peça vão direto ao Fundo Infância (cofre 2-de-3)</small></div></div>
         </div>
       </div>
-      <p className="mini centro">No produto físico, este QR fica na etiqueta — o turista escaneia e audita a jornada inteira.</p>
+      {venda ? (
+        <p className="mini centro">
+          Este QR é de verdade: aponte a câmera e ele abre a página pública desta peça.
+          Na etiqueta física vai impresso junto do código <b>{venda.rastreio}</b>.
+        </p>
+      ) : (
+        <p className="mini centro">Venda a peça para gerar o código e a etiqueta.</p>
+      )}
     </Modal>
   );
 }
@@ -139,7 +151,9 @@ export default function Mercado() {
   }, [state.vendas]);
 
   const comprarProduto = p => {
-    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco } });
+    // `materiais` liga a peça às coletas que forneceram a matéria-prima —
+    // é o que faz o rastreio ser verdadeiro e não ilustrativo
+    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco, materiais: [p.material] } });
     toast(`${p.nome} vendido — ${fmt(p.preco)} 🛒`);
   };
 

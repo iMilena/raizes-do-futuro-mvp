@@ -638,6 +638,101 @@ try {
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'estado inválido é descartado e a seed é recriada');
   ok(await ev('return __t.conta(".grafico svg") >= 2'), 'gráficos voltam a renderizar');
 
+  /* ---------- 14b. QR de rastreio do produto ---------- */
+  secao('14b. QR de rastreio do produto (jornada da peça)');
+  await irPara(ALVO);
+  await ev('return __t.clicar("nav.tabs button", "Mercado")');
+  await espera(600);
+
+  // a luminária da seed já foi vendida, então tem código e QR de verdade
+  ok(await ev('return __t.clicar(".produto .link-rastreio", "rastrear origem") === true'),
+    'abre o rastreio da peça já vendida');
+  await espera(600);
+  const codigo = await ev('const e = document.querySelector(".etiqueta-codigo"); return e ? e.innerText.trim() : null;');
+  ok(/^RF-[2-9A-HJ-NP-Z]{4}$/.test(codigo || ''), `código curto sem caracteres ambíguos (${codigo})`);
+  ok(await ev('return __t.conta(".rastreio svg.qr") === 1'), 'QR renderizado como SVG');
+  ok(await ev('return __t.tem("Este QR é de verdade")'), 'afirma o que o QR realmente faz');
+
+  // prova independente: o QR da tela decodifica para a URL pública
+  const carregouDec = await ev(`
+    return new Promise(res => {
+      if (typeof jsQR === 'function') return res('ja');
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+      s.onload = () => res('ok'); s.onerror = () => res('erro');
+      document.head.appendChild(s);
+    });
+  `);
+  if (carregouDec === 'erro') {
+    console.log('  ⏭️  sem internet: pulada a decodificação independente do QR');
+  } else {
+    const lido = await ev(`
+      return (async () => {
+        const svg = document.querySelector('.rastreio svg.qr');
+        const xml = new XMLSerializer().serializeToString(svg);
+        const img = new Image();
+        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
+        await img.decode();
+        const L = 400;
+        const cv = document.createElement('canvas'); cv.width = cv.height = L;
+        const cx = cv.getContext('2d');
+        cx.fillStyle = '#fff'; cx.fillRect(0, 0, L, L);
+        cx.imageSmoothingEnabled = false;
+        cx.drawImage(img, 0, 0, L, L);
+        const d = cx.getImageData(0, 0, L, L);
+        const r = jsQR(d.data, d.width, d.height);
+        return r ? r.data : null;
+      })();
+    `);
+    ok(typeof lido === 'string' && lido.includes('#/rastreio/' + codigo),
+      `QR da tela decodifica para a URL de rastreio (${lido})`);
+    ok(typeof lido === 'string' && lido.startsWith('http'), 'a URL no QR é absoluta (abre do celular)');
+  }
+  await ev('return __t.clicar(".modal-x")');
+  await espera(300);
+
+  // comprar outra peça gera um código próprio
+  await ev('return __t.clicar(".produto button.acao", "Comprar")');
+  await espera(600);
+  const codigos = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const p = s.vendas.filter(v => v.tipo === 'produto' && v.rastreio);
+    return { total: p.length, unicos: new Set(p.map(v => v.rastreio)).size, origem: p[p.length - 1].origem };
+  `);
+  ok(codigos.total >= 2 && codigos.unicos === codigos.total, `cada peça recebe código próprio (${codigos.total} peças, ${codigos.unicos} códigos)`);
+  ok(Array.isArray(codigos.origem) && codigos.origem.length > 0, 'a venda guarda as coletas de origem');
+
+  // a página pública do turista
+  await ev(`window.location.hash = '#/rastreio/' + ${JSON.stringify(codigo)}; return 1;`);
+  await espera(900);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.conta(".rastreio-tela") === 1'), 'página pública de rastreio abre');
+  ok(await ev('return __t.conta("nav.tabs") === 0'), 'sem painel da operação (é página de turista)');
+  ok(await ev(`return __t.tem(${JSON.stringify(codigo)})`), 'mostra o código da peça');
+  ok(await ev('return __t.tem("A jornada deste material")'), 'apresenta a jornada');
+  ok(await ev('return __t.tem("Verificado pela DeTrash")'), 'diz quem verificou');
+  ok(await ev('return __t.tem("Para onde foi o seu dinheiro")'), 'mostra para onde foi o dinheiro');
+  ok(await ev('return __t.conta(".divisao-linha") === 3'), 'divisão em 3 destinos (60/25/15)');
+  ok(await ev('return __t.tem("R$ 48,00")'), '60% de R$ 80 = R$ 48,00 para quem coletou');
+  ok(await ev('return __t.tem("R$ 20,00")'), '25% de R$ 80 = R$ 20,00 para o Fundo Infância');
+  ok(await ev('return __t.tem("de um bônus mensal")'), 'traduz o valor em impacto para uma criança');
+  ok(await ev('return /slot \\d+/.test(__t.txt())'), 'conecta com o registro da transação (slot)');
+
+  // a página é pública: nada de família ou criança nela
+  const vazou = await ev(`
+    const t = document.body.innerText;
+    return ['Maria de Lourdes','José Raimundo','Ana Cláudia','Vacinação','pediátrica','Matrícula','PIN']
+      .filter(p => t.includes(p));
+  `);
+  ok(vazou.length === 0, `página pública não expõe família nem criança${vazou.length ? ' — achou: ' + vazou.join(', ') : ''}`);
+
+  await ev(`window.location.hash = '#/rastreio/RF-ZZZZ'; return 1;`);
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("não encontrado")'), 'código inválido mostra estado vazio orientado');
+  await ev(`window.location.hash = '#/'; return 1;`);
+  await espera(600);
+
   /* ---------- 15. console ---------- */
   secao('15. Erros e avisos do console (app, sem extensões)');
   if (erros.length) erros.slice(0, 12).forEach(e => console.log('    ' + e));
