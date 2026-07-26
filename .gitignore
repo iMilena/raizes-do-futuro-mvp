@@ -1,13 +1,14 @@
 node_modules/
 dist/
-.wrangler/
 
-# Segredos: a chave da Recy nunca entra no repositório.
-# Ela vive só como secret do Cloudflare (wrangler pages secret put RECY_API_KEY).
+# Segredos nunca entram no repositório.
 .env
 .env.*
-!.env.example
 .dev.vars
+
+# Configuração do Supabase: contém a chave anon, que é pública por natureza
+# (vai no bundle do site). Fica fora do git só para cada ambiente ter a sua.
+public/supabase.json
 
 # Chaves da devnet: são só de teste e sem valor, mas chave secreta não entra
 # em repositório por princípio — se um dia alguém apontar este script para a
@@ -17,5 +18,5 @@ onchain/chaves/
 *.log
 .DS_Store
 
-# temporarios dos testes
+# temporários dos testes
 testes/.tmp*/
