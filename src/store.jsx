@@ -127,7 +127,9 @@ function aplicarSplit(state, venda) {
   state.caixas.renda += venda.valor * SPLIT.renda;
   state.caixas.fundo += venda.valor * SPLIT.fundo;
   state.caixas.operacao += venda.valor * SPLIT.operacao;
-  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor);
+  // vendaId liga esta transação à peça vendida: é o que a página de rastreio usa
+  // para mostrar ao turista em qual registro a compra dele entrou
+  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
 }
 
 /** "Vacinação em dia (2 crianças)" → "vacinação em dia" (para o extrato da família). */

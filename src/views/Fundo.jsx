@@ -5,6 +5,7 @@ import {
 } from '../store.jsx';
 import { useToast, Modal, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
+import OnchainDevnet from '../OnchainDevnet.jsx';
 
 const STATUS = {
   pendente: ['pend', 'aguardando comprovação'],
@@ -209,7 +210,9 @@ export default function Fundo() {
 
   return (
     <>
-      <h2>Fundo Infância — cofre multisig ({REDE}, simulado)</h2>
+      <h2>Fundo Infância — cofre multisig ({REDE})</h2>
+
+      <OnchainDevnet />
 
       <div className="grid g4">
         <div className="card kpi">

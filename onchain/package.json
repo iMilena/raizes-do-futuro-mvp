@@ -1,0 +1,12 @@
+{
+  "name": "raizes-onchain-devnet",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "implantar": "node implantar-devnet.mjs"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.4",
+    "@solana/spl-token": "^0.4.9"
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from './store.jsx';
 import { ToastProvider, useToast } from './ui.jsx';
 import { DemoProvider, DemoNarrador } from './demo.jsx';
@@ -10,6 +10,7 @@ import Mercado from './views/Mercado.jsx';
 import Fundo from './views/Fundo.jsx';
 import Carteira from './views/Carteira.jsx';
 import PaginaFamilia from './views/PaginaFamilia.jsx';
+import Rastreio from './views/Rastreio.jsx';
 
 const TABS = [
   ['dashboard', '📊 Dashboard'],
@@ -20,6 +21,25 @@ const TABS = [
   ['carteira', '👨‍👩‍👧 Família (operação)'],
   ['familia', '📱 App da Família'],
 ];
+
+/** Anuncia cada nova transação registrada na rede simulada. */
+function AvisosDeRede() {
+  const { state } = useStore();
+  const toast = useToast();
+  const nRef = useRef(state.transacoes.length);
+
+  useEffect(() => {
+    const n = state.transacoes.length;
+    if (n > nRef.current) {
+      const tx = state.transacoes[n - 1];
+      toast(`Transação registrada no slot ${tx.slot} · ${tx.tipo}`, 'info', 2800);
+    }
+    nRef.current = n;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.transacoes.length]);
+
+  return null;
+}
 
 /* ------------------------------------------------------------ painel ---- */
 function Painel({ tab, setTab }) {
@@ -123,11 +143,24 @@ export default function App() {
     return () => window.removeEventListener('hashchange', aoMudar);
   }, []);
 
+  // rota pública do rastreio: o turista escaneia o QR da peça e cai aqui, sem painel nenhum
+  if (rota.startsWith('#/rastreio/')) {
+    const codigo = decodeURIComponent(rota.slice('#/rastreio/'.length)).trim();
+    return (
+      <ToastProvider>
+        <DemoProvider setTab={() => {}}>
+          <Rastreio codigo={codigo} />
+        </DemoProvider>
+      </ToastProvider>
+    );
+  }
+
   // rota standalone da família: abre só o app do celular, sem o painel
   if (rota.startsWith('#/familia')) {
     return (
       <ToastProvider>
         <DemoProvider setTab={() => {}}>
+          <AvisosDeRede />
           <div className="rota-familia">
             <PaginaFamilia standalone />
             <a className="voltar-painel" href="#" onClick={() => setRota('')}>← Voltar ao painel do projeto</a>
@@ -140,6 +173,7 @@ export default function App() {
   return (
     <ToastProvider>
       <DemoProvider setTab={setTab}>
+        <AvisosDeRede />
         <Painel tab={tab} setTab={setTab} />
       </DemoProvider>
     </ToastProvider>
