@@ -112,6 +112,11 @@ try {
     }
   }
 
+  if (querem('nuvem')) {
+    console.log('\n── esquema compartilhado (Supabase real) ' + '─'.repeat(17));
+    registrar('nuvem', rodar('nuvem.mjs') ? 'ok' : 'falhou');
+  }
+
   if (querem('navegador')) {
     console.log('\n── app no navegador ' + '─'.repeat(38));
     const edge = temEdge();
