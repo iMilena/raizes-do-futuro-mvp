@@ -244,6 +244,65 @@ ok(['RECEITA', 'VALIDAÇÃO', 'PROPOSTA', 'ASSINATURA', 'LIBERAÇÃO', 'RESERVA'
   .every(t => tipos.includes(t)), `todos os 8 tipos exercitados (${tipos.length} tipos vistos)`);
 ok(s.transacoes.every(t => t.taxa > 0 && t.taxa < 0.001), 'toda tx tem taxa em SOL (fração de centavo)');
 
+/* ---------- 13. deltas de sincronização ---------- */
+secao('13. Deltas de sincronização (o que sobe para a nuvem)');
+const { calcularDeltas, mesclar, nuvemAdiante } = await import(
+  pathToFileURL(process.env.SYNC_BUNDLE ?? new URL('./.tmp/sinc.mjs', import.meta.url).pathname).href);
+
+const base = estadoInicial();
+const tiposDe = ops => ops.map(o => o.tipo);
+
+/* venda: entra receita e o split precisa virar 3 movimentos, não 1 saldo */
+const comVenda = d(base, { type: 'NOVA_VENDA', payload: { tipo: 'esg', descricao: 'Rel Q2', comprador: 'X', valor: 2500 } });
+const opsVenda = calcularDeltas(base, comVenda);
+ok(tiposDe(opsVenda).includes('transacao'), 'venda gera operação de transação');
+ok(tiposDe(opsVenda).includes('venda'), 'venda gera operação de venda');
+const movs = opsVenda.filter(o => o.tipo === 'movimento');
+ok(movs.length === 3, `split vira 3 movimentos, um por caixa (${movs.length})`);
+ok(movs.every(m => m.transacaoSig != null), 'todo movimento referencia a signature da transação (idempotência)');
+const somaMov = movs.reduce((a, m) => a + m.valor, 0);
+ok(Math.abs(somaMov - 2500) < 0.01, `movimentos somam o valor da venda (${somaMov})`);
+ok(movs.find(m => m.caixa === 'fundo').valor === 625, 'delta do fundo é 625 (25% de 2500), não o saldo total');
+ok(opsVenda[0].tipo === 'transacao', 'transação vem primeiro: movimento referencia ela');
+
+/* assinatura é linha, e a segunda executa e mexe em dinheiro */
+const p0 = comVenda.propostas.find(p => p.status === 'aguardando');
+const s1 = d(comVenda, { type: 'ASSINAR_PROPOSTA', propostaId: p0.id, signatario: 'detrash' });
+const opsAss = calcularDeltas(comVenda, s1);
+const assinaturas = opsAss.filter(o => o.tipo === 'assinatura');
+ok(assinaturas.length === 1 && assinaturas[0].signatario === 'detrash', 'só a assinatura nova sobe');
+ok(opsAss.some(o => o.tipo === 'extrato' && o.valor === p0.valor), 'liberação gera linha de extrato com o valor do bônus');
+ok(opsAss.filter(o => o.tipo === 'movimento').length === 2, 'liberação move fundo e fundo_liberado');
+ok(opsAss.some(o => o.tipo === 'proposta-atualiza' && o.status === 'executada'), 'proposta muda de status');
+ok(opsAss.every(o => o.tipo !== 'extrato' || o.transacaoSig != null), 'todo extrato referencia a signature da transação');
+
+/* nada mudou → nada sobe */
+ok(calcularDeltas(s1, s1).length === 0, 'estado igual não gera operação nenhuma');
+
+/* LGPD: o nome da família não pode sair daqui */
+const semConta = base.familias.find(f => !f.carteira);
+const comConta = d(base, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
+const opsFam = calcularDeltas(base, comConta);
+const opFamilia = opsFam.find(o => o.tipo === 'familia');
+ok(Boolean(opFamilia), 'criar conta gera operação de família');
+ok(!('resp' in opFamilia.familia), 'a operação NÃO carrega o nome da pessoa');
+ok(typeof opFamilia.familia.codigo === 'string' && opFamilia.familia.codigo.length > 0, 'carrega código pseudônimo');
+const serializado = JSON.stringify(opsFam);
+ok(!/Maria de Lourdes|José Raimundo|Ana Cláudia/.test(serializado),
+  'nenhum nome de família aparece no que sobe');
+
+/* merge: dado vem da nuvem, nome vem do cadastro local */
+const remoto = {
+  ...base,
+  familias: base.familias.map(f => ({ id: f.id, codigo: 'BOI-00' + f.id, criancas: f.criancas, carteira: f.carteira, saldo: 7, condicoes: f.condicoes, extrato: [] })),
+  transacoes: [...base.transacoes, { ...base.transacoes[0], seq: 999, slot: 99999, signature: 'outra' }],
+};
+const mesclado = mesclar(base, remoto);
+ok(mesclado.familias[0].resp === base.familias[0].resp, 'merge recupera o nome do cadastro local');
+ok(mesclado.familias[0].saldo === 7, 'merge usa o saldo que veio da nuvem');
+ok(nuvemAdiante(base, remoto) === true, 'detecta que a nuvem está à frente');
+ok(nuvemAdiante(remoto, base) === false, 'e que o local está à frente');
+
 console.log(`\n${'='.repeat(52)}`);
 console.log(falhas === 0 ? `✅ ${total} verificações, todas passaram` : `❌ ${falhas} de ${total} falharam`);
 process.exit(falhas === 0 ? 0 : 1);

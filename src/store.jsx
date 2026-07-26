@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer, useRef, useState } from 'react';
+import * as nuvem from './nuvem.js';
+import * as sinc from './sincronizacao.js';
 
 const KEY = 'raizes-mvp-v2';
 
@@ -427,67 +429,80 @@ export function StoreProvider({ children }) {
   }, [state]);
 
   /* ------------------------------------------------------------------------
-     Sincronização opcional multi-aparelho (Supabase REST) — GRAU DEMO.
-     Ativa apenas se public/supabase.json existir com { url, anonKey } —
-     ver SUPABASE.md. Sem o arquivo, o app funciona 100% local.
+     Sincronização multi-aparelho — tabelas por entidade, registro append-only.
 
-     ⚠️ A SUBSTITUIR: grava o estado inteiro num blob, com last-write-wins.
-     Dois aparelhos editando ao mesmo tempo e um perde o trabalho, e uma
-     gravação atrasada pode apagar transações já registradas. O modelo correto
-     (tabelas por entidade, transações append-only, saldo derivado de soma)
-     está em supabase/schema.sql + src/nuvem.js, com o plano de migração no
-     topo do nuvem.js.
+     Local-first de propósito: o app já renderizou com o estado local antes de
+     qualquer rede acontecer. Sem public/supabase.json, nada disto roda e o app
+     é 100% offline. Ver SUPABASE.md e src/sincronizacao.js.
   ------------------------------------------------------------------------ */
-  const [cfgSync, setCfgSync] = useState(null);
+  const [nuvemAtiva, setNuvemAtiva] = useState(false);
+  const [fila, setFila] = useState(0);
+  const anteriorRef = useRef(state);
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  /* 1. configura e traz o que já existe na nuvem */
   useEffect(() => {
-    fetch('./supabase.json')
-      .then(r => (r.ok ? r.json() : null))
-      .then(c => { if (c?.url && c?.anonKey) setCfgSync(c); })
-      .catch(() => {});
+    let vivo = true;
+    (async () => {
+      if (!(await nuvem.configurar())) return;
+      if (!vivo) return;
+      setNuvemAtiva(true);
+      try {
+        const remoto = await nuvem.carregar();
+        if (vivo && sinc.nuvemAdiante(stateRef.current, remoto)) {
+          const mesclado = sinc.mesclar(stateRef.current, remoto);
+          anteriorRef.current = mesclado; // não reenviar o que veio de lá
+          dispatch({ type: 'SUBSTITUIR_ESTADO', estado: mesclado });
+        }
+      } catch (e) { /* offline no boot: segue local, a fila resolve depois */ }
+    })();
+    return () => { vivo = false; };
   }, []);
 
-  // carrega o estado remoto e fica de olho em versões mais novas
+  /* 2. cada mudança local vira delta na fila e tenta subir (otimista) */
   useEffect(() => {
-    if (!cfgSync) return;
-    const H = { apikey: cfgSync.anonKey, Authorization: 'Bearer ' + cfgSync.anonKey };
-    const puxar = async () => {
+    if (!nuvemAtiva) return;
+    const antes = anteriorRef.current;
+    anteriorRef.current = state;
+    if (antes === state) return;
+
+    const ops = sinc.calcularDeltas(antes, state);
+    if (!ops.length) return;
+    sinc.enfileirar(ops);
+    setFila(sinc.tamanhoFila());
+    sinc.escoarFila().then(r => setFila(r.restantes));
+  }, [state, nuvemAtiva]);
+
+  /* 3. de tempo em tempo: reenvia o que ficou preso e busca o que os outros
+        aparelhos fizeram. Só substitui quando a fila está vazia, para não
+        descartar trabalho local ainda não enviado. */
+  useEffect(() => {
+    if (!nuvemAtiva) return;
+    const bater = async () => {
+      const r = await sinc.escoarFila();
+      setFila(r.restantes);
+      if (r.restantes > 0) return;
       try {
-        const r = await fetch(`${cfgSync.url}/rest/v1/estado?id=eq.1&select=dados`, { headers: H });
-        if (!r.ok) return;
-        const linhas = await r.json();
-        const remoto = linhas?.[0]?.dados;
-        if (remoto?.cofre && (remoto.v || 0) > (stateRef.current.v || 0)) {
-          dispatch({ type: 'SUBSTITUIR_ESTADO', estado: remoto });
+        const total = await nuvem.contarTransacoes();
+        if (total == null || total <= stateRef.current.transacoes.length) return;
+        const remoto = await nuvem.carregar();
+        if (sinc.nuvemAdiante(stateRef.current, remoto)) {
+          const mesclado = sinc.mesclar(stateRef.current, remoto);
+          anteriorRef.current = mesclado;
+          dispatch({ type: 'SUBSTITUIR_ESTADO', estado: mesclado });
         }
-      } catch (e) { /* offline: segue local */ }
+      } catch (e) { /* segue local */ }
     };
-    puxar();
-    const id = setInterval(puxar, 7000);
+    const id = setInterval(bater, 8000);
     return () => clearInterval(id);
-  }, [cfgSync]);
+  }, [nuvemAtiva]);
 
-  // grava alterações locais (com debounce)
-  useEffect(() => {
-    if (!cfgSync) return;
-    const t = setTimeout(() => {
-      fetch(`${cfgSync.url}/rest/v1/estado?on_conflict=id`, {
-        method: 'POST',
-        headers: {
-          apikey: cfgSync.anonKey,
-          Authorization: 'Bearer ' + cfgSync.anonKey,
-          'Content-Type': 'application/json',
-          Prefer: 'resolution=merge-duplicates',
-        },
-        body: JSON.stringify({ id: 1, dados: state }),
-      }).catch(() => {});
-    }, 1200);
-    return () => clearTimeout(t);
-  }, [state, cfgSync]);
-
-  return <Ctx.Provider value={{ state, dispatch, sincronizado: !!cfgSync }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ state, dispatch, sincronizado: nuvemAtiva, pendentes: fila }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export const useStore = () => useContext(Ctx);

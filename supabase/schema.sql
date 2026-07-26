@@ -121,13 +121,16 @@ create or replace view propostas_com_assinaturas as
   group by p.id;
 
 -- ------------------------------------------- registro auditável (append-only)
+-- A chave é a signature, derivada do CONTEÚDO da transação — não o seq.
+-- seq vem do tamanho do array local: dois aparelhos offline criariam o mesmo
+-- seq com conteúdos diferentes, e um seria descartado em silêncio ao sincronizar.
 create table if not exists transacoes (
-  seq            bigint primary key,
+  signature      text primary key,
+  seq            bigint not null,              -- ordenação local, sem unicidade global
   slot           bigint not null,
   tipo           text   not null,
   descricao      text   not null,
   valor          numeric not null default 0,
-  signature      text   not null unique,
   prev_signature text   not null,
   taxa           numeric,
   meta           jsonb,                        -- propostaId, familiaId, vendaId, real…
@@ -142,26 +145,32 @@ comment on table transacoes is
 -- ------------------------------------------------- dinheiro (livro imutável)
 -- Saldo não é campo: é a soma dos movimentos. Elimina a corrida clássica de
 -- "ler saldo, subtrair, gravar" entre dois aparelhos.
+-- (transacao_sig, caixa) é chave natural: cada transação produz no máximo um
+-- movimento por caixa. Sem ela, o reenvio da fila de sincronização duplicaria
+-- dinheiro — id `bigserial` não protege contra reenvio.
 create table if not exists movimentos (
   id            bigserial primary key,
   caixa         text not null check (caixa in ('renda','fundo','operacao','fundo_liberado')),
   valor         numeric not null,              -- positivo entra, negativo sai
   motivo        text not null,
-  transacao_seq bigint references transacoes(seq),
-  criado_em     timestamptz not null default now()
+  transacao_sig text not null references transacoes(signature),
+  criado_em     timestamptz not null default now(),
+  constraint movimentos_por_transacao unique (transacao_sig, caixa)
 );
 
 create or replace view saldos as
   select caixa, sum(valor) as saldo from movimentos group by caixa;
 
 -- Extrato da família: mesma ideia. O saldo dela é a soma do que entrou e saiu.
+-- Mesma razão do movimentos: (transacao_sig, familia_id) é a chave natural.
 create table if not exists extrato (
   id            bigserial primary key,
   familia_id    bigint not null references familias(id) on delete cascade,
   descricao     text not null,
   valor         numeric not null,
-  transacao_seq bigint references transacoes(seq),
-  criado_em     timestamptz not null default now()
+  transacao_sig text not null references transacoes(signature),
+  criado_em     timestamptz not null default now(),
+  constraint extrato_por_transacao unique (transacao_sig, familia_id)
 );
 
 create or replace view saldo_familia as
@@ -170,6 +179,7 @@ create or replace view saldo_familia as
 create index if not exists idx_condicoes_familia on condicoes(familia_id);
 create index if not exists idx_extrato_familia  on extrato(familia_id);
 create index if not exists idx_transacoes_slot  on transacoes(slot);
+create index if not exists idx_transacoes_seq   on transacoes(seq);
 create index if not exists idx_propostas_status on propostas(status);
 
 -- ===========================================================================

@@ -4,37 +4,28 @@
 
    Ver SUPABASE.md para o raciocínio e supabase/schema.sql para o esquema.
 
-   ── ESTADO ────────────────────────────────────────────────────────────────
-   Escrito e revisado, mas o store ainda NÃO usa este módulo: a sincronização
-   por blob antiga continua ativa em store.jsx. Não liguei porque não tenho um
-   projeto Supabase para exercitar, e sincronização não testada é pior que
-   sincronização ausente.
-
-   ── PLANO DE MIGRAÇÃO (na ordem) ──────────────────────────────────────────
-   1. `carregar()` no boot: se houver configuração, monta o estado a partir das
-      tabelas; se não, segue com a seed local. O app continua local-first.
-   2. Para cada action do reducer, chamar o `registrar*` correspondente DEPOIS
-      do dispatch local (otimista). Falha de rede não bloqueia a UI: a ação já
-      valeu localmente e entra na fila.
-   3. Fila de reenvio em localStorage para o modo offline do campo (o service
-      worker já cobre o carregamento do app; isto cobre os dados).
-   4. Realtime (`supabase.channel`) em vez do polling de 7 s, para o Vivá ver a
-      coleta aparecer sem recarregar.
-   5. Só então remover o bloco de blob de store.jsx.
-
-   Teste que vale antes de confiar: dois navegadores, um deles offline durante
-   uma validação, e conferir que nada se perde quando ele volta.
+   O store usa este módulo desde o commit da sincronização por entidade: o app
+   carrega da nuvem no boot, envia deltas a cada ação e reenvia o que ficou preso.
+   Sem public/supabase.json nada disto roda e o app é 100% local.
 --------------------------------------------------------------------------- */
 
 let cfg = null;
 
-/** Lê public/supabase.json. Sem o arquivo, tudo aqui vira no-op silencioso. */
-export async function configurar() {
+/**
+ * Lê public/supabase.json. Sem o arquivo, tudo aqui vira no-op silencioso.
+ * @param {{url:string, anonKey:string}} [injetada] usado pelos testes, que não
+ *        têm um servidor servindo o arquivo.
+ */
+export async function configurar(injetada) {
+  if (injetada?.url && injetada?.anonKey) {
+    cfg = { url: injetada.url.replace(/\/$/, ''), anonKey: injetada.anonKey };
+    return cfg;
+  }
   if (cfg !== null) return cfg;
   try {
     const r = await fetch('./supabase.json');
     const j = r.ok ? await r.json() : null;
-    cfg = j?.url && j?.anonKey ? j : false;
+    cfg = j?.url && j?.anonKey ? { ...j, url: j.url.replace(/\/$/, '') } : false;
   } catch {
     cfg = false;
   }
@@ -55,8 +46,11 @@ function cabecalhos(extra = {}) {
 async function req(caminho, opcoes = {}) {
   if (!(await configurar())) return null;
   const r = await fetch(`${cfg.url}/rest/v1/${caminho}`, { ...opcoes, headers: cabecalhos(opcoes.headers) });
-  if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text()).slice(0, 160)}`);
-  return r.status === 204 ? null : r.json();
+  const texto = await r.text();
+  if (!r.ok) throw new Error(`Supabase ${r.status}: ${texto.slice(0, 160)}`);
+  // `Prefer: return=minimal` devolve 201 com corpo VAZIO — não é só o 204.
+  if (!texto) return null;
+  try { return JSON.parse(texto); } catch { return null; }
 }
 
 const ler = (tabela, query = '') => req(`${tabela}?${query || 'select=*'}`);
@@ -144,6 +138,19 @@ export async function carregar() {
 /* Cada função corresponde a uma action do reducer. A ordem importa: a
    transação entra antes dos movimentos que a referenciam.                    */
 
+/**
+ * Cria ou atualiza a família na nuvem. Recebe só o recorte publicável — nome
+ * da pessoa não entra aqui (ver LGPD no SUPABASE.md); o que sobe é o `codigo`.
+ */
+export const registrarFamilia = f => gravar('familias', {
+  id: f.id,
+  codigo: f.codigo,
+  criancas: f.criancas,
+  carteira_end: f.carteira?.end ?? null,
+  carteira_prov: f.carteira?.provider ?? null,
+  carteira_rede: f.carteira?.rede ?? null,
+});
+
 export const registrarColeta = c => gravar('coletas', {
   id: c.id, coletor: c.coletor, material: c.material, kg: c.kg, local: c.local,
   data: c.data, status: c.status, signature: c.signature,
@@ -177,6 +184,17 @@ export const registrarCarteira = f => atualizar('familias', `id=eq.${f.id}`, {
   carteira_rede: f.carteira.rede,
 });
 
+/** Estado da nuvem só para comparação rápida — evita baixar tudo a cada poll. */
+export async function contarTransacoes() {
+  if (!(await configurar())) return null;
+  const r = await fetch(`${cfg.url}/rest/v1/transacoes?select=seq`, {
+    headers: { ...cabecalhos(), Prefer: 'count=exact', Range: '0-0' },
+  });
+  const faixa = r.headers.get('content-range'); // ex.: "0-0/42"
+  const total = faixa?.split('/')?.[1];
+  return total === '*' || total == null ? null : Number(total);
+}
+
 export const registrarProposta = p => gravar('propostas', {
   id: p.id, familia_id: p.familiaId, condicao_id: p.condicaoId,
   valor: p.valor, status: p.status, signature: p.signature ?? null,
@@ -198,9 +216,9 @@ export const registrarTransacao = t => inserir('transacoes', {
 });
 
 /** Movimento de caixa. Nunca gravamos saldo — só o que entrou ou saiu. */
-export const registrarMovimento = (caixa, valor, motivo, transacaoSeq = null) =>
-  inserir('movimentos', { caixa, valor, motivo, transacao_seq: transacaoSeq });
+export const registrarMovimento = (caixa, valor, motivo, transacaoSig) =>
+  inserir('movimentos', { caixa, valor, motivo, transacao_sig: transacaoSig });
 
 /** Linha do extrato da família. Idem: o saldo dela é a soma disto. */
-export const registrarExtrato = (familiaId, descricao, valor, transacaoSeq = null) =>
-  inserir('extrato', { familia_id: familiaId, descricao, valor, transacao_seq: transacaoSeq });
+export const registrarExtrato = (familiaId, descricao, valor, transacaoSig) =>
+  inserir('extrato', { familia_id: familiaId, descricao, valor, transacao_sig: transacaoSig });

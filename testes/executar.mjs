@@ -29,17 +29,18 @@ const querem = nome => pedidas.length === 0 || pedidas.includes(nome);
 const bin = nome => join(RAIZ, 'node_modules', '.bin', process.platform === 'win32' ? nome + '.cmd' : nome);
 
 /* ------------------------------------------------------- pré-requisitos ---- */
-function empacotarStore() {
+/** Empacota um módulo de src/ para o Node poder importar (tem JSX no caminho). */
+function empacotar(entrada, nomeSaida) {
   mkdirSync(TMP, { recursive: true });
-  const saida = join(TMP, 'store.mjs');
+  const saida = join(TMP, nomeSaida);
   const r = spawnSync(bin('esbuild'), [
-    join(RAIZ, 'src', 'store.jsx'),
+    join(RAIZ, 'src', entrada),
     '--bundle', '--format=esm', '--platform=node',
     '--loader:.jsx=jsx', '--jsx=automatic',
     '--log-level=warning', '--outfile=' + saida,
   ], { encoding: 'utf8', shell: process.platform === 'win32' });
   if (r.status !== 0) {
-    console.error('não foi possível empacotar o store:\n' + (r.stderr || r.stdout));
+    console.error(`não foi possível empacotar ${entrada}:\n` + (r.stderr || r.stdout));
     process.exit(1);
   }
   return saida;
@@ -91,11 +92,12 @@ console.log('\n🌱 Raízes do Futuro — testes\n');
 
 let servidor = null;
 try {
-  const store = empacotarStore();
+  const store = empacotar('store.jsx', 'store.mjs');
+  const sinc = empacotar('sincronizacao.js', 'sinc.mjs');
 
   if (querem('fluxo')) {
     console.log('── fluxo (reducer, sem navegador) ' + '─'.repeat(24));
-    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store }) ? 'ok' : 'falhou');
+    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }) ? 'ok' : 'falhou');
   }
 
   if (querem('qr')) {
@@ -114,7 +116,7 @@ try {
 
   if (querem('nuvem')) {
     console.log('\n── esquema compartilhado (Supabase real) ' + '─'.repeat(17));
-    registrar('nuvem', rodar('nuvem.mjs') ? 'ok' : 'falhou');
+    registrar('nuvem', rodar('nuvem.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }) ? 'ok' : 'falhou');
   }
 
   if (querem('navegador')) {

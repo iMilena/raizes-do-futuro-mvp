@@ -81,6 +81,21 @@ const marca = '[teste] ' + new Date().toISOString();
 console.log(`projeto: ${cred.url}`);
 console.log(`faixa de teste: ${N}`);
 
+/* Antes de tudo: o esquema está na versão nova? Sem isso, todo o resto falha por
+   um motivo só, e dez linhas vermelhas escondem a única ação necessária. */
+{
+  const sonda = await chamar('movimentos?select=transacao_sig&limit=1');
+  if (sonda.status !== 200) {
+    console.log('\n  ✗ MIGRAÇÃO PENDENTE');
+    console.log('    rode supabase/migracao-01-chave-e-idempotencia.sql no SQL Editor do Supabase.');
+    console.log('');
+    console.log('    Sem ela, dois problemas ficam abertos:');
+    console.log('      · `seq` como chave primária descarta em silêncio a transação de um');
+    console.log('        segundo aparelho offline — o caso que a sincronização deveria resolver;');
+    console.log('      · o reenvio da fila duplica dinheiro (testado: R$ 90 viraram R$ 180).');
+    process.exit(1);
+  }
+}
 try {
   /* ---------------------------------------------------------------- base --- */
   secao('1. Entidades operacionais aceitam escrita');
@@ -145,17 +160,23 @@ try {
 
   /* -------------------------------------------------- saldo é soma -------- */
   secao('5. Saldo é soma de livro imutável, não campo');
+  // duas transações distintas: (transacao_sig, caixa) é único, então dois
+  // movimentos no mesmo caixa precisam vir de transações diferentes
+  await inserir('transacoes', {
+    seq: SEQ + 2, slot: 3, tipo: 'TESTE', descricao: marca, valor: 0,
+    signature: 'sig2-' + N, prev_signature: 'sig-' + N,
+  }, 'return=minimal');
   await inserir('movimentos', [
-    { caixa: 'fundo', valor: 645, motivo: marca, transacao_seq: SEQ },
-    { caixa: 'fundo', valor: -60, motivo: marca, transacao_seq: SEQ },
+    { caixa: 'fundo', valor: 645, motivo: marca, transacao_sig: 'sig-' + N },
+    { caixa: 'fundo', valor: -60, motivo: marca, transacao_sig: 'sig2-' + N },
   ], 'return=minimal');
   const sal = await ler('saldos', 'caixa=eq.fundo&select=saldo');
   ok(sal.ok && Number(sal.corpo?.[0]?.saldo) >= 585,
     `view saldos soma os movimentos (fundo = ${sal.corpo?.[0]?.saldo})`);
 
   await inserir('extrato', [
-    { familia_id: FAM, descricao: 'Bônus de julho — ' + marca, valor: 60, transacao_seq: SEQ },
-    { familia_id: FAM, descricao: 'Retirada pelo Pix ' + marca, valor: -20, transacao_seq: SEQ },
+    { familia_id: FAM, descricao: 'Bônus de julho — ' + marca, valor: 60, transacao_sig: 'sig-' + N },
+    { familia_id: FAM, descricao: 'Retirada pelo Pix ' + marca, valor: -20, transacao_sig: 'sig2-' + N },
   ], 'return=minimal');
   const sf = await ler('saldo_familia', `familia_id=eq.${FAM}&select=saldo`);
   ok(Number(sf.corpo?.[0]?.saldo) === 40, `saldo da família = 60 − 20 = 40 (deu ${sf.corpo?.[0]?.saldo})`);
@@ -184,8 +205,113 @@ try {
   falhas++;
 }
 
+/* =========================================================================
+   Parte 2 — ida e volta do estado do app
+
+   Aqui não se testa mais o esquema, e sim a sincronização: rodar ações no
+   reducer, subir os deltas, baixar de volta e conferir que o estado reconstruído
+   bate. É o que precisa estar verde antes de confiar o dado de uma família a
+   isto.
+   ========================================================================= */
+
+if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
+  console.log('\n(parte 2 pulada: rode via `npm test` para os módulos serem empacotados)');
+} else {
+
+  const { pathToFileURL } = await import('node:url');
+  const store = await import(pathToFileURL(process.env.STORE_BUNDLE).href);
+  const sinc = await import(pathToFileURL(process.env.SYNC_BUNDLE).href);
+  // o proprio modulo de sincronizacao reexporta a nuvem, garantindo mesma instancia
+  const nuvem = sinc;
+  await sinc.configurar(cred);
+
+  secao('8. Ida e volta: estado do app → nuvem → estado do app');
+  /* faixa própria para não misturar com o piloto: ids deslocados */
+  let s = store.estadoInicial();
+  const desloca = st => ({
+    ...st,
+    nextId: N + 100,
+    familias: st.familias.map(f => ({ ...f, id: f.id + N, codigo: 'RT-' + (f.id + N),
+      condicoes: f.condicoes.map(c => ({ ...c, id: c.id + N })) })),
+    coletas: st.coletas.map(c => ({ ...c, id: c.id + N })),
+    relatorios: st.relatorios.map(r => ({ ...r, id: r.id + N })),
+    // rastreio e unique (duas pecas nao compartilham codigo): a faixa entra nele tambem
+    vendas: st.vendas.map(v => ({ ...v, id: v.id + N, rastreio: v.rastreio ? `RT${N}-${v.id}` : null })),
+    propostas: st.propostas.map(p => ({ ...p, id: p.id + N, familiaId: p.familiaId + N, condicaoId: p.condicaoId + N })),
+    transacoes: st.transacoes.map(t => ({ ...t, seq: t.seq + N + 1000, signature: `rt${N}-${t.seq}` })),
+  });
+  s = desloca(s);
+
+  const enviar = async (antes, depois) => {
+    const ops = sinc.calcularDeltas(antes, depois);
+    sinc.enfileirar(ops);
+    const r = await sinc.escoarFila();
+    return r;
+  };
+
+  /* estado inicial inteiro sobe */
+  const r0 = await enviar(null, s);
+  ok(r0.erro === null, `estado inicial subiu sem erro (${r0.enviadas} operações)${r0.erro ? ' — ' + r0.erro : ''}`);
+
+  /* uma jornada: coleta → validação → venda → assinatura que executa */
+  const antes1 = s;
+  s = store.reducer(s, { type: 'NOVA_COLETA', payload: { coletor: 'Teste RT', material: 'Vidro', kg: 33, local: 'Cueira', data: '2026-07-26' } });
+  const nova = s.coletas[s.coletas.length - 1];
+  s = store.reducer(s, { type: 'VALIDAR_COLETA', id: nova.id });
+  s = store.reducer(s, { type: 'NOVA_VENDA', payload: { tipo: 'esg', descricao: 'RT relatório', comprador: 'RT', valor: 2000 } });
+  const pAberta = s.propostas.find(p => p.status === 'aguardando');
+  s = store.reducer(s, { type: 'ASSINAR_PROPOSTA', propostaId: pAberta.id, signatario: 'detrash' });
+  const r1 = await enviar(antes1, s);
+  ok(r1.erro === null, `jornada subiu sem erro (${r1.enviadas} operações)${r1.erro ? ' — ' + r1.erro : ''}`);
+  ok(sinc.tamanhoFila() === 0, 'fila esvaziou');
+
+  /* baixa e compara */
+  const remoto = await nuvem.carregar();
+  const meu = f => f.id > N;
+  const famRemoto = remoto.familias.filter(meu);
+  ok(famRemoto.length === s.familias.length, `famílias voltaram (${famRemoto.length}/${s.familias.length})`);
+
+  const local1 = s.familias.find(f => f.id === pAberta.familiaId);
+  const remoto1 = famRemoto.find(f => f.id === pAberta.familiaId);
+  ok(Number(remoto1?.saldo) === Number(local1.saldo),
+    `saldo da família bate: local ${local1.saldo} vs nuvem ${remoto1?.saldo}`);
+  ok(remoto1?.resp === undefined, 'a nuvem não devolve nome (porque nunca recebeu)');
+  ok(typeof remoto1?.codigo === 'string', `devolve o código pseudônimo (${remoto1?.codigo})`);
+
+  const caixaLocal = Number(s.caixas.fundo.toFixed(2));
+  const propRT = remoto.propostas.filter(p => p.id > N);
+  const exec = propRT.find(p => p.id === pAberta.id);
+  ok(exec?.status === 'executada', 'proposta voltou como executada');
+  ok((exec?.assinaturas || []).length === 2, `voltou com 2 assinaturas (${(exec?.assinaturas || []).length})`);
+
+  const txRT = remoto.transacoes.filter(t => String(t.signature).startsWith('rt' + N + '-'));
+  ok(txRT.length === s.transacoes.length, `transações voltaram (${txRT.length}/${s.transacoes.length})`);
+  ok(txRT.every(t => !/Maria de Lourdes|José Raimundo|Ana Cláudia/.test(t.desc)),
+    'nenhuma descrição de transação na nuvem contém nome de família');
+  ok(txRT.some(t => /RT-\d+/.test(t.desc)), 'as descrições usam o código pseudônimo');
+
+  const colRT = remoto.coletas.filter(c => c.id > N);
+  ok(colRT.find(c => c.id === nova.id)?.status === 'validada', 'coleta voltou validada');
+
+  /* merge devolve o nome a partir do cadastro local */
+  const mesclado = sinc.mesclar(s, remoto);
+  const famMesclada = mesclado.familias.find(f => f.id === pAberta.familiaId);
+  ok(famMesclada?.resp === local1.resp, `merge recupera o nome local (${famMesclada?.resp})`);
+  ok(Number(famMesclada?.saldo) === Number(local1.saldo), 'e mantém o saldo vindo da nuvem');
+
+  /* reenviar tudo de novo não deve mexer em nada (idempotência de ponta a ponta) */
+  const saldoAntes = Number(remoto1?.saldo);
+  sinc.enfileirar(sinc.calcularDeltas(antes1, s));
+  const r2 = await sinc.escoarFila();
+  const remoto2 = await nuvem.carregar();
+  const saldoDepois = Number(remoto2.familias.find(f => f.id === pAberta.familiaId)?.saldo);
+  ok(saldoDepois === saldoAntes,
+    `reenviar a mesma jornada não altera saldo (${saldoAntes} → ${saldoDepois})${r2.erro ? ' · ' + r2.erro : ''}`);
+  ok(Number(caixaLocal) >= 0, 'caixa local permanece consistente');
+}
+
 console.log('\n' + '─'.repeat(52));
 console.log(falhas === 0
-  ? `✅ ${total} garantias do esquema confirmadas no banco real`
+  ? `✅ ${total} garantias confirmadas no banco real`
   : `❌ ${falhas} de ${total} falharam`);
 process.exit(falhas === 0 ? 0 : 1);
