@@ -1,7 +1,118 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore, fmt, trunc, disponivelCofre, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA } from '../store.jsx';
-import { useToast, EstadoVazio } from '../ui.jsx';
+import { useToast, EstadoVazio, Modal } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
+import { hashRelatorio, comandoAncoragem, assinaturaValida, urlExplorer, REDE_ANCORAGEM } from '../ancoragem.js';
+
+/* ---------------------------------------------------------------------------
+   Ancoragem do relatório na Solana devnet.
+
+   O app calcula o SHA-256 de verdade e mostra o comando; quem assina é o
+   script em onchain/, com a chave na máquina de quem opera. Depois o operador
+   cola a assinatura aqui e o selo aparece. Nenhuma chave privada no navegador.
+--------------------------------------------------------------------------- */
+function Ancoragem({ relatorio }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
+  const [hash, setHash] = useState(null);
+  const [aberto, setAberto] = useState(false);
+  const [assinatura, setAssinatura] = useState('');
+  const [copiado, setCopiado] = useState(null);
+
+  useEffect(() => {
+    hashRelatorio(relatorio).then(setHash).catch(() => setHash(null));
+  }, [relatorio]);
+
+  const copiar = async (texto, qual) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiado(qual);
+      setTimeout(() => setCopiado(null), 1600);
+    } catch {
+      toast('Não foi possível copiar — selecione e copie à mão', 'alerta');
+    }
+  };
+
+  const confirmar = () => {
+    const s = assinatura.trim();
+    if (!assinaturaValida(s)) {
+      toast('Assinatura inválida: esperado base58 de ~88 caracteres', 'alerta', 5000);
+      return;
+    }
+    dispatch({ type: 'ANCORAR_RELATORIO', id: relatorio.id, hash, txId: s });
+    toast(`Relatório ancorado na ${REDE_ANCORAGEM} ⚓`);
+    setAberto(false);
+    setAssinatura('');
+  };
+
+  if (relatorio.ancoragem) {
+    const a = relatorio.ancoragem;
+    return (
+      <div className="ancorado">
+        ⚓ <b>ancorado na {a.rede}</b> <span className="tag ok">registro real</span>
+        <div className="hash">SHA-256 {trunc(a.hash, 12, 12)}</div>
+        <div className="hash">tx {trunc(a.txId, 10, 10)}</div>
+        <a href={a.url} target="_blank" rel="noreferrer noopener">conferir no explorer ↗</a>
+      </div>
+    );
+  }
+
+  if (!hash) return <div className="mini">calculando o hash do relatório…</div>;
+
+  return (
+    <>
+      <div className="nao-ancorado">
+        ⚓ ainda não ancorado ·{' '}
+        <button className="link-rastreio" onClick={() => setAberto(true)}>ancorar na {REDE_ANCORAGEM}</button>
+        <div className="hash">SHA-256 {trunc(hash, 12, 12)}</div>
+      </div>
+
+      {aberto && (
+        <Modal titulo="⚓ Ancorar na Solana devnet" sub="registro público e verificável do relatório"
+          onFechar={() => setAberto(false)} largura={560}>
+          <p className="mini">
+            A assinatura exige chave privada, e chave privada não entra no navegador. Então são
+            três passos: copie o hash, rode o comando na máquina da operação, e cole a assinatura de volta.
+          </p>
+
+          <label>1 · hash do relatório (SHA-256 real)</label>
+          <div className="linha-copiar">
+            <code className="hash sel">{hash}</code>
+            <button className="acao sec" onClick={() => copiar(hash, 'hash')}>
+              {copiado === 'hash' ? 'copiado ✓' : 'copiar'}
+            </button>
+          </div>
+
+          <label>2 · rode em <code>onchain/</code></label>
+          <div className="linha-copiar">
+            <code className="hash sel">{comandoAncoragem(hash, relatorio.periodo)}</code>
+            <button className="acao sec" onClick={() => copiar(comandoAncoragem(hash, relatorio.periodo), 'cmd')}>
+              {copiado === 'cmd' ? 'copiado ✓' : 'copiar'}
+            </button>
+          </div>
+
+          <label>3 · cole aqui a assinatura que o script imprimiu</label>
+          <input value={assinatura} onChange={e => setAssinatura(e.target.value)}
+            placeholder="5a1v34R8Tqpk1du9UAJdexypcUFou5ARHSCTy6nFshS6…" />
+          {assinatura.trim() && !assinaturaValida(assinatura) && (
+            <p className="mini alerta-txt">
+              Isso não parece uma assinatura Solana (base58, ~88 caracteres).
+            </p>
+          )}
+          {assinaturaValida(assinatura) && (
+            <p className="mini">
+              Vai registrar: <a href={urlExplorer(assinatura.trim())} target="_blank" rel="noreferrer noopener">
+                conferir no explorer ↗</a>
+            </p>
+          )}
+          <button className="acao grande" disabled={!assinaturaValida(assinatura)} onClick={confirmar}>
+            Registrar ancoragem
+          </button>
+        </Modal>
+      )}
+    </>
+  );
+}
 
 export default function Validacao() {
   const { state, dispatch } = useStore();
@@ -65,6 +176,7 @@ export default function Validacao() {
             <div key={r.id} style={{ marginTop: 10, fontSize: 13 }}>
               📄 <b>{r.periodo}</b> — {r.kg} kg, {r.acoes} ações
               <div className="hash">{trunc(r.signature, 12, 12)}</div>
+              <Ancoragem relatorio={r} />
             </div>
           ))}
         </div>

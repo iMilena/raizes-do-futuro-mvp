@@ -638,6 +638,57 @@ try {
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'estado inválido é descartado e a seed é recriada');
   ok(await ev('return __t.conta(".grafico svg") >= 2'), 'gráficos voltam a renderizar');
 
+  /* ---------- 14a. ancoragem do relatório na Solana devnet ---------- */
+  secao('14a. Ancoragem do relatório na Solana devnet');
+  await irPara(ALVO);
+  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await espera(900);
+  ok(await ev('return __t.tem("ainda não ancorado")'), 'relatório da seed aparece como não ancorado');
+  ok(await ev('return /SHA-256 [0-9a-f]{12}…[0-9a-f]{12}/.test(__t.txt())'), 'mostra o SHA-256 real do relatório');
+
+  ok(await ev('return __t.clicar(".nao-ancorado .link-rastreio", "ancorar") === true'), 'abre o passo a passo');
+  await espera(500);
+  ok(await ev('return __t.conta(".modal") === 1'), 'modal de ancoragem abre');
+  ok(await ev('return __t.conta(".linha-copiar") === 2'), 'oferece hash e comando para copiar');
+  ok(await ev('return __t.tem("chave privada não entra no navegador")'), 'explica por que há etapa humana');
+  const cmd = await ev('return document.querySelectorAll(".linha-copiar code")[1].innerText');
+  ok(/^node ancorar-relatorio\.mjs [0-9a-f]{64} ".+"$/.test(cmd), `comando pronto e correto (${cmd.slice(0, 42)}…)`);
+  const hashApp = await ev('return document.querySelectorAll(".linha-copiar code")[0].innerText.trim()');
+  ok(/^[0-9a-f]{64}$/.test(hashApp), 'hash com 64 hexadecimais');
+
+  // assinatura inválida é recusada antes de sujar o estado
+  await ev('return __t.preencher(".modal input", "isso-nao-e-assinatura")');
+  await espera(300);
+  ok(await ev('return __t.tem("não parece uma assinatura Solana")'), 'recusa assinatura mal formada');
+  ok(await ev('return __t.clicar(".modal button.acao.grande", "Registrar") === "desabilitado"'), 'botão bloqueado enquanto inválida');
+
+  // a assinatura de verdade, da transação que ancoramos na devnet
+  const SIG_REAL = '32236oNENMrvKmfp5e62Asi7Uxf7DabAiJynAeLc5JE6hVDWmEeRUYMJjGspJgt9UadUVKiUVzgKicc1F9LqDN6w';
+  await ev(`return __t.preencher(".modal input", ${JSON.stringify(SIG_REAL)})`);
+  await espera(400);
+  ok(await ev('return __t.tem("conferir no explorer")'), 'oferece conferir antes de registrar');
+  ok(await ev('return __t.clicar(".modal button.acao.grande", "Registrar") === true'), 'registra a ancoragem');
+  await espera(700);
+
+  ok(await ev('return __t.tem("ancorado na Solana devnet")'), 'selo de ancorado aparece');
+  ok(await ev('return __t.tem("registro real")'), 'marcado como registro real, distinto do simulado');
+  const linkAncora = await ev(`return [...document.querySelectorAll('a[href*="explorer.solana.com"]')].map(a => a.href)[0] || null;`);
+  ok(typeof linkAncora === 'string' && linkAncora.includes(SIG_REAL), 'link aponta para a transação real no explorer');
+
+  const guardado = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const r = s.relatorios.find(x => x.ancoragem);
+    const tx = s.transacoes.filter(t => t.tipo === 'ANCORAGEM');
+    return r ? { rede: r.ancoragem.rede, hash: r.ancoragem.hash, txId: r.ancoragem.txId, txs: tx.length, real: tx[0]?.real } : null;
+  `);
+  ok(guardado?.rede === 'Solana devnet' && guardado.txId === SIG_REAL, 'guarda rede e assinatura corretas');
+  ok(guardado?.hash === hashApp, 'o hash guardado é o mesmo que o app exibiu');
+  ok(guardado?.txs === 1 && guardado.real === true, 'gera transação ANCORAGEM marcada como real');
+
+  await ev('return __t.clicar("nav.tabs button", "Cofre Multisig")');
+  await espera(600);
+  ok(await ev('return __t.tem("ANCORAGEM")'), 'a ancoragem aparece no explorador de transações');
+
   /* ---------- 14b. QR de rastreio do produto ---------- */
   secao('14b. QR de rastreio do produto (jornada da peça)');
   await irPara(ALVO);

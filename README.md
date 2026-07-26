@@ -97,38 +97,44 @@ Há também um **🎥 Modo gravação** no rodapé: esconde os elementos que den
 - **Renda do trabalho é incondicional** — o cofre administra apenas o bônus (Fundo Infância, 25%).
 - **Nenhuma organização move o dinheiro sozinha** — 2 de 3 assinaturas por transferência.
 - **Bônus reservado, nunca perdido** — condição não cumprida mantém o valor reservado para liberação retroativa.
-- **Nenhum dado sensível na rede** — comprovações ficam no ambiente seguro (simulado); só o hash é registrado.
+- **Nenhum dado sensível na rede** — a foto do comprovante não sai do aparelho da família: o app calcula o SHA-256 e só o hash é registrado.
 - **Sem barreira digital** — sem seed phrase, sem taxa de rede para a família, com agente humano de apoio.
 
-## Ancoragem real na Rede Recy (opcional)
+## Ancoragem real na Solana devnet
 
-Todo o resto do MVP é simulado de propósito — roda offline, é repetível e resetável. **Um único ponto fala com uma rede de verdade:** o hash do Relatório de Circularidade pode ser ancorado na **Rede Recy Testnet**, a rede da própria DeTrash onde relatórios auditados sustentam a emissão de cRECY.
+A jornada do app é simulada de propósito — roda offline, é repetível e resetável. **Um único ponto sai da simulação:** o hash do Relatório de Circularidade é gravado numa transação real na Solana devnet, pelo programa Memo.
 
-Por que só o relatório: é o artefato que tem valor externo (é o que a empresa ESG compra), é **apenas um hash SHA-256** — nenhum dado de família ou criança sai daqui — e uma transação real já sustenta a afirmação de verificabilidade. Os bônus das famílias **não** são registrados numa testnet: envolvem dinheiro de família e continuam no cofre simulado.
+Por que só o relatório: é o artefato que tem valor externo (é o que a empresa ESG compra), é **apenas um SHA-256** — nenhum dado de família ou criança sai daqui — e uma transação real basta para sustentar a afirmação de verificabilidade. Os bônus das famílias continuam no cofre simulado: envolvem dinheiro de família e não devem depender de testnet.
 
-### A chave nunca fica no frontend
+### Por que tem uma etapa humana
 
-Este é um app Vite puro: tudo que entra no bundle é público. Variáveis `VITE_*` são **inlinadas literalmente** em `dist/assets/*.js` e ficam legíveis para qualquer visitante. Por isso a chave vive só no servidor:
+Assinar transação exige chave privada, e ela não pode ficar em dois lugares:
 
-```
-navegador  →  /api/ancorar  (functions/api/ancorar.js, Cloudflare Pages Function)
-                    ↓  RECY_API_KEY (secret, só existe aqui)
-              app.crecy.workers.dev/api
-```
+- **no navegador** não pode — tudo que entra no bundle Vite é público, inclusive variáveis `VITE_*`, que são inlinadas em `dist/assets/*.js`;
+- **em servidor** a gente escolheu não colocar — seria uma chave a mais para vazar, por conveniência.
 
-Configurar:
+Então o fluxo é: o app calcula o SHA-256 e mostra o comando pronto → quem opera roda na própria máquina → cola a assinatura de volta no app. Menos cômodo, e o registro fica verificável por qualquer pessoa.
 
 ```bash
-npx wrangler pages secret put RECY_API_KEY     # produção
-# local: crie .dev.vars com RECY_API_KEY=... (já está no .gitignore)
-npx wrangler pages dev -- npm run dev          # sobe o app + a função juntos
+cd onchain
+node ancorar-relatorio.mjs <sha256> "<período>"
 ```
 
-`npm run dev` puro continua funcionando — sem a função, o app só mostra "ancoragem real indisponível" ao lado do relatório e segue normal.
+O script usa a mesma conta pagadora do `implantar-devnet.mjs`, grava o histórico em `onchain/ancoragens.json` e imprime o link do explorer. No app: aba **Instituto Vivá** → relatório → *ancorar na Solana devnet*.
 
-### Estado da integração
+### Exemplo já ancorado
 
-O proxy, o cliente, o hash SHA-256, o armazenamento, a UI e os testes estão prontos. Falta **um** trecho: o contrato da API da Recy. Em `functions/api/ancorar.js` há um bloco marcado com as três lacunas — caminho da operação, nome do header de autenticação e formato do corpo. Enquanto não estiverem preenchidas, o endpoint responde `503 {erro:'nao-configurado'}` e nada quebra.
+O relatório "Julho 2026 — quinzena 1" (105 kg) está na devnet:
+
+```
+hash  3bb13611cde6b9f67cd97964d4b4736a4c6fe86840595e4b16b8049673511d4b
+tx    32236oNENMrvKmfp5e62Asi7Uxf7DabAiJynAeLc5JE6hVDWmEeRUYMJjGspJgt9UadUVKiUVzgKicc1F9LqDN6w
+slot  479128408
+```
+
+Conferível em `explorer.solana.com/tx/<tx>?cluster=devnet` — o log do programa mostra o memo com o hash.
+
+> A integração com a **Rede Recy** foi retirada: sem o contrato da API (endpoint, header de autenticação e formato do corpo), o código só devolvia `503` e era código morto no repositório. Está no histórico do git se a Recy responder.
 
 ## Nota técnica
 
@@ -147,13 +153,35 @@ src/
   graficos.jsx       barras (kg/semana) e donut (receita por fonte) em SVG puro
   demo.jsx           motor do modo demo guiado e card narrador
   tour.jsx           tour de primeira visita do painel (9 passos)
-  recy.js            cliente da ancoragem real (SHA-256 + chamada ao proxy)
-  App.jsx            abas + roteamento por hash (#/familia)
+  qr.js              gerador de QR Code real (Reed-Solomon), sem dependência
+  ancoragem.js       hash SHA-256 do relatório + validação da assinatura Solana
+  evidencia.js       SHA-256 da foto no aparelho + geolocalização
+  nuvem.js           cliente do esquema compartilhado (Supabase)
+  App.jsx            abas + rotas por hash (#/familia, #/rastreio/CÓDIGO)
   views/
     Dashboard.jsx  Coleta.jsx  Validacao.jsx  Mercado.jsx
-    Fundo.jsx      Carteira.jsx  PaginaFamilia.jsx
-functions/
-  api/ancorar.js     proxy da Rede Recy — guarda a chave fora do navegador
+    Fundo.jsx      Carteira.jsx  PaginaFamilia.jsx  Rastreio.jsx
+onchain/
+  implantar-devnet.mjs   cria o token cRED e o cofre multisig 2-de-3 na devnet
+  ancorar-relatorio.mjs  grava o hash do relatório numa transação real
+supabase/
+  schema.sql             tabelas por entidade, transações append-only
+testes/
+  executar.mjs           runner do `npm test`
+  fluxo.mjs              regras de negócio no reducer (sem navegador)
+  navegador.mjs          app inteiro no Edge, via DevTools Protocol
+  qr.mjs                 QR gerado é decodificado por leitor independente
+  nuvem.mjs              garantias do esquema, contra o Supabase real
 ```
 
-Sem dependências além de React + Vite. O `wrangler` é usado via `npx`, só quando se quer a ancoragem real.
+## Testes
+
+```bash
+npm test                  # tudo o que o ambiente permitir
+npm test -- fluxo         # só o reducer, em segundos
+npm test -- navegador     # só o app no navegador
+```
+
+O runner sobe o servidor de desenvolvimento sozinho e o derruba no fim, e **pula com aviso** — em vez de falhar — quando falta Edge, internet ou credencial do Supabase.
+
+Sem dependências além de React + Vite no app. O `@solana/web3.js` vive num `package.json` separado em `onchain/`, então não entra no bundle do site; o `esbuild` é dependência de desenvolvimento, usada pelos testes.

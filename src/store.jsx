@@ -28,6 +28,7 @@ export const TIPOS_TX = {
   'RESERVA': { rot: 'Bônus reservado — nunca perdido', cor: '#f2c14e' },
   'CARTEIRA': { rot: 'Conta da família conectada', cor: '#1cabe2' },
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
+  'ANCORAGEM': { rot: 'Relatório ancorado na Solana devnet (registro real)', cor: '#0f7a6c' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -275,6 +276,25 @@ function reducer(state, action) {
         c.status = 'validada';
         const tx = pushTx(s, 'VALIDAÇÃO', `Coleta validada (DeTrash): ${c.kg} kg de ${c.material} — ${c.local}`, 0);
         c.signature = tx.signature;
+      }
+      return s;
+    }
+
+    case 'ANCORAR_RELATORIO': {
+      // Registro REAL na Solana devnet, feito por onchain/ancorar-relatorio.mjs.
+      // Guardamos só o que é público: hash do relatório e assinatura da transação.
+      const rel = s.relatorios.find(r => r.id === action.id);
+      if (rel && action.txId && !rel.ancoragem) {
+        rel.ancoragem = {
+          rede: 'Solana devnet',
+          hash: action.hash,
+          txId: action.txId,
+          url: `https://explorer.solana.com/tx/${action.txId}?cluster=devnet`,
+          em: Date.now(),
+        };
+        pushTx(s, 'ANCORAGEM',
+          `Relatório "${rel.periodo}" ancorado na Solana devnet: ${rel.kg} kg — SHA-256 ${String(action.hash).slice(0, 16)}…`,
+          0, { relatorioId: rel.id, real: true, txExterna: action.txId, urlExterna: rel.ancoragem.url });
       }
       return s;
     }
