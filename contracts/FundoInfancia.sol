@@ -32,6 +32,23 @@ contract FundoInfancia {
     uint8 public constant APROVACOES_NECESSARIAS = 2; // 2-de-3
 
     bool private _inicializado;
+
+    /**
+     * Quem implantou, usado só para fechar a janela de front-running do
+     * initialize (ver a função).
+     *
+     * É variável de STORAGE, não `immutable`, e isso é essencial: valor
+     * `immutable` mora no bytecode e seria lido igual dentro de um proxy,
+     * travando a Recy para fora. Em storage, o construtor grava no storage da
+     * própria implantação — então num proxy este slot fica em zero e o contrato
+     * principal da Recy segue livre para chamar initialize. Nenhuma
+     * CONFIGURAÇÃO vive no construtor: o padrão de proxy continua respeitado.
+     */
+    address private _implantador;
+
+    constructor() {
+        _implantador = msg.sender;
+    }
     address public institutoViva;            // validação social
     address public deTrash;                  // auditoria ambiental / metodologia
     address public representanteComunitario; // controle social do território
@@ -39,13 +56,17 @@ contract FundoInfancia {
     /* ------------------------------------------------------------ pedidos --- */
     enum Status { Inexistente, Solicitado, Validado, Liberado }
 
+    /// Categoria como enum, não string: impede "saúde"/"saude"/"Saude" virando
+    /// registros distintos, e custa 1 byte em vez de um slot inteiro.
+    enum Categoria { Saude, Educacao }
+
     struct Pedido {
-        address familia;       // carteira que recebe
-        uint96  valor;         // em wei
-        string  categoria;     // "saude" | "educacao"
-        string  evidenciaHash; // hash dos Certificados Recy + prova de necessidade (off-chain)
-        Status  status;
-        uint8   aprovacoes;
+        address   familia;       // carteira que recebe            (20 bytes)
+        uint96    valor;         // em wei                         (12 bytes) → 1 slot com familia
+        bytes32   evidenciaHash; // SHA-256 das evidências, off-chain
+        Categoria categoria;
+        Status    status;
+        uint8     aprovacoes;
     }
 
     uint256 public totalPedidos;
@@ -55,7 +76,7 @@ contract FundoInfancia {
     /* ------------------------------------------------------------ eventos --- */
     event FundoInicializado(address institutoViva, address deTrash, address representanteComunitario);
     event DepositoRecebido(address indexed de, uint256 valor);
-    event FundingSolicitado(uint256 indexed id, address indexed familia, uint256 valor, string categoria, string evidenciaHash);
+    event FundingSolicitado(uint256 indexed id, address indexed familia, uint256 valor, Categoria categoria, bytes32 evidenciaHash);
     event AskValidado(uint256 indexed id, address indexed validador, uint8 aprovacoes, bool atingiuLimiar);
     event FundingLiberado(uint256 indexed id, address indexed familia, uint256 valor);
     event FundingReservado(uint256 indexed id, uint256 valorNecessario, uint256 saldoDisponivel);
@@ -77,6 +98,14 @@ contract FundoInfancia {
         address _representanteComunitario
     ) external {
         require(!_inicializado, "FundoInfancia: ja inicializado");
+        // Sem esta linha, qualquer pessoa poderia inicializar primeiro com 3
+        // endereços próprios e assumir o fundo — a implantação e o initialize
+        // acontecem em transações separadas, e essa janela é pública.
+        // Em proxy, _implantador é zero e a condição libera a Recy.
+        require(
+            _implantador == address(0) || msg.sender == _implantador,
+            "FundoInfancia: apenas quem implantou pode inicializar"
+        );
         require(
             _institutoViva != address(0) && _deTrash != address(0) && _representanteComunitario != address(0),
             "FundoInfancia: signatario invalido"
@@ -100,27 +129,42 @@ contract FundoInfancia {
 
     /* ---------------------------------------------------------------- fluxo */
 
-    /// @notice (1) A família solicita assistência para saúde ou educação de uma criança.
+    /// @notice (1) Registra o pedido de assistência de uma família para saúde ou educação.
+    ///
+    /// Quem chama é um signatário credenciado, não a família — de propósito. A
+    /// família de Boipeba usa uma conta custodiada e **não tem ETH para gás**;
+    /// obrigá-la a pagar taxa de rede contradiria o princípio de inclusão do
+    /// projeto. O agente registra em nome dela e a família só recebe.
+    /// Isso também evita que qualquer endereço infle o storage do contrato.
+    ///
+    /// @param familia        carteira que vai receber o recurso
     /// @param valor          quantia solicitada, em wei
-    /// @param categoria      "saude" ou "educacao"
-    /// @param evidenciaHash  hash das evidências (Certificados Recy + prova de necessidade) guardadas off-chain
-    function askForFunding(uint96 valor, string calldata categoria, string calldata evidenciaHash)
+    /// @param categoria      Saude ou Educacao
+    /// @param evidenciaHash  SHA-256 das evidências (Certificados Recy + prova de necessidade), off-chain
+    function askForFunding(
+        address familia,
+        uint96 valor,
+        Categoria categoria,
+        bytes32 evidenciaHash
+    )
         external
+        apenasValidador
         returns (uint256 id)
     {
         require(_inicializado, "FundoInfancia: nao inicializado");
+        require(familia != address(0), "FundoInfancia: familia invalida");
         require(valor > 0, "FundoInfancia: valor deve ser positivo");
-        require(bytes(evidenciaHash).length > 0, "FundoInfancia: evidencia obrigatoria");
+        require(evidenciaHash != bytes32(0), "FundoInfancia: evidencia obrigatoria");
 
         id = ++totalPedidos;
         Pedido storage p = pedidos[id];
-        p.familia = msg.sender;
+        p.familia = familia;
         p.valor = valor;
         p.categoria = categoria;
         p.evidenciaHash = evidenciaHash;
         p.status = Status.Solicitado;
 
-        emit FundingSolicitado(id, msg.sender, valor, categoria, evidenciaHash);
+        emit FundingSolicitado(id, familia, valor, categoria, evidenciaHash);
     }
 
     /// @notice (2) Um signatário credenciado valida as evidências e parâmetros do pedido.
@@ -140,16 +184,23 @@ contract FundoInfancia {
     }
 
     /// @notice (3) Libera o recurso para a família após a validação 2-de-3.
-    ///         Sem saldo suficiente, o pedido permanece Validado (reservado, nunca perdido)
-    ///         e pode ser sacado assim que novos depósitos entrarem.
-    function claimFunding(uint256 id) external {
+    ///
+    /// Chamável por QUALQUER endereço: o valor vai sempre para `p.familia`, então
+    /// não há o que um terceiro ganhe além de pagar o gás no lugar dela — que é
+    /// exatamente o que queremos (a operação paga, a família recebe).
+    ///
+    /// Sem saldo suficiente NÃO reverte: emite FundingReservado e mantém o
+    /// pedido em Validado. Se revertesse, o log seria descartado junto com a
+    /// transação e a regra "reservado, nunca perdido" não deixaria nenhuma
+    /// evidência on-chain — além de queimar gás num pedido que só falha.
+    /// @return liberado true se o dinheiro saiu; false se ficou reservado
+    function claimFunding(uint256 id) external returns (bool liberado) {
         Pedido storage p = pedidos[id];
         require(p.status == Status.Validado, "FundoInfancia: pedido nao validado");
-        require(msg.sender == p.familia, "FundoInfancia: apenas a familia solicitante");
 
         if (address(this).balance < p.valor) {
             emit FundingReservado(id, p.valor, address(this).balance);
-            revert("FundoInfancia: saldo insuficiente - pedido segue reservado");
+            return false;
         }
 
         p.status = Status.Liberado;
@@ -157,6 +208,7 @@ contract FundoInfancia {
         require(ok, "FundoInfancia: falha na transferencia");
 
         emit FundingLiberado(id, p.familia, p.valor);
+        return true;
     }
 
     /* ------------------------------------------------------------ consultas */

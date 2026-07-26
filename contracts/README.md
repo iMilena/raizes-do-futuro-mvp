@@ -6,9 +6,15 @@ Contrato do fundo comunitário de saúde e educação infantil, escrito **no pad
 
 | RecyReport.sol | FundoInfancia.sol | O que faz |
 |---|---|---|
-| `mintRecyReportResult` | `askForFunding(valor, categoria, evidenciaHash)` | Família solicita assistência para saúde ou educação de uma criança |
+| `mintRecyReportResult` | `askForFunding(familia, valor, categoria, evidenciaHash)` | Registra o pedido de assistência de uma família (chamado por signatário credenciado) |
 | `validateRecyReport` | `validateAsk(id)` | Signatário credenciado valida evidências (Certificados Recy + prova de necessidade) |
-| `claimRecyReportReward` | `claimFunding(id)` | Libera o recurso para a família após a validação |
+| `claimRecyReportReward` | `claimFunding(id)` | Libera o recurso para a família após a validação (chamável por qualquer um) |
+
+### Por que a família não chama o contrato
+
+`askForFunding` recebe o endereço da família como parâmetro e só aceita signatário credenciado; `claimFunding` pode ser chamado por qualquer endereço, mas o dinheiro vai **sempre** para a família do pedido.
+
+Isso é deliberado: a família de Boipeba usa conta custodiada e **não tem ETH para gás**. Exigir que ela pague taxa de rede contradiria o princípio de inclusão do projeto — a operação paga o gás, a família só recebe. Como efeito colateral, ninguém de fora consegue inflar o storage do contrato com pedidos falsos.
 
 ## Governança embutida (o diferencial do projeto)
 
@@ -30,10 +36,21 @@ Sem constructor com estado: toda a configuração está em **`initialize(institu
 4. Chame `initialize` com 3 endereços de teste (podem ser 3 contas do próprio MetaMask)
 5. Fluxo de demonstração:
    - Envie 0.01 ETH ao contrato (aba "Low level interactions" → Transact) → `DepositoRecebido`
-   - Com a conta "família": `askForFunding(2000000000000000, "saude", "QmHashEvidencia...")` (0.002 ETH)
+   - Com a conta **Vivá**: `askForFunding(<endereço da família>, 2000000000000000, 0, 0x<sha256 da evidência>)`
+     — `0` = Saude, `1` = Educacao; o hash é `bytes32`, ou seja `0x` + 64 hexadecimais
    - Com Vivá: `validateAsk(1)` → 1/2 · Com DeTrash: `validateAsk(1)` → **Validado** ✅
-   - Com a família: `claimFunding(1)` → ETH transferido → `FundingLiberado`
+   - Com **qualquer** conta: `claimFunding(1)` → ETH vai para a família → `FundingLiberado`
+   - Teste a regra de reserva: peça um valor maior que o saldo e chame `claimFunding` —
+     ele **não reverte**, devolve `false` e emite `FundingReservado`, deixando o pedido liberável depois
 6. Verifique o contrato no Etherscan (Verify & Publish) e guarde os links das transações — são a prova para a banca
+
+> **Antes de divulgar o endereço:** chame `initialize` na mesma sessão da implantação.
+> Só quem implantou consegue inicializar, mas um contrato publicado e não inicializado
+> não serve para nada — e o `askForFunding` rejeita tudo até lá.
+
+## Limitação conhecida
+
+A regra 4 do cofre ("saldo residual do ciclo → ações coletivas definidas com a comunidade") **não tem caminho on-chain**: não existe função de saque residual, então ETH depositado e não reclamado fica preso no contrato para sempre. Isso é decisão de governança pendente — quem decide o destino, e sob qual quórum. Implementar antes de qualquer uso com valor real.
 
 ## O que enviar ao contato da Rede Recy
 
