@@ -94,7 +94,7 @@ function Onboarding({ familia, onDone }) {
 
   const concluir = () => {
     dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, provider: provider || 'Picnic' });
-    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo 📲' : ' na Picnic 🧺'} 🎉`);
+    toast(`Conta da família criada com ${provider === 'Solana' ? 'sua carteira Solana ◎' : 'Picnic 🧺'} 🎉`);
     celebrar();
     setPronto(true);
   };
@@ -123,9 +123,9 @@ function Onboarding({ familia, onDone }) {
               <small>Aplicativo brasileiro, simples, com retirada em reais pelo Pix</small></span>
           </button>
           <button className={'btn-conexao' + (provider === 'Solana' ? ' sel' : '')} onClick={() => setProvider('Solana')}>
-            <span className="ic" aria-hidden="true">📲</span>
-            <span><b>Já tenho uma conta digital</b><br />
-              <small>Receber o dinheiro no aplicativo que você já usa hoje</small></span>
+            <span className="ic" aria-hidden="true">◎</span>
+            <span><b>Já tenho uma carteira Solana</b><br />
+              <small>Phantom, Solflare ou outra — conectar a conta que você já usa</small></span>
           </button>
           <div className="conceito" style={{ marginTop: 10 }}>
             💡 Seu dinheiro fica num <b>cofre digital</b> que ninguém pode desviar — nem a gente.
@@ -294,9 +294,12 @@ export default function PaginaFamilia({ standalone = false }) {
   const conteudo = (
     <div className="fam-tela">
       <div className="fam-topo">
-        <div>
-          <div className="fam-marca">🌱 Raízes do Futuro</div>
-          <div className="fam-sub">conta da família{logado && f ? ` · ${f.resp.split(' ')[0]}` : ''}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img className="fam-logo" src="./emblema.png" alt="" aria-hidden="true" />
+          <div>
+            <div className="fam-marca">Raízes do Futuro</div>
+            <div className="fam-sub">conta da família{logado && f ? ` · ${f.resp.split(' ')[0]}` : ''}</div>
+          </div>
         </div>
         {logado && !rodando && (
           <button className="fam-sair" onClick={() => { setEntrou(false); setPin(''); setOnboardOk(false); setSacando(false); }}>sair</button>
@@ -307,6 +310,7 @@ export default function PaginaFamilia({ standalone = false }) {
         {/* entrada */}
         {!logado && (
           <div className="fam-entrada">
+            <img className="fam-logo-entrada" src="./logo.png" alt="Raízes do Futuro" />
             <Mascote fala="Bem-vinda de volta! Escolha sua família e digite o PIN para entrar." />
             <div className="card">
               <label>Quem é você?<span className="so-sim"> (simulação)</span></label>

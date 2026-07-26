@@ -1,7 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore, fmt, trunc, disponivelCofre, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA } from '../store.jsx';
 import { useToast, EstadoVazio } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
+import { statusAncoragem, ancorarRelatorio, motivoLegivel } from '../recy.js';
+
+/* ---------- ancoragem real do relatório na Rede Recy ---------- */
+function Ancoragem({ relatorio }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
+  const [status, setStatus] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
+
+  useEffect(() => { statusAncoragem().then(setStatus); }, []);
+
+  if (relatorio.ancoragem) {
+    const a = relatorio.ancoragem;
+    return (
+      <div className="ancorado">
+        ⚓ <b>ancorado na {a.rede}</b>
+        <span className="tag ok">registro real</span>
+        <div className="hash">SHA-256 {trunc(a.hash, 12, 12)}</div>
+        <div className="hash">tx {trunc(a.txId, 10, 10)}</div>
+        {a.url && <a href={a.url} target="_blank" rel="noreferrer noopener">conferir na Recy ↗</a>}
+      </div>
+    );
+  }
+
+  const ancorar = async () => {
+    setOcupado(true);
+    const r = await ancorarRelatorio(relatorio);
+    setOcupado(false);
+    if (r.ok) {
+      dispatch({ type: 'ANCORAR_RELATORIO', id: relatorio.id, ancoragem: r });
+      toast('Relatório ancorado na Rede Recy ⚓');
+    } else {
+      toast(`Não foi possível ancorar: ${motivoLegivel(r.motivo)}`, 'alerta', 5000);
+    }
+  };
+
+  if (!status) return <div className="mini">verificando ancoragem…</div>;
+
+  if (!status.disponivel) {
+    return (
+      <div className="mini nao-ancorado">
+        ⚓ ancoragem real indisponível ({motivoLegivel(status.motivo)}) — o relatório vale
+        normalmente na demo, apenas sem registro externo
+      </div>
+    );
+  }
+
+  return (
+    <button className="acao sec" style={{ marginTop: 6 }} disabled={ocupado} onClick={ancorar}>
+      {ocupado ? 'ancorando…' : '⚓ Ancorar na Rede Recy (real)'}
+    </button>
+  );
+}
 
 export default function Validacao() {
   const { state, dispatch } = useStore();
@@ -65,6 +118,7 @@ export default function Validacao() {
             <div key={r.id} style={{ marginTop: 10, fontSize: 13 }}>
               📄 <b>{r.periodo}</b> — {r.kg} kg, {r.acoes} ações
               <div className="hash">{trunc(r.signature, 12, 12)}</div>
+              <Ancoragem relatorio={r} />
             </div>
           ))}
         </div>

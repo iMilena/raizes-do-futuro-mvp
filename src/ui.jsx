@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useCallback, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { gerarQR, qrParaPath } from './qr.js';
 
 /* ---------------------------------------------------------------- toasts ---- */
 const ToastCtx = createContext(() => {});
@@ -154,6 +155,27 @@ export function Confete({ pecas = 34 }) {
         }} />
       ))}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------- QR ---- */
+/** QR Code de verdade (escaneável), desenhado como um único path SVG. */
+export function QrCode({ texto, lado = 148, nivel = 'M', quiet = 3, titulo = 'Código para escanear' }) {
+  const qr = useMemo(() => {
+    try { return gerarQR(texto, nivel); } catch (e) { return null; }
+  }, [texto, nivel]);
+
+  if (!qr) return <div className="mini">não foi possível gerar o código</div>;
+
+  const total = qr.lado + quiet * 2;
+  return (
+    <svg className="qr" width={lado} height={lado} viewBox={`0 0 ${total} ${total}`}
+      role="img" aria-label={titulo} shapeRendering="crispEdges">
+      <rect width={total} height={total} fill="#fff" />
+      <g transform={`translate(${quiet} ${quiet})`}>
+        <path d={qrParaPath(qr)} fill="#26332b" />
+      </g>
+    </svg>
   );
 }
 

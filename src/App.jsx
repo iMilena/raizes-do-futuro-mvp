@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from './store.jsx';
 import { ToastProvider, useToast } from './ui.jsx';
 import { DemoProvider, DemoNarrador } from './demo.jsx';
@@ -20,25 +20,6 @@ const TABS = [
   ['carteira', '👨‍👩‍👧 Família (operação)'],
   ['familia', '📱 App da Família'],
 ];
-
-/** Anuncia cada nova transação registrada na rede simulada. */
-function AvisosDeRede() {
-  const { state } = useStore();
-  const toast = useToast();
-  const nRef = useRef(state.transacoes.length);
-
-  useEffect(() => {
-    const n = state.transacoes.length;
-    if (n > nRef.current) {
-      const tx = state.transacoes[n - 1];
-      toast(`Transação registrada no slot ${tx.slot} · ${tx.tipo}`, 'info', 2800);
-    }
-    nRef.current = n;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.transacoes.length]);
-
-  return null;
-}
 
 /* ------------------------------------------------------------ painel ---- */
 function Painel({ tab, setTab }) {
@@ -80,9 +61,12 @@ function Painel({ tab, setTab }) {
       <header className="top">
         <div className="inner">
           <div className="top-linha">
-            <div>
-              <h1>🌱 Raízes do Futuro</h1>
-              <p>Do impacto ambiental à proteção da infância — Boipeba, BA · MVP (Solana simulada · cofre multisig 2-de-3 · carteira Picnic)</p>
+            <div className="marca">
+              <img className="logo-emblema" src="./emblema.png" alt="Raízes do Futuro" />
+              <div>
+                <h1>Raízes do Futuro</h1>
+                <p>Do impacto ambiental à proteção da infância — Boipeba, BA · MVP (Solana simulada · cofre multisig 2-de-3 · carteira Picnic)</p>
+              </div>
             </div>
             <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>❔ Como funciona</button>
           </div>
@@ -105,18 +89,7 @@ function Painel({ tab, setTab }) {
         {tab === 'mercado' && <Mercado />}
         {tab === 'fundo' && <Fundo />}
         {tab === 'carteira' && <Carteira />}
-        {tab === 'familia' && (
-          <>
-            <h2>📱 App da Família — o que a família vê no celular</h2>
-            <p className="mini so-sim">
-              Mesma tela disponível em <a href="#/familia">#/familia</a> (abre em modo celular, sem o painel da operação).
-              Nenhum termo técnico aparece aqui: é "conta da família", "dinheiro" e "cofre digital".
-            </p>
-            <div className="moldura-celular">
-              <PaginaFamilia />
-            </div>
-          </>
-        )}
+        {tab === 'familia' && <PaginaFamilia />}
 
         <footer>
           <span>Youth Challenge Blockchain — UNICEF Brasil · protótipo demonstrativo · blockchain simulada (produção: cofre multisig na Solana + carteira Picnic)</span>
@@ -155,7 +128,6 @@ export default function App() {
     return (
       <ToastProvider>
         <DemoProvider setTab={() => {}}>
-          <AvisosDeRede />
           <div className="rota-familia">
             <PaginaFamilia standalone />
             <a className="voltar-painel" href="#" onClick={() => setRota('')}>← Voltar ao painel do projeto</a>
@@ -168,7 +140,6 @@ export default function App() {
   return (
     <ToastProvider>
       <DemoProvider setTab={setTab}>
-        <AvisosDeRede />
         <Painel tab={tab} setTab={setTab} />
       </DemoProvider>
     </ToastProvider>

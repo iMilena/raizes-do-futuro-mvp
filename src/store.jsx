@@ -28,6 +28,7 @@ export const TIPOS_TX = {
   'RESERVA': { rot: 'Bônus reservado — nunca perdido', cor: '#f2c14e' },
   'CARTEIRA': { rot: 'Conta da família conectada', cor: '#1cabe2' },
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
+  'ANCORAGEM': { rot: 'Relatório ancorado na Rede Recy (registro real)', cor: '#0f7a6c' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -69,6 +70,34 @@ export const solSig = seed => solAddr('sig:' + seed, 88);
 export const trunc = (s, a = 6, b = 6) => (!s ? '' : s.length <= a + b + 1 ? s : s.slice(0, a) + '…' + s.slice(-b));
 
 export const fmt = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* ---------- rastreio do produto (QR no chaveiro) ---------- */
+/* alfabeto sem O/0/I/1 para ninguém errar ao ditar o código por telefone */
+const ALFA_CODIGO = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+/** Código curto e legível impresso na etiqueta: RF-XXXX */
+export function codigoRastreio(semente) {
+  const h = hex(String(semente));
+  let out = '';
+  for (let i = 0; i < 4; i++) out += ALFA_CODIGO[parseInt(h.slice(i * 2, i * 2 + 2), 16) % 32];
+  return 'RF-' + out;
+}
+
+/** Coletas validadas que forneceram o material deste produto (as mais recentes). */
+function coletasDeOrigem(state, materiais) {
+  const filtro = Array.isArray(materiais) && materiais.length ? materiais : null;
+  return state.coletas
+    .filter(c => c.status === 'validada' && (!filtro || filtro.includes(c.material)))
+    .slice(-2)
+    .map(c => c.id);
+}
+
+export const vendaPorRastreio = (state, codigo) =>
+  state.vendas.find(v => v.rastreio && v.rastreio.toUpperCase() === String(codigo || '').toUpperCase());
+
+/** URL absoluta que vai dentro do QR — precisa ser absoluta para o celular abrir. */
+export const urlRastreio = codigo =>
+  `${location.origin}${location.pathname}#/rastreio/${codigo}`;
 
 SIGNATARIOS.forEach(s => { s.endereco = solAddr('signatario-' + s.id); });
 
@@ -153,7 +182,7 @@ function seed() {
       { id: 1, periodo: 'Julho 2026 — quinzena 1', kg: 105, acoes: 2, signature: solSig('rel-1'), data: '2026-07-15' },
     ],
     vendas: [
-      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16' },
+      { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16', materiais: ['Vidro'], rastreio: codigoRastreio('rastreio-1-luminaria'), origem: [2] },
       { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
@@ -247,8 +276,32 @@ export function reducer(state, action) {
       return s;
     }
 
+    case 'ANCORAR_RELATORIO': {
+      // registro REAL na Rede Recy, feito pelo proxy. Guardamos só o que é
+      // público: hash do relatório, id da transação e link para conferir.
+      const rel = s.relatorios.find(r => r.id === action.id);
+      if (rel && action.ancoragem?.txId) {
+        rel.ancoragem = {
+          rede: action.ancoragem.rede || 'Recy Testnet',
+          hash: action.ancoragem.hash,
+          txId: action.ancoragem.txId,
+          url: action.ancoragem.url || null,
+          ts: action.ancoragem.ts || Date.now(),
+        };
+        pushTx(s, 'ANCORAGEM',
+          `Relatório "${rel.periodo}" ancorado na ${rel.ancoragem.rede}: ${rel.kg} kg — SHA-256 ${rel.ancoragem.hash.slice(0, 16)}…`,
+          0, { relatorioId: rel.id, real: true, txExterna: rel.ancoragem.txId, urlExterna: rel.ancoragem.url });
+      }
+      return s;
+    }
+
     case 'NOVA_VENDA': {
       const venda = { id: s.nextId++, ...action.payload, data: new Date().toISOString().slice(0, 10) };
+      // produto físico leva etiqueta com QR: o turista escaneia e vê de onde veio o material
+      if (venda.tipo === 'produto') {
+        venda.rastreio = codigoRastreio('rastreio-' + venda.id + '-' + venda.descricao);
+        venda.origem = coletasDeOrigem(s, venda.materiais);
+      }
       s.vendas.push(venda);
       aplicarSplit(s, venda);
       return s;

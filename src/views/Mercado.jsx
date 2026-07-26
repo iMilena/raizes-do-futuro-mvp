@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, fmt, SPLIT } from '../store.jsx';
-import { useToast, ValorAnimado, EstadoVazio } from '../ui.jsx';
+import { useStore, fmt, SPLIT, urlRastreio } from '../store.jsx';
+import { useToast, ValorAnimado, EstadoVazio, QrCode } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
 
+/* `materiais` liga o produto às coletas que forneceram a matéria-prima —
+   é o que faz o rastreio do QR ser verdadeiro e não decorativo */
 const PRODUTOS = [
-  { nome: 'Luminária de vidro reaproveitado', preco: 80 },
-  { nome: 'Bolsa de lona de vela reciclada', preco: 65 },
-  { nome: 'Vaso de plástico prensado', preco: 40 },
-  { nome: 'Chaveiro-lembrança de rede de pesca', preco: 25 },
+  { nome: 'Luminária de vidro reaproveitado', preco: 80, materiais: ['Vidro'] },
+  { nome: 'Bolsa de lona de vela reciclada', preco: 65, materiais: ['Rejeito de praia'] },
+  { nome: 'Vaso de plástico prensado', preco: 40, materiais: ['Plástico PET', 'Plástico misto'] },
+  { nome: 'Chaveiro-lembrança de rede de pesca', preco: 25, materiais: ['Rejeito de praia', 'Plástico misto'] },
 ];
 
 const FATIAS = [
@@ -100,9 +102,12 @@ export default function Mercado() {
   }, [state.vendas]);
 
   const comprarProduto = p => {
-    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco } });
+    dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'produto', descricao: p.nome, comprador: 'Turista', valor: p.preco, materiais: p.materiais } });
     toast(`${p.nome} vendido — ${fmt(p.preco)} 🛒`);
   };
+
+  // etiqueta do último produto vendido: é o QR que vai preso na peça
+  const ultimoProduto = [...state.vendas].reverse().find(v => v.tipo === 'produto' && v.rastreio);
 
   const comprarEsg = () => {
     const t = (kgDisponivel / 1000).toFixed(2);
@@ -143,6 +148,31 @@ export default function Mercado() {
           <button className="acao" style={{ marginTop: 12 }} onClick={comprarEsg}>Financiar impacto</button>
         </div>
       </div>
+
+      {ultimoProduto && (
+        <>
+          <h3>🏷️ Etiqueta de rastreio da peça</h3>
+          <div className="card etiqueta">
+            <div className="etiqueta-qr">
+              <QrCode texto={urlRastreio(ultimoProduto.rastreio)} lado={150}
+                titulo={`Rastreio ${ultimoProduto.rastreio}`} />
+              <div className="etiqueta-codigo">{ultimoProduto.rastreio}</div>
+            </div>
+            <div className="etiqueta-texto">
+              <b>{ultimoProduto.descricao}</b>
+              <p className="mini">
+                Este QR vai preso na peça. O turista escaneia e vê a jornada inteira: de qual coleta
+                veio o material, quem verificou, e quanto da compra dele foi para a renda de quem
+                coletou e para o Fundo Infância.
+              </p>
+              <a className="acao sec etiqueta-link" href={`#/rastreio/${ultimoProduto.rastreio}`}>
+                Ver a página do turista ↗
+              </a>
+              <div className="hash">{urlRastreio(ultimoProduto.rastreio)}</div>
+            </div>
+          </div>
+        </>
+      )}
 
       <h3 className="ancora">🔀 Divisão automática da receita</h3>
       <div className={'card' + focoSplit}>
