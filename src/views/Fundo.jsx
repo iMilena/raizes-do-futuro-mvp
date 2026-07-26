@@ -36,9 +36,14 @@ function CardProposta({ proposta, familia }) {
       <div className="proposta-topo">
         <div>
           <span className="tag prop">proposta #{proposta.id}</span>
-          <b style={{ marginLeft: 8 }}>{familia?.resp || 'família'}</b>
+          <b style={{ marginLeft: 8 }}>{familia?.resp || 'família de outro aparelho'}</b>
+          {/* sem a família no cadastro local (proposta criada em outro aparelho e
+              trazida pela nuvem), não invento "0 criança(s) × R$ 30" — isso lia
+              como bônus de zero real. Diz o valor, que é o dado que existe. */}
           <div className="mini">
-            bônus de {familia?.criancas || 0} criança(s) × {fmt(BONUS_POR_CRIANCA)} · destino: conta {PROVIDER_CARTEIRA} {trunc(familia?.carteira?.end, 4, 4)}
+            {familia
+              ? `bônus de ${familia.criancas} criança(s) × ${fmt(BONUS_POR_CRIANCA)} · destino: conta ${PROVIDER_CARTEIRA} ${trunc(familia.carteira?.end, 4, 4)}`
+              : `proposta registrada em outro aparelho · o cadastro da família fica só no aparelho da operação`}
           </div>
         </div>
         <div className="proposta-valor">{fmt(proposta.valor)}</div>
@@ -48,8 +53,13 @@ function CardProposta({ proposta, familia }) {
         {Array.from({ length: 3 }, (_, i) => (
           <span key={i} className={'pip' + (i < proposta.assinaturas.length ? ' on' : '') + (i < limiar ? '' : ' opcional')} />
         ))}
+        {/* acima do limiar, "3/2 assinaturas" fica absurdo na tela — e acontece
+            de verdade quando um terceiro signatário assina depois da execução.
+            Nesse caso o texto passa a dizer o total e qual era o mínimo. */}
         <span className="mini">
-          {proposta.assinaturas.length}/{limiar} assinaturas
+          {proposta.assinaturas.length > limiar
+            ? `${proposta.assinaturas.length} assinaturas (mínimo ${limiar})`
+            : `${proposta.assinaturas.length}/${limiar} assinaturas`}
           {executada ? ' · executada ✅' : faltam > 0 ? ` · faltam ${faltam}` : ' · executando…'}
         </span>
       </div>

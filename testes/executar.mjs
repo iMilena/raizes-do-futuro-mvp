@@ -141,6 +141,19 @@ try {
       registrar('navegador', rodar('navegador.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
     }
   }
+  /* fora do conjunto padrão: só roda quando pedido (`npm test -- telas`),
+     porque grava arquivos em capturas/ e serve para conferir com o olho. */
+  if (pedidas.includes('telas')) {
+    console.log('\n── capturas de tela ' + '─'.repeat(38));
+    const edge = temEdge();
+    if (!edge) {
+      console.log('  ⏭️  pulado: precisa do Microsoft Edge');
+      registrar('telas', 'pulado');
+    } else {
+      servidor = servidor || await subirServidor();
+      registrar('telas', rodar('telas.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+    }
+  }
 } catch (e) {
   console.error('\n✗ ' + e.message);
   registrar('infraestrutura', 'falhou');

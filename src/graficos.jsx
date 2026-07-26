@@ -43,12 +43,24 @@ export function BarrasKgSemana({ coletas }) {
   return (
     <div className="grafico">
       <svg viewBox="0 0 320 200" role="img" aria-label="Quilos coletados por semana">
+        {/* gradiente tem de morar no próprio SVG: CSS não cria paint server.
+            Vertical, mais saturado embaixo, para a barra ter peso na base. */}
+        <defs>
+          <linearGradient id="g-barra" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#0b7ba8" />
+            <stop offset="100%" stopColor="#5cc9ee" />
+          </linearGradient>
+          <linearGradient id="g-barra-on" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#0d5530" />
+            <stop offset="100%" stopColor="#35a869" />
+          </linearGradient>
+        </defs>
         {linhas.map(f => {
           const y = T + A * (1 - f);
           return (
             <g key={f}>
-              <line x1={L} y1={y} x2={312} y2={y} stroke="var(--borda)" strokeWidth="1" />
-              <text x={L - 6} y={y + 3.5} textAnchor="end" fontSize="9" fill="var(--cinza)">{Math.round(escala * f)}</text>
+              <line className="eixo" x1={L} y1={y} x2={312} y2={y} />
+              <text className="rot-eixo" x={L - 6} y={y + 3.5} textAnchor="end">{Math.round(escala * f)}</text>
             </g>
           );
         })}
@@ -59,10 +71,11 @@ export function BarrasKgSemana({ coletas }) {
           const on = ativo === i;
           return (
             <g key={d.chave} onMouseEnter={() => setAtivo(i)} onMouseLeave={() => setAtivo(null)}>
-              <rect x={cx - bw / 2} y={T + A - h} width={bw} height={h} rx="3"
-                fill={on ? 'var(--verde)' : 'var(--azul)'} className="barra-anim" style={{ '--h': h + 'px' }} />
-              <text x={cx} y={T + A + 13} textAnchor="middle" fontSize="9" fill="var(--cinza)">{d.rot}</text>
-              <text x={cx} y={T + A - h - 4} textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--verde)">{d.kg}</text>
+              <rect x={cx - bw / 2} y={T + A - h} width={bw} height={h} rx="4"
+                fill={on ? 'url(#g-barra-on)' : 'url(#g-barra)'} className="barra-anim" style={{ '--h': h + 'px' }} />
+              <text className="rot-eixo" x={cx} y={T + A + 13} textAnchor="middle">{d.rot}</text>
+              <text x={cx} y={T + A - h - 5} textAnchor="middle" fontSize="9.5" fontWeight="700"
+                fill={on ? 'var(--verde-escuro)' : 'var(--azul-escuro)'}>{d.kg}</text>
             </g>
           );
         })}
@@ -109,6 +122,14 @@ export function DonutReceita({ vendas }) {
   return (
     <div className="grafico donut-wrap">
       <svg viewBox="0 0 124 124" role="img" aria-label="Receita por fonte">
+        <defs>
+          {dados.map((d, i) => (
+            <linearGradient key={d.rot} id={'g-fatia-' + i} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor={d.cor} stopOpacity=".78" />
+              <stop offset="100%" stopColor={d.cor} />
+            </linearGradient>
+          ))}
+        </defs>
         {dados.map((d, i) => {
           const frac = d.valor / total;
           const a0 = acc * 2 * Math.PI - Math.PI / 2;
@@ -122,7 +143,7 @@ export function DonutReceita({ vendas }) {
           if (frac > 0.999) {
             return (
               <g key={d.rot} onMouseEnter={() => setAtivo(i)} onMouseLeave={() => setAtivo(null)}>
-                <circle cx={cx} cy={cy} r={(raio + r) / 2} fill="none" stroke={d.cor} strokeWidth={raio - r} />
+                <circle cx={cx} cy={cy} r={(raio + r) / 2} fill="none" stroke={'url(#g-fatia-' + i + ')'} strokeWidth={raio - r} />
               </g>
             );
           }
@@ -130,10 +151,10 @@ export function DonutReceita({ vendas }) {
             <path key={d.rot} className="fatia"
               onMouseEnter={() => setAtivo(i)} onMouseLeave={() => setAtivo(null)}
               d={`M ${p(a0, raio)} A ${raio} ${raio} 0 ${grande} 1 ${p(a1, raio)} L ${p(a1, r)} A ${r} ${r} 0 ${grande} 0 ${p(a0, r)} Z`}
-              fill={d.cor} stroke="#fff" strokeWidth="1" />
+              fill={'url(#g-fatia-' + i + ')'} stroke="#fff" strokeWidth="1.2" />
           );
         })}
-        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="11" fontWeight="800" fill="var(--verde)">
+        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--verde-escuro)">
           {ativo != null ? Math.round(dados[ativo].valor / total * 100) + '%' : 'R$'}
         </text>
         <text x={cx} y={cy + 10} textAnchor="middle" fontSize="7.5" fill="var(--cinza)">

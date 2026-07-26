@@ -623,6 +623,14 @@ try {
   /* ---------- 13. resetar demo ---------- */
   secao('13. Resetar demo com os campos novos');
   await ev('window.confirm = () => true; return 1;');
+  /* os controles de simulação moram num painel retrátil no rodapé, para a tela
+     principal não parecer uma demo. <details> fechado não renderiza texto, então
+     o teste abre o painel antes — como a pessoa faria. */
+  ok(await ev('return __t.conta("footer .painel-config") === 1'), 'controles de simulação em painel retrátil');
+  ok(await ev('return !__t.tem("Resetar demo")'), 'e ficam fora da tela enquanto fechado');
+  await ev('return document.querySelector("footer .painel-config").open = true, 1;');
+  await espera(250);
+  ok(await ev('return __t.tem("Resetar demo") && __t.tem("Modo gravação")'), 'painel aberto revela reset e gravação');
   await ev('return __t.clicar("footer button.acao", "Resetar demo")');
   await espera(700);
   const pos = await ev(`

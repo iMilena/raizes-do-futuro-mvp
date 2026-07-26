@@ -20,3 +20,7 @@ onchain/chaves/
 
 # temporários dos testes
 testes/.tmp*/
+
+# capturas de tela geradas por 
+pm test -- telas (conferência visual)
+capturas/
