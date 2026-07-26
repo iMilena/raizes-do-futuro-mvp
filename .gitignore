@@ -9,5 +9,10 @@ dist/
 !.env.example
 .dev.vars
 
+# Chaves da devnet: são só de teste e sem valor, mas chave secreta não entra
+# em repositório por princípio — se um dia alguém apontar este script para a
+# mainnet, o hábito errado já estaria instalado.
+onchain/chaves/
+
 *.log
 .DS_Store
