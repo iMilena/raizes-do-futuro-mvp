@@ -291,6 +291,9 @@ export async function escoarFila() {
  */
 export function mesclar(local, remoto) {
   if (!remoto) return local;
+  /* segunda barreira, no lugar onde o dano aconteceria: mesmo que alguém chame
+     mesclar() direto, sem passar por nuvemDifere(), o vazio não substitui dado */
+  if (!remotoUtilizavel(local, remoto)) return local;
   /* Campos que existem SÓ no aparelho e seriam apagados pelo pull:
      · resp  — nome da pessoa, que nunca sobe (LGPD)
      · pin   — segredo da família; se subisse, vazamento da base viraria
@@ -346,5 +349,30 @@ export const impressao = e => !e ? '' : [
  * direção. Quem chama já garantiu que a fila está vazia, senão isto descartaria
  * trabalho ainda não enviado.
  */
+/**
+ * O estado remoto pode ser ADOTADO? Nunca se ele for vazio e o local não.
+ *
+ * ── O ACIDENTE QUE ISTO IMPEDE ────────────────────────────────────────────
+ * Depois da migração 02, o papel anônimo não tem policy nenhuma — e o PostgREST
+ * responde a isso com 200 e LISTA VAZIA, não com erro. Então um aparelho sem
+ * sessão baixava um estado perfeitamente bem formado, com tudo zerado; a
+ * impressão digital diferia; o merge adotava; e o trabalho de campo era APAGADO
+ * e gravado por cima. Encontrado ao investigar por que `familias` estava vazio
+ * num aparelho de teste — não era o teste, era o app.
+ *
+ * A trava de sessão (em store.jsx) resolve o caso conhecido. Esta função existe
+ * porque o caso conhecido não é o único: chave trocada, projeto errado, política
+ * mudada no meio do piloto — qualquer um desses volta vazio. Substituir dado por
+ * vazio nunca é sincronização; é perda.
+ */
+export function remotoUtilizavel(local, remoto) {
+  if (!remoto) return false;
+  const vazio = e => (e?.transacoes?.length || 0) === 0
+    && (e?.familias?.length || 0) === 0
+    && (e?.coletas?.length || 0) === 0;
+  if (vazio(remoto) && !vazio(local)) return false;
+  return true;
+}
+
 export const nuvemDifere = (local, remoto) =>
-  Boolean(remoto) && impressao(remoto) !== impressao(local);
+  remotoUtilizavel(local, remoto) && impressao(remoto) !== impressao(local);

@@ -261,7 +261,7 @@ ok(s.transacoes.every(t => t.taxa > 0 && t.taxa < 0.001), 'toda tx tem taxa em S
 
 /* ---------- 13. deltas de sincronização ---------- */
 secao('13. Deltas de sincronização (o que sobe para a nuvem)');
-const { calcularDeltas, mesclar, nuvemDifere } = await import(
+const { calcularDeltas, mesclar, nuvemDifere, remotoUtilizavel } = await import(
   pathToFileURL(process.env.SYNC_BUNDLE ?? new URL('./.tmp/sinc.mjs', import.meta.url).pathname).href);
 
 const base = estadoInicial();
@@ -442,6 +442,46 @@ const revog = d(comCons, { type: 'REVOGAR_CONSENTIMENTO', familiaId: fam0, motiv
 const cRev = revog.familias.find(f => f.id === fam0).consentimentos[0];
 ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe ao prazo');
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
+
+/* ==========================================================================
+   18. A nuvem vazia NÃO apaga o trabalho local
+   ========================================================================== */
+secao('18. Estado remoto vazio nunca substitui dado local');
+
+/* Este é o acidente: desde a migração 02 o papel anônimo não tem policy, e o
+   PostgREST responde a isso com 200 e LISTA VAZIA — não com erro. Um aparelho
+   sem sessão baixava um estado bem formado com tudo zerado, a impressão digital
+   diferia, o merge adotava, e o trabalho de campo era apagado e gravado por
+   cima. Aconteceu de verdade num aparelho de teste. */
+const vazioDaNuvem = {
+  coletas: [], relatorios: [], vendas: [], propostas: [], transacoes: [],
+  familias: [], caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
+};
+const comDados = estadoInicial();
+
+ok(comDados.familias.length > 0 && comDados.transacoes.length > 0, 'o local tem dados');
+ok(nuvemDifere(comDados, vazioDaNuvem) === false,
+  'um remoto VAZIO não é considerado "diferente" (não dispara merge)');
+
+const apos = mesclar(comDados, vazioDaNuvem);
+ok(apos.familias.length === comDados.familias.length,
+  `mesclar com vazio preserva as famílias (${apos.familias.length})`);
+ok(apos.transacoes.length === comDados.transacoes.length, 'e as transações');
+ok(apos === comDados, 'na prática devolve o próprio estado local, intacto');
+
+/* nuvem vazia com local vazio é legítima: é o primeiro aparelho a abrir */
+ok(remotoUtilizavel(vazioDaNuvem, vazioDaNuvem) === true,
+  'local vazio + remoto vazio é situação normal (primeiro aparelho)');
+
+/* e um remoto COM dados continua sendo adotado — a trava não pode virar bloqueio */
+const remotoCheio = {
+  ...vazioDaNuvem,
+  familias: [{ id: 1, codigo: 'BOI-001', criancas: 2, carteira: null, saldo: 5, condicoes: [], extrato: [] }],
+  transacoes: comDados.transacoes,
+  coletas: comDados.coletas,
+};
+ok(nuvemDifere(comDados, remotoCheio) === true, 'remoto COM dados continua sendo detectado');
+ok(mesclar(comDados, remotoCheio).familias.length === 1, 'e continua sendo adotado');
 
 /* ==========================================================================
    17. Renda do trabalho visível para a família (o que o app escondia)

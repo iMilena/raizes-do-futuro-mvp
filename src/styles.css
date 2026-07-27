@@ -711,7 +711,10 @@ nav.tabs button.tour-alvo{animation:tour-anel 1.5s ease-in-out infinite}
 .extrato-linha:last-child{border-bottom:none}
 .extrato-desc{font-size:13px}
 .extrato-linha .mini{margin:1px 0 0}
-.extrato-linha b{font-variant-numeric:tabular-nums}
+/* o valor NUNCA quebra: "+R$ 857,14" partido em "+R$" / "857,14" faz a pessoa
+   reler para saber quanto entrou. Visto na captura da tela da família. */
+.extrato-linha b{font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 auto}
+.extrato-linha>div:first-child{min-width:0}
 
 /* ============================================================
    APP DA FAMÍLIA — mobile-first, acolhedor, zero fricção

@@ -12,6 +12,7 @@ import Validacao from './views/Validacao.jsx';
 import Mercado from './views/Mercado.jsx';
 import Fundo from './views/Fundo.jsx';
 import Carteira from './views/Carteira.jsx';
+import Cadastro from './views/Cadastro.jsx';
 import PaginaFamilia from './views/PaginaFamilia.jsx';
 import PaginaRastreio from './views/Rastreio.jsx';
 
@@ -24,6 +25,7 @@ const TABS = [
   ['validacao', '✅', 'Instituto Vivá', 'validar & aprovar', 'Operação'],
   ['mercado', '🛒', 'Mercado', 'turista & empresa', 'Operação'],
   ['fundo', '🔗', 'Cofre Multisig', 'Solana · 2-de-3', 'Governança'],
+  ['cadastro', '📝', 'Cadastro', 'incluir família', 'Famílias'],
   ['carteira', '👨‍👩‍👧', 'Família (operação)', 'visão do agente', 'Famílias'],
   ['familia', '📱', 'App da Família', 'como a família vê', 'Famílias'],
 ];
@@ -447,6 +449,7 @@ function Painel({ tab, setTab }) {
             {tab === 'validacao' && <Validacao />}
             {tab === 'mercado' && <Mercado />}
             {tab === 'fundo' && <Fundo />}
+            {tab === 'cadastro' && <Cadastro />}
             {tab === 'carteira' && <Carteira />}
             {tab === 'familia' && <PaginaFamilia />}
           </div>

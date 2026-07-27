@@ -669,6 +669,62 @@ function reducer(state, action) {
       return s;
     }
 
+    /* --------------------------------------------------- cadastro -------- */
+    /**
+     * Cadastra uma família nova.
+     *
+     * Faltava por completo: as famílias só existiam na seed, então não havia
+     * como o piloto crescer de dentro do app. O consentimento entra na MESMA
+     * ação de propósito — a policy do banco recusa família sem consentimento
+     * ativo, e uma tela que deixasse cadastrar primeiro e pedir autorização
+     * depois criaria um registro que não pode subir e uma fila travada.
+     *
+     * `resp` (nome da pessoa) fica só neste aparelho; para a nuvem vai o código.
+     */
+    case 'NOVA_FAMILIA': {
+      const nome = String(action.resp || '').trim();
+      const criancas = Number(action.criancas || 0);
+      if (!nome || criancas < 1) return s;
+
+      const id = novoId();
+      const usados = new Set(s.familias.map(f => f.codigo));
+      let n = s.familias.length + 1;
+      let codigo = action.codigo?.trim();
+      while (!codigo || usados.has(codigo)) {
+        codigo = `BOI-${String(n).padStart(3, '0')}`;
+        n++;
+      }
+
+      const familia = {
+        id, resp: nome, criancas, codigo, saldo: 0,
+        carteira: null, pin: null, extrato: [],
+        condicoes: (action.condicoes || []).map(tipo => ({
+          id: novoId(), mes: action.mes || 'Julho', tipo, status: 'pendente',
+        })),
+        consentimentos: action.termoHash ? [{
+          id: novoId(),
+          versaoTermo: action.versaoTermo || VERSAO_TERMO,
+          finalidades: FINALIDADES_PADRAO,
+          forma: action.forma || 'presencial-assinado',
+          termoHash: action.termoHash,
+          coletadoPor: action.coletadoPor || null,
+          coletadoEm: new Date().toISOString(),
+          validadeMeses: VALIDADE_MESES,
+          revogadoEm: null,
+          renovadoDe: null,
+        }] : [],
+        celular: action.celular || '',
+      };
+      s.familias.push(familia);
+
+      /* o registro público usa o CÓDIGO, nunca o nome — esta transação vai para
+         a base compartilhada e é lida por quem tem papel no projeto */
+      pushTx(s, 'CONSENTIMENTO',
+        `Família ${codigo} cadastrada com ${criancas} criança(s) e consentimento ${action.forma || 'presencial-assinado'} registrado`,
+        0, { familiaId: id });
+      return s;
+    }
+
     /* ------------------------------------------------- consentimento ----- */
     /* Registro do consentimento do responsável (LGPD art. 8º: específico,
        informado e DEMONSTRÁVEL). Nada de família vai para a nuvem sem isto —
@@ -842,6 +898,10 @@ export function StoreProvider({ children }) {
     (async () => {
       if (!(await nuvem.configurar())) return;
       if (!vivo) return;
+      /* SESSÃO, não só configuração. Sem sessão o PostgREST responde 200 com
+         lista vazia (anon não tem policy desde a migração 02), o merge adotava
+         esse vazio e o trabalho de campo era apagado. Ver remotoUtilizavel(). */
+      if (!nuvem.ativo()) { setNuvemAtiva(false); return; }
       setNuvemAtiva(true);
       try {
         const remoto = await nuvem.carregar();

@@ -47,6 +47,8 @@ const DICIONARIO = {
     'Instituto Vivá': 'Instituto Vivá',
     'Mercado': 'Market',
     'Cofre Multisig': 'Multisig Vault',
+    'Cadastro': 'Enrolment',
+    'incluir família': 'add a family',
     'Família (operação)': 'Family (staff view)',
     'App da Família': 'Family App',
     'visão geral do piloto': 'pilot overview',

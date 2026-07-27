@@ -308,7 +308,7 @@ try {
   ok(await ev('return __t.conta(".grafico svg rect.barra-anim") >= 2'), 'barras: uma por semana com coleta');
   ok(await ev('return __t.conta(".donut-legenda li") >= 2'), 'donut com legenda por fonte de receita');
   ok(await ev('return __t.tem("Ver o ciclo completo")'), 'botão do modo demo presente');
-  ok(await ev('return __t.conta("nav.tabs button") === 7'), '7 abas (inclui App da Família)');
+  ok(await ev('return __t.conta("nav.tabs button") === 8'), '8 abas (inclui Cadastro e App da Família)');
 
   /* ---------- 2. cofre multisig ---------- */
   secao('2. Cofre multisig — assinaturas 2-de-3');
@@ -913,6 +913,76 @@ try {
   ok(await ev('return __t.tem("não encontrado")'), 'código inválido mostra estado vazio orientado');
   await ev(`window.location.hash = '#/'; return 1;`);
   await espera(600);
+
+  /* ---------- 14b2. cadastro de família ---------- */
+  secao('14b2. Cadastro de família (com consentimento no mesmo formulário)');
+  await irPara(ALVO);
+  ok(await ev('return __t.clicar("nav.tabs button", "Cadastro")'), 'abre a aba de Cadastro');
+  await espera(600);
+  await ev(HELPERS + ' return 1;');
+
+  const antesFam = await ev(`return JSON.parse(localStorage.getItem('raizes-mvp-v2')).familias.length`);
+  ok(await ev('return __t.tem("Cadastro de famílias")'), 'formulário de cadastro presente');
+  ok(await ev('return /BOI-\\d{3}/.test(__t.txt())'), 'mostra o código pseudônimo que irá para a base');
+  ok(await ev('return __t.tem("nome fica só neste aparelho")'), 'diz que o nome não sai do aparelho (LGPD)');
+  ok(await ev('return __t.tem("Consentimento do responsável")'), 'consentimento é passo do MESMO formulário');
+
+  /* não deve salvar sem consentimento marcado — a policy do banco recusaria e a
+     fila de sincronização travaria atrás dessa linha */
+  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === "desabilitado"'),
+    'botão bloqueado antes de marcar o consentimento');
+
+  await ev('return __t.preencher("#cad-resp", "Joana Teste da Silva")');
+  await ev('return __t.preencher("#cad-criancas", "3")');
+  await espera(300);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("R$ 90,00")'), 'calcula o bônus potencial (3 × R$ 30)');
+  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === "desabilitado"'),
+    'ainda bloqueado: falta a confirmação do consentimento');
+
+  await ev(`
+    const cx = [...document.querySelectorAll('.opcao-aviso input[type=checkbox]')].pop();
+    cx.click();
+    return 1;
+  `);
+  await espera(400);
+  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === true'),
+    'com o consentimento confirmado, salva');
+  await espera(800);
+  await ev(HELPERS + ' return 1;');
+
+  const nova = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias[s.familias.length - 1];
+    const c = (f.consentimentos || [])[0];
+    return { total: s.familias.length, resp: f.resp, criancas: f.criancas, codigo: f.codigo,
+             condicoes: f.condicoes.length, saldo: f.saldo, temPin: !!f.pin, temCarteira: !!f.carteira,
+             consentimento: c ? { forma: c.forma, hash: (c.termoHash || '').length, validade: c.validadeMeses } : null };
+  `);
+  ok(nova.total === antesFam + 1, `família criada (${antesFam} → ${nova.total})`);
+  ok(nova.resp === 'Joana Teste da Silva' && nova.criancas === 3, 'com nome e número de crianças');
+  ok(/^BOI-\d{3}$/.test(nova.codigo), `com código pseudônimo (${nova.codigo})`);
+  ok(nova.consentimento && nova.consentimento.hash === 64,
+    'e com consentimento registrado, com SHA-256 do termo');
+  ok(nova.consentimento.validade === 24, 'validade de 24 meses aplicada');
+  ok(nova.condicoes >= 1, `compromissos do mês criados (${nova.condicoes})`);
+  ok(!nova.temCarteira && !nova.temPin, 'nasce SEM conta e SEM PIN — quem faz isso é a família');
+  ok(nova.saldo === 0, 'e com saldo zero');
+  ok(await ev('return __t.tem("cadastrada como")'), 'a tela confirma o cadastro com o próximo passo');
+  ok(await ev(`return __t.tem("Joana Teste da Silva")`), 'e a família aparece na lista do piloto');
+
+  /* a família nova tem de aparecer nas outras abas na hora */
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("Joana Teste da Silva")'), 'aparece no seletor do App da Família');
+
+  /* e o nome dela NUNCA pode ir para a nuvem */
+  const opsNome = await ev(`
+    const f = JSON.parse(localStorage.getItem('raizes-fila-sync') || '[]');
+    return JSON.stringify(f).includes('Joana Teste da Silva');
+  `);
+  ok(opsNome === false, 'o nome não entra na fila de sincronização (só o código)');
 
   /* ---------- 14c. voz da Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
