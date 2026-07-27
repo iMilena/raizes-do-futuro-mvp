@@ -315,6 +315,18 @@ O runner sobe o servidor de desenvolvimento sozinho e o derruba no fim, e **pula
 
 **Pular não é passar.** Suíte pulada aparece como ⏭️ no resumo e o runner diz explicitamente que aquela garantia não foi verificada — antes ela saía com código 0 e o resumo mostrava ✅ para uma suíte que não conferiu nada, o que é pior que vermelho.
 
+Estado verificado contra o banco real, com sessão de operação (nenhuma suíte pulada):
+
+| suíte | o que garante |
+|---|---|
+| `fluxo` 233 | regras de negócio no reducer, sem navegador |
+| `qr` | o QR gerado é decodificado por leitor independente |
+| `nuvem` 39 | append-only real, idempotência de dinheiro, saldo como soma, CHECKs |
+| `autorizacao` 44 | anônimo barrado, papel, 2-de-3 por organização, ciclo do consentimento, canal da família |
+| `canal` 17 | celular sem sessão deposita e a operação recebe, sem o segredo vazar |
+| `aparelhos` 19 | dois navegadores, um offline durante uma coleta |
+| `navegador` 356 | app inteiro no Edge, em 1280px |
+
 As suítes `nuvem`, `aparelhos` e a metade da operação do `canal` precisam de sessão da operação, porque a nuvem não responde mais a anônimo — por desenho.
 
 O `.env` já vem apontando para um **usuário de testes** criado pela suíte, com senha gerada na hora — não é a senha de ninguém. Para ele funcionar, dois passos no painel do Supabase, uma vez só:
