@@ -36,6 +36,181 @@ const COMPROMISSOS = [
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
+/* ------------------------------------------- compromissos de cada mês ----- */
+/**
+ * Abre o mês seguinte — a tarefa mais repetida do piloto.
+ *
+ * Antes, compromisso só nascia junto com o cadastro da família: dava para rodar
+ * um mês e depois o ciclo travava. Como todo mês repete quase a mesma lista para
+ * quase todas as famílias, isto é em LOTE, com a opção de escolher quem.
+ *
+ * O que já existe não é duplicado, e o que já foi comprovado não é apagável —
+ * ver ABRIR_MES e REMOVER_COMPROMISSO no store.
+ */
+function AbrirMes() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const [mes, setMes] = useState(MESES[(new Date().getMonth() + 1) % 12]);
+  const [tipos, setTipos] = useState(['Vacinação em dia']);
+  const [quem, setQuem] = useState([]); // vazio = todas
+
+  const comConsentimento = state.familias.filter(f => consentimentoAtivo(f));
+  const alvo = quem.length ? comConsentimento.filter(f => quem.includes(f.id)) : comConsentimento;
+  const semConsentimento = state.familias.length - comConsentimento.length;
+
+  /* prévia honesta: mostra o que SERÁ criado e o que será pulado por já existir,
+     porque "criei 12" sem dizer que pulou 4 é relatório enganoso */
+  const previa = (() => {
+    let novos = 0, repetidos = 0;
+    for (const f of alvo) {
+      for (const base of tipos) {
+        const tipo = f.criancas > 1 ? `${base} (${f.criancas} crianças)` : base;
+        if ((f.condicoes || []).some(c => c.mes === mes && c.tipo === tipo)) repetidos++;
+        else novos++;
+      }
+    }
+    return { novos, repetidos };
+  })();
+
+  const alternar = (lista, set, v) =>
+    set(lista.includes(v) ? lista.filter(x => x !== v) : [...lista, v]);
+
+  const abrir = () => {
+    if (!tipos.length || !alvo.length) { toast('Escolha o compromisso e ao menos uma família', 'alerta'); return; }
+    dispatch({ type: 'ABRIR_MES', mes, tipos, familiaIds: quem.length ? quem : null });
+    toast(previa.novos > 0
+      ? `${mes}: ${previa.novos} compromisso(s) criados${previa.repetidos ? ` · ${previa.repetidos} já existiam` : ''}`
+      : `Nada a criar — esses compromissos de ${mes} já existem`, 'info', 6000);
+  };
+
+  return (
+    <>
+      <h3>Compromissos de cada mês</h3>
+      <div className="card destaque">
+        <p className="mini" style={{ marginTop: 0 }}>
+          O ciclo é mensal: todo mês a operação define o que cada família vai comprovar.
+          Faça em lote e ajuste caso a caso na tabela abaixo. <b>A renda do trabalho de
+          coleta não depende disto</b> — aqui só se define o bônus.
+        </p>
+
+        <div className="grid g2" style={{ marginTop: 4 }}>
+          <div>
+            <label htmlFor="mes-abrir">Mês</label>
+            <select id="mes-abrir" value={mes} onChange={e => setMes(e.target.value)}>
+              {MESES.map(m => <option key={m}>{m}</option>)}
+            </select>
+
+            <label style={{ marginTop: 14 }}>Compromissos deste mês</label>
+            {COMPROMISSOS.map(c => (
+              <label key={c} className="opcao-aviso" style={{ marginTop: 6 }}>
+                <input type="checkbox" checked={tipos.includes(c)}
+                  onChange={() => alternar(tipos, setTipos, c)} />
+                <span><b>{c}</b></span>
+              </label>
+            ))}
+          </div>
+
+          <div>
+            <label>Para quem</label>
+            <p className="mini" style={{ margin: '0 0 6px' }}>
+              Sem marcar ninguém, vale para <b>todas as {comConsentimento.length} famílias
+              com consentimento vigente</b>.
+              {semConsentimento > 0 && (
+                <> {semConsentimento} família(s) ficam de fora por não ter consentimento vigente.</>
+              )}
+            </p>
+            <div className="lista-quem">
+              {comConsentimento.map(f => (
+                <label key={f.id} className={'chip-familia' + (quem.includes(f.id) ? ' on' : '')}>
+                  <input type="checkbox" checked={quem.includes(f.id)}
+                    onChange={() => alternar(quem, setQuem, f.id)} />
+                  {f.resp.split(' ')[0]} <small>{f.codigo}</small>
+                </label>
+              ))}
+              {comConsentimento.length === 0 && (
+                <p className="mini">Nenhuma família com consentimento vigente ainda.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="aviso" style={{ marginTop: 12 }}>
+          <b>Vai criar {previa.novos} compromisso(s)</b> em {mes}, para {alvo.length} família(s)
+          {previa.repetidos > 0 && <> · <b>{previa.repetidos}</b> já existem e serão pulados (não duplica bônus)</>}
+          {previa.novos > 0 && <> · bônus potencial total de {fmt(alvo.reduce((a, f) => a + BONUS_POR_CRIANCA * f.criancas * tipos.filter(base => {
+            const tipo = f.criancas > 1 ? `${base} (${f.criancas} crianças)` : base;
+            return !(f.condicoes || []).some(c => c.mes === mes && c.tipo === tipo);
+          }).length, 0))}</>}
+        </div>
+
+        <button className="acao" disabled={previa.novos === 0} onClick={abrir}>
+          Abrir {mes} para {alvo.length} família(s)
+        </button>
+      </div>
+
+      <h3>Compromissos já definidos</h3>
+      <div className="card">
+        <ListaCompromissos />
+      </div>
+    </>
+  );
+}
+
+/** Todos os compromissos, por mês, com remoção só do que ainda está pendente. */
+function ListaCompromissos() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+
+  const linhas = state.familias.flatMap(f =>
+    (f.condicoes || []).map(c => ({ ...c, familia: f })));
+  if (linhas.length === 0) {
+    return <EstadoVazio icone="📋" titulo="Nenhum compromisso definido"
+      dica="Use o bloco acima para abrir um mês." />;
+  }
+
+  const porMes = [...new Set(linhas.map(l => l.mes))];
+
+  return (
+    <>
+      {porMes.map(m => (
+        <div key={m} style={{ marginBottom: 14 }}>
+          <b style={{ fontSize: 13.5 }}>{m}</b>
+          <table style={{ marginTop: 6 }}>
+            <thead><tr><th>Família</th><th>Compromisso</th><th>Situação</th><th /></tr></thead>
+            <tbody>
+              {linhas.filter(l => l.mes === m).map(l => (
+                <tr key={l.id}>
+                  <td>{l.familia.resp}</td>
+                  <td>{l.tipo}</td>
+                  <td>
+                    <Badge tom={l.status === 'liberada' ? 'ok' : l.status === 'pendente' ? 'pend' : 'info'}>
+                      {l.status.replace(/-/g, ' ')}
+                    </Badge>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    {l.status === 'pendente' ? (
+                      <button className="meta-apagar" onClick={() => {
+                        dispatch({ type: 'REMOVER_COMPROMISSO', condicaoId: l.id });
+                        toast('Compromisso removido');
+                      }}>remover</button>
+                    ) : (
+                      /* comprovado, validado ou liberado é histórico: apagar removeria
+                         a prova que a família enviou, ou contradiria um repasse feito */
+                      <span className="mini" title="Já comprovado ou repassado — faz parte do histórico">
+                        —
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export default function Cadastro() {
   const { state, dispatch } = useStore();
   const toast = useToast();
@@ -173,7 +348,10 @@ export default function Cadastro() {
         </select>
 
         <label className="opcao-aviso" style={{ marginTop: 12 }}>
-          <input type="checkbox" checked={aceito} onChange={e => setAceito(e.target.checked)} />
+          {/* id próprio: é a confirmação que libera o cadastro, e alvo posicional
+              ("o último checkbox da tela") quebra assim que a tela cresce */}
+          <input id="cad-aceito" type="checkbox" checked={aceito}
+            onChange={e => setAceito(e.target.checked)} />
           <span>
             <b>Confirmo que li o termo acima para o responsável e que ele autorizou.</b>
             <small>
@@ -192,6 +370,8 @@ export default function Cadastro() {
           </p>
         )}
       </div>
+
+      <AbrirMes />
 
       <h3>Famílias no piloto ({state.familias.length})</h3>
       <div className="card">

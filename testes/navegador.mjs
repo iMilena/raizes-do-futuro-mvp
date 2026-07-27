@@ -940,11 +940,10 @@ try {
   ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === "desabilitado"'),
     'ainda bloqueado: falta a confirmação do consentimento');
 
-  await ev(`
-    const cx = [...document.querySelectorAll('.opcao-aviso input[type=checkbox]')].pop();
-    cx.click();
-    return 1;
-  `);
+  /* alvo por id, nao posicional: a versao anterior pegava "o ultimo checkbox
+     .opcao-aviso da tela" e quebrou no minuto em que o bloco de abrir o mes
+     acrescentou checkboxes depois dele */
+  await ev(`document.querySelector('#cad-aceito').click(); return 1;`);
   await espera(400);
   ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === true'),
     'com o consentimento confirmado, salva');
@@ -970,6 +969,47 @@ try {
   ok(nova.saldo === 0, 'e com saldo zero');
   ok(await ev('return __t.tem("cadastrada como")'), 'a tela confirma o cadastro com o próximo passo');
   ok(await ev(`return __t.tem("Joana Teste da Silva")`), 'e a família aparece na lista do piloto');
+
+  /* ---- abrir o mês seguinte (o ciclo era de um mês só) ---- */
+  ok(await ev('return __t.tem("Compromissos de cada mês")'), 'bloco para abrir o mês seguinte existe');
+  ok(await ev('return __t.conta("#mes-abrir") === 1'), 'com seletor de mês');
+  ok(await ev('return __t.conta(".chip-familia") >= 1'), 'e escolha de quais famílias');
+
+  const previaAntes = await ev('return document.querySelector(".card.destaque .aviso")?.innerText || ""');
+  ok(/Vai criar \d+ compromisso/.test(previaAntes), `mostra a prévia antes de clicar (${previaAntes.slice(0, 60)}…)`);
+
+  const antesCond = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    return s.familias.flatMap(f => f.condicoes).filter(c => c.mes === 'Agosto').length;
+  `);
+  await ev('return __t.preencher("#mes-abrir", "Agosto")');
+  await espera(400);
+  ok(await ev('return __t.clicar(".card.destaque button.acao", "Abrir Agosto") === true'), 'abre o mês de Agosto');
+  await espera(800);
+  await ev(HELPERS + ' return 1;');
+
+  const depoisCond = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const ago = s.familias.flatMap(f => f.condicoes).filter(c => c.mes === 'Agosto');
+    return { total: ago.length, pendentes: ago.filter(c => c.status === 'pendente').length };
+  `);
+  ok(depoisCond.total > antesCond, `compromissos de Agosto criados (${antesCond} → ${depoisCond.total})`);
+  ok(depoisCond.pendentes === depoisCond.total, 'todos pendentes, esperando a comprovação da família');
+
+  /* clicar de novo não pode dobrar o bônus do mês */
+  await ev('return __t.clicar(".card.destaque button.acao", "Abrir Agosto")');
+  await espera(700);
+  const semDuplicar = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    return s.familias.flatMap(f => f.condicoes).filter(c => c.mes === 'Agosto').length;
+  `);
+  ok(semDuplicar === depoisCond.total, 'abrir o mesmo mês de novo não duplica (não dobra o bônus)');
+  ok(await ev('return __t.tem("já existem") || __t.conta(".card.destaque button.acao:disabled") >= 1'),
+    'e a tela avisa/bloqueia em vez de fingir que criou');
+
+  ok(await ev('return __t.tem("Compromissos já definidos")'), 'lista os compromissos definidos por mês');
+  ok(await ev('return __t.clicar(".meta-apagar", "remover") === true'), 'compromisso pendente pode ser removido');
+  await espera(500);
 
   /* a família nova tem de aparecer nas outras abas na hora */
   await ev('return __t.clicar("nav.tabs button", "App da Família")');

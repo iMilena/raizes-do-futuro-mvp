@@ -444,6 +444,76 @@ ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe a
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 /* ==========================================================================
+   20. Abrir o mês seguinte (o ciclo mensal não travava mais em um mês)
+   ========================================================================== */
+secao('20. Compromissos do mês seguinte');
+
+const base20 = estadoInicial();
+/* a seed não tem consentimento: sem ele nada é criado, e isso é a regra —
+   compromisso é dado de família e exige autorização vigente */
+const semCons = d(base20, { type: 'ABRIR_MES', mes: 'Agosto', tipos: ['Vacinação em dia'] });
+ok(semCons.familias.every(f => !f.condicoes.some(c => c.mes === 'Agosto')),
+  'sem consentimento vigente, nenhum compromisso é criado');
+
+/* com consentimento nas três, o mês abre para todas */
+let cons20 = base20;
+for (const f of base20.familias) {
+  cons20 = d(cons20, {
+    type: 'REGISTRAR_CONSENTIMENTO', familiaId: f.id, termoHash: 'd'.repeat(64),
+  });
+}
+const agosto = d(cons20, {
+  type: 'ABRIR_MES', mes: 'Agosto', tipos: ['Vacinação em dia', 'Matrícula escolar'],
+});
+const novosAgosto = agosto.familias.flatMap(f => f.condicoes.filter(c => c.mes === 'Agosto'));
+ok(novosAgosto.length === base20.familias.length * 2,
+  `abre o mês para todas: ${novosAgosto.length} compromissos`);
+ok(novosAgosto.every(c => c.status === 'pendente'), 'todos nascem pendentes');
+ok(novosAgosto.every(c => c.id), 'com id próprio');
+/* o rótulo leva o número de crianças, para a família reconhecer na tela dela */
+const deMaria = agosto.familias[0];
+ok(deMaria.condicoes.some(c => c.mes === 'Agosto' && /2 crianças/.test(c.tipo)),
+  'o rótulo inclui o número de crianças da família');
+
+/* CLICAR DUAS VEZES NÃO PODE DOBRAR O BÔNUS DO MÊS */
+const agostoDeNovo = d(agosto, {
+  type: 'ABRIR_MES', mes: 'Agosto', tipos: ['Vacinação em dia', 'Matrícula escolar'],
+});
+ok(agostoDeNovo.familias.flatMap(f => f.condicoes.filter(c => c.mes === 'Agosto')).length === novosAgosto.length,
+  'abrir o mesmo mês de novo NÃO duplica (não dobraria o bônus)');
+
+/* só para quem foi escolhido */
+const soUma = d(cons20, {
+  type: 'ABRIR_MES', mes: 'Setembro', tipos: ['Vacinação em dia'],
+  familiaIds: [base20.familias[1].id],
+});
+ok(soUma.familias.filter(f => f.condicoes.some(c => c.mes === 'Setembro')).length === 1,
+  'com familiaIds, abre só para as escolhidas');
+
+/* remover: pendente sim, comprovado NUNCA */
+const pend = novosAgosto[0];
+const semPend = d(agosto, { type: 'REMOVER_COMPROMISSO', condicaoId: pend.id });
+ok(!semPend.familias.flatMap(f => f.condicoes).some(c => c.id === pend.id),
+  'compromisso pendente pode ser removido (erro de digitação se corrige)');
+
+const comprovado = d(agosto, {
+  type: 'ENVIAR_COMPROVACAO', familiaId: deMaria.id,
+  condicaoId: deMaria.condicoes.find(c => c.mes === 'Agosto').id,
+});
+const alvoComp = comprovado.familias[0].condicoes.find(c => c.mes === 'Agosto');
+ok(alvoComp.status === 'comprovada', 'a família comprovou');
+const tentouRemover = d(comprovado, { type: 'REMOVER_COMPROMISSO', condicaoId: alvoComp.id });
+ok(tentouRemover.familias[0].condicoes.some(c => c.id === alvoComp.id),
+  'compromisso JÁ COMPROVADO não é removível — apagaria a prova que a família enviou');
+
+/* entrada inválida não faz nada */
+ok(d(cons20, { type: 'ABRIR_MES', mes: '', tipos: ['x'] }).familias
+  .every(f => f.condicoes.length === base20.familias.find(x => x.id === f.id).condicoes.length),
+'mês vazio não cria nada');
+ok(d(cons20, { type: 'ABRIR_MES', mes: 'Outubro', tipos: [] }).familias
+  .every(f => !f.condicoes.some(c => c.mes === 'Outubro')), 'sem tipo escolhido não cria nada');
+
+/* ==========================================================================
    19. Meta de poupança — sem virar tutela
    ========================================================================== */
 secao('19. Meta de poupança da família');

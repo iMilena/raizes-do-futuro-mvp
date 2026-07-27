@@ -688,6 +688,71 @@ function reducer(state, action) {
       return s;
     }
 
+    /* ------------------------------------------- compromissos do mês ------ */
+    /**
+     * Abre um mês: cria os compromissos que as famílias vão comprovar.
+     *
+     * ── O QUE FALTAVA ────────────────────────────────────────────────────
+     * Compromisso só nascia no cadastro da família. Depois disso não havia como
+     * definir o mês seguinte — o piloto rodaria UM mês e travaria, e a operação
+     * teria de editar código para continuar. Como o ciclo é mensal, isto é a
+     * tarefa mais repetida do projeto e precisava ser em lote.
+     *
+     * Duas regras:
+     *  · NÃO DUPLICA. Mesmo tipo no mesmo mês para a mesma família é ignorado —
+     *    senão um segundo clique dobraria o bônus daquele mês.
+     *  · só cria para família com consentimento vigente; sem ele o dado não
+     *    pode ser tratado, e criar linha que não sobe travaria a fila.
+     */
+    case 'ABRIR_MES': {
+      const mes = String(action.mes || '').trim();
+      const tipos = (action.tipos || []).map(t => String(t).trim()).filter(Boolean);
+      if (!mes || !tipos.length) return s;
+
+      const alvo = action.familiaIds?.length
+        ? s.familias.filter(f => action.familiaIds.includes(f.id))
+        : s.familias;
+
+      let criados = 0;
+      for (const f of alvo) {
+        if (!consentimentoAtivo(f)) continue;
+        for (const base of tipos) {
+          /* o rótulo leva o número de crianças, como no cadastro, para a família
+             reconhecer na tela dela do que se trata */
+          const tipo = f.criancas > 1 ? `${base} (${f.criancas} crianças)` : base;
+          const jaTem = (f.condicoes || []).some(c => c.mes === mes && c.tipo === tipo);
+          if (jaTem) continue;
+          f.condicoes.push({ id: novoId(), mes, tipo, status: 'pendente' });
+          criados++;
+        }
+      }
+      if (criados > 0) {
+        pushTx(s, 'PROPOSTA',
+          `Mês de ${mes} aberto: ${criados} compromisso(s) criados para ${alvo.length} família(s)`,
+          0, { mes });
+      }
+      return s;
+    }
+
+    /**
+     * Apaga um compromisso — SÓ enquanto pendente.
+     *
+     * Depois de comprovado, validado ou liberado, ele é histórico: apagar
+     * removeria a prova que a família enviou e, no caso de liberado, contradiria
+     * um repasse que já aconteceu. Erro de digitação se corrige antes da
+     * comprovação; depois dela, o caminho é a operação explicar, não sumir.
+     */
+    case 'REMOVER_COMPROMISSO': {
+      for (const f of s.familias) {
+        const c = (f.condicoes || []).find(c => c.id === action.condicaoId);
+        if (!c) continue;
+        if (c.status !== 'pendente') return s;
+        f.condicoes = f.condicoes.filter(x => x.id !== action.condicaoId);
+        return s;
+      }
+      return s;
+    }
+
     /* ------------------------------------------------------ meta ---------- */
     /**
      * Meta de poupança da família.
