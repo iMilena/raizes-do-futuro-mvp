@@ -86,10 +86,10 @@ Rode primeiro **`npm test -- migracoes`**: ele sonda o banco e diz quais migraç
 ### No banco — verificável por `npm test`
 
 - [x] **02** papéis e consentimento — `npm test -- autorizacao`, 44 verificações
-- [ ] **03** prazos e expurgo — **FALTA.** Sem ela a tela diz "consentimento vale até tal data" e o banco **não tem prazo nenhum**: consentimento vencido continua autorizando, e não existe `expurgar_vencidos()` para a rotina mensal rodar. `npm test -- migracoes` falha por isso, de propósito.
+- [x] **03** prazos e expurgo — aplicada. A tela e o banco agora concordam sobre a data de vencimento, e `expurgar_vencidos()` existe para a rotina mensal.
 - [x] **04** canal de contestação — `npm test -- canal`, 17 verificações
 - [x] **05** contestação sem gate de consentimento
-- [ ] **06** vínculo coleta↔família e ciclos — o app tolera a ausência (grava sem eles), mas sem ela o vínculo e os fechamentos de ciclo não atravessam aparelhos
+- [x] **06** vínculo coleta↔família e ciclos — aplicada. As coletas que subiram antes dela estão na nuvem com vínculo nulo; o app repara sozinho no próximo pull, reenviando o vínculo de quem o tem.
 - [ ] Dados de demonstração limpos (`supabase/limpar-demonstracao.sql`) — a base tem bastante lixo de teste, inclusive famílias `TESTE-*` e contestações `[teste]`
 - [ ] Usuário `raizes.testes@gmail.com` removido, quando não for mais rodar a suíte
 

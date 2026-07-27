@@ -1200,6 +1200,26 @@ export function StoreProvider({ children }) {
         // sempre baixa e compara por impressão digital: contar transações não
         // servia, porque coleta nova não gera transação (ver sincronizacao.js)
         const remoto = await nuvem.carregar();
+
+        /* Reparo do vínculo coleta↔família.
+           As coletas que subiram ANTES da migração 06 estão na nuvem com
+           familia_id nulo, e nada as reenviaria: o delta só dispara quando muda
+           status ou signature. `mesclar` preserva o vínculo local (então este
+           aparelho não perde), mas um segundo aparelho puxaria nulo para sempre.
+           Aqui, quem tem o vínculo o devolve à nuvem — uma vez por coleta. */
+        const faltando = (remoto?.coletas || []).filter(r => {
+          if (r.familiaId) return false;
+          const local = stateRef.current.coletas.find(c => c.id === r.id);
+          return Boolean(local?.familiaId);
+        });
+        if (faltando.length) {
+          sinc.enfileirar(faltando.map(r => ({
+            tipo: 'coleta',
+            coleta: stateRef.current.coletas.find(c => c.id === r.id),
+          })));
+          setFila(sinc.tamanhoFila());
+        }
+
         if (sinc.nuvemDifere(stateRef.current, remoto)) {
           const mesclado = sinc.mesclar(stateRef.current, remoto);
           anteriorRef.current = mesclado;
