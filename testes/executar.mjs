@@ -156,6 +156,18 @@ try {
     registrar('autorizacao', rodar('autorizacao.mjs'));
   }
 
+  if (querem('canal')) {
+    console.log('\n── canal da família sem sessão (Supabase real) ' + '─'.repeat(11));
+    const edge = temEdge();
+    if (!edge) {
+      console.log('  ⏭️  pulado: precisa do Microsoft Edge');
+      registrar('canal', 'pulado');
+    } else {
+      servidor = servidor || await subirServidor();
+      registrar('canal', rodar('canal-familia.mjs', { EDGE: edge, ALVO }));
+    }
+  }
+
   if (querem('aparelhos')) {
     console.log('\n── dois aparelhos, um offline ' + '─'.repeat(28));
     const edge = temEdge();
