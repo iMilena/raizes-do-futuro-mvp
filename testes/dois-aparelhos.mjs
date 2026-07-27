@@ -50,8 +50,13 @@ if (!SESSAO) {
 }
 
 /* limpa a nuvem da faixa deste teste inserindo com ids próprios não é possível
-   (append-only), então o teste trabalha com o que existe e mede DELTAS. */
-const H = { apikey: cred.anonKey, Authorization: 'Bearer ' + cred.anonKey };
+   (append-only), então o teste trabalha com o que existe e mede DELTAS.
+
+   O TOKEN DA SESSÃO, não a chave anônima: desde a migração 02 o anônimo recebe
+   zero linhas em tudo. Com a chave anônima este teste media sempre 0 → 0 e a
+   asserção "nenhum movimento duplicado (0 movimentos)" passava por VACUIDADE —
+   verde sobre conjunto vazio, que é o pior tipo de verde. */
+const H = { apikey: cred.anonKey, Authorization: 'Bearer ' + SESSAO.access_token };
 const contarNuvem = async tabela => {
   const r = await fetch(`${cred.url}/rest/v1/${tabela}?select=*`, {
     headers: { ...H, Prefer: 'count=exact', Range: '0-0' },
@@ -200,7 +205,7 @@ try {
   const movDup = await (await fetch(
     `${cred.url}/rest/v1/movimentos?select=transacao_sig,caixa`, { headers: H })).json();
   const chaves = movDup.map(m => m.transacao_sig + '|' + m.caixa);
-  ok(new Set(chaves).size === chaves.length,
+  ok(chaves.length > 0 && new Set(chaves).size === chaves.length,
     `nenhum movimento duplicado (${chaves.length} movimentos, todos com chave única)`);
 
   const erros = [...A.erros, ...B.erros];

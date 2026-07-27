@@ -281,25 +281,81 @@ export function enfileirar(ops) {
  * Tenta esvaziar a fila. Para no primeiro erro e mantém o resto para depois.
  * @returns {{enviadas:number, restantes:number, erro:string|null}}
  */
+/* Fila de recusadas: operações que o banco NUNCA vai aceitar.
+   Separada da fila de trabalho para não bloquear a linha, e persistida para
+   alguém poder olhar — recusa silenciosa é pior que fila parada. */
+const CHAVE_RECUSADAS = 'raizes-fila-recusada';
+const lerRecusadas = () => {
+  try { return JSON.parse(armazem().getItem(CHAVE_RECUSADAS)) || []; } catch { return []; }
+};
+export const tamanhoRecusadas = () => lerRecusadas().length;
+export const recusadas = () => lerRecusadas();
+
+/**
+ * Recusa DEFINITIVA ou falha passageira?
+ *
+ * 403 = a policy do banco disse não (RLS). 400/409/422 = a linha não serve
+ * (constraint, enum, formato). Nenhum desses melhora com o tempo.
+ * Rede caída, 5xx e 429 melhoram — esses a fila deve reter e reenviar.
+ */
+const recusaDefinitiva = e => {
+  const s = e?.status ?? Number(String(e?.message || '').match(/Supabase (\d{3})/)?.[1]);
+  return s === 400 || s === 403 || s === 409 || s === 422;
+};
+
+/**
+ * Tenta esvaziar a fila.
+ *
+ * ── POR QUE ISTO NÃO PARA MAIS NO PRIMEIRO ERRO ──────────────────────────
+ * A fila era FIFO e parava em qualquer falha, para não trocar a ordem (transação
+ * antes do movimento que a referencia). Correto para falha passageira, e
+ * desastroso para recusa definitiva: um coletor que tocou em "Assinar" no app
+ * gera uma operação que o banco recusa SEMPRE (só assina quem é signatário
+ * daquela organização) — e a partir daí NADA mais dele subia. Nem as coletas.
+ * Descoberto rodando a suíte com sessão de verdade: a fila entupia na assinatura
+ * da seed e as 40 garantias do esquema falhavam em cascata.
+ *
+ * Agora a recusada sai da linha e vai para um lado, o resto segue, e quem chama
+ * sabe quantas foram — a interface mostra.
+ *
+ * @returns {{enviadas:number, restantes:number, recusadas:number, erro:string|null}}
+ */
 export async function escoarFila() {
-  if (!nuvem.ativo()) return { enviadas: 0, restantes: lerFila().length, erro: 'sem-configuracao' };
+  if (!nuvem.ativo()) {
+    return { enviadas: 0, restantes: lerFila().length, recusadas: tamanhoRecusadas(), erro: 'sem-configuracao' };
+  }
 
   let fila = lerFila();
   let enviadas = 0;
   let erro = null;
+  let novasRecusadas = 0;
 
   while (fila.length) {
+    const op = fila[0];
     try {
-      await executar(fila[0]);
+      await executar(op);
       fila = fila.slice(1);
       enviadas++;
       gravarFila(fila);
     } catch (e) {
+      if (recusaDefinitiva(e)) {
+        /* sai da linha, com o motivo, e a fila continua andando */
+        fila = fila.slice(1);
+        novasRecusadas++;
+        gravarFila(fila);
+        try {
+          armazem().setItem(CHAVE_RECUSADAS, JSON.stringify([
+            ...lerRecusadas().slice(-200),
+            { op, motivo: String(e.message || e).slice(0, 200), em: new Date().toISOString() },
+          ]));
+        } catch { /* cota cheia: a recusa ainda saiu da fila, que é o essencial */ }
+        continue;
+      }
       erro = String(e.message || e).slice(0, 160);
       break;
     }
   }
-  return { enviadas, restantes: fila.length, erro };
+  return { enviadas, restantes: fila.length, recusadas: novasRecusadas, erro };
 }
 
 /* -------------------------------------------------------------- merge ----- */

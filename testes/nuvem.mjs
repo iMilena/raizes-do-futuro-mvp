@@ -112,6 +112,16 @@ console.log(`faixa de teste: ${N}`);
 try {
   /* ---------------------------------------------------------------- base --- */
   secao('1. Entidades operacionais aceitam escrita');
+  /* Consentimento PRIMEIRO: desde a migração 02 a policy am_criar recusa
+     família sem consentimento ativo. Esta suíte foi escrita antes disso e
+     inseria família direto — o 403 resultante era a policy funcionando, não
+     defeito. Registrar aqui é o que o app faz na aba Cadastro. */
+  const consentiu = await inserir('consentimentos', {
+    id: N, familia_id: FAM, versao_termo: 'termo-teste-nuvem',
+    finalidades: ['[teste] garantias do esquema'], forma: 'presencial-assinado',
+    termo_hash: 'c'.repeat(64), coletado_por: SESSAO.usuario.id,
+  });
+  ok(consentiu.ok, `consentimento registrado antes da família (status ${consentiu.status})`);
   ok((await inserir('familias', { id: FAM, codigo: 'TESTE-' + N, criancas: 2 })).ok,
     'insere família com código pseudônimo');
   ok((await inserir('condicoes', { id: COND, familia_id: FAM, mes: 'Julho', tipo: marca })).ok,
@@ -156,20 +166,39 @@ try {
 
   /* ----------------------------------------------- assinaturas 2-de-3 ----- */
   secao('4. Assinatura é linha: 2-de-3 correto por construção');
-  ok((await inserir('assinaturas', { proposta_id: PROP, signatario: 'viva' })).ok,
-    'Instituto Vivá assina');
-  const dup = await inserir('assinaturas', { proposta_id: PROP, signatario: 'viva' });
-  ok(!dup.ok, `mesmo signatário não assina duas vezes (status ${dup.status})`);
-  ok((await inserir('assinaturas', { proposta_id: PROP, signatario: 'detrash' })).ok,
-    'DeTrash assina — signatário diferente não conflita');
+  /* Desde a migração 02, só assina quem é signatário DAQUELA organização — a
+     trava que faz o 2-de-3 valer. O usuário desta suíte tem signatario nulo
+     de propósito (dar-lhe uma organização real duplicaria o signatário e o
+     2-de-3 voltaria a poder ser cumprido por uma só). Então: com signatário,
+     exercita a chave primária; sem, confere que a recusa acontece — que é a
+     garantia mais importante das duas. */
+  const meuSig = SESSAO.papel?.signatario ?? null;
+  if (meuSig) {
+    ok((await inserir('assinaturas', { proposta_id: PROP, signatario: meuSig })).ok,
+      `assina como ${meuSig}`);
+    const dup = await inserir('assinaturas', { proposta_id: PROP, signatario: meuSig });
+    ok(!dup.ok, `mesmo signatário não assina duas vezes (status ${dup.status})`);
+  } else {
+    const recusa = await inserir('assinaturas', { proposta_id: PROP, signatario: 'viva' });
+    ok(!recusa.ok,
+      `sem signatário no papel, a assinatura é RECUSADA pelo banco (status ${recusa.status})`);
+    console.log('     (a PK de assinaturas e o 2-de-3 por organizacao estao em: npm test -- autorizacao)');
+  }
   ok(!(await inserir('assinaturas', { proposta_id: PROP, signatario: 'terceiro' })).ok,
     'recusa signatário fora dos três credenciados');
 
+  /* A garantia da view não é "conta 2": é BATER COM A TABELA. Assim ela é
+     verificável com qualquer número de assinaturas — inclusive zero, que é o
+     caso de um usuário sem signatário. Antes a asserção fixava 2 e falhava por
+     falta de permissão de assinar, não por a view estar errada. */
+  const naTabela = await ler('assinaturas', `proposta_id=eq.${PROP}&select=signatario`);
+  const assinantes = (naTabela.corpo || []).map(a => a.signatario).sort();
   const vista = await ler('propostas_com_assinaturas', `id=eq.${PROP}&select=assinaturas,quem_assinou`);
   const linha = vista.corpo?.[0];
-  ok(Number(linha?.assinaturas) === 2, `a view conta 2 assinaturas (contou ${linha?.assinaturas})`);
-  ok(Array.isArray(linha?.quem_assinou) && linha.quem_assinou.includes('viva') && linha.quem_assinou.includes('detrash'),
-    `a view diz quem assinou (${JSON.stringify(linha?.quem_assinou)})`);
+  ok(Number(linha?.assinaturas) === assinantes.length,
+    `a view conta o mesmo que a tabela (${linha?.assinaturas} = ${assinantes.length})`);
+  ok(JSON.stringify((linha?.quem_assinou || []).slice().sort()) === JSON.stringify(assinantes),
+    `a view diz exatamente quem assinou (${JSON.stringify(linha?.quem_assinou)})`);
 
   /* -------------------------------------------------- saldo é soma -------- */
   secao('5. Saldo é soma de livro imutável, não campo');
@@ -313,7 +342,15 @@ if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
   const propRT = remoto.propostas.filter(p => p.id > N);
   const exec = propRT.find(p => p.id === pAberta.id);
   ok(exec?.status === 'executada', 'proposta voltou como executada');
-  ok((exec?.assinaturas || []).length === 2, `voltou com 2 assinaturas (${(exec?.assinaturas || []).length})`);
+  /* As assinaturas só sobem se o usuário desta sessão for signatário — a trava
+     que faz o 2-de-3 valer (policy ass_assinar). Sem signatário no papel, elas
+     ficam na fila de recusadas e a proposta volta com zero: comportamento
+     correto, e é o que esta asserção mede em cada caso. */
+  const nAss = (exec?.assinaturas || []).length;
+  ok(SESSAO.papel?.signatario ? nAss >= 1 : nAss === 0,
+    SESSAO.papel?.signatario
+      ? `voltou com as assinaturas que este papel pode dar (${nAss})`
+      : `sem signatário no papel, as assinaturas NÃO subiram (${nAss}) — a policy recusou, como deve`);
 
   /* assertiva precisa: toda signature local tem de existir na nuvem. Contar por
      prefixo não serve — as transações criadas pelo reducer recebem signature

@@ -69,7 +69,16 @@ async function req(caminho, opcoes = {}) {
   if (!(await configurar())) return null;
   const r = await fetch(`${cfg.url}/rest/v1/${caminho}`, { ...opcoes, headers: await cabecalhos(opcoes.headers) });
   const texto = await r.text();
-  if (!r.ok) throw new Error(`Supabase ${r.status}: ${texto.slice(0, 160)}`);
+  if (!r.ok) {
+    const e = new Error(`Supabase ${r.status}: ${texto.slice(0, 160)}`);
+    /* o status vai no erro, não só no texto: a fila precisa distinguir recusa
+       DEFINITIVA (403 de RLS, 400 de constraint) de falha passageira (rede, 5xx).
+       Reenviar para sempre o que o banco nunca vai aceitar entope a fila e
+       bloqueia todo o trabalho legítimo atrás dela. */
+    e.status = r.status;
+    e.corpo = texto.slice(0, 300);
+    throw e;
+  }
   // `Prefer: return=minimal` devolve 201 com corpo VAZIO — não é só o 204.
   if (!texto) return null;
   try { return JSON.parse(texto); } catch { return null; }

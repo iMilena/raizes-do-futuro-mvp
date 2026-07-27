@@ -9,6 +9,7 @@ import OnchainDevnet from '../OnchainDevnet.jsx';
 import {
   assinaturaValida, comandoLiberacao, comandoDecisao, hashDecisaoColetiva,
 } from '../ancoragem.js';
+import * as auth from '../auth.js';
 
 const STATUS = {
   pendente: ['pend', 'aguardando comprovação'],
@@ -19,6 +20,19 @@ const STATUS = {
 };
 
 /* ---------- proposta pendente com os 3 signatários ---------- */
+/**
+ * Esta pessoa pode assinar em nome desta organização?
+ *
+ * SEM sessão (modo local, demonstração) todos os três botões aparecem — é o modo
+ * em que o app é uma simulação da jornada e nada sobe. COM sessão, só a
+ * organização do papel: o banco recusa as outras, e a recusada entupia a fila.
+ */
+function podeAssinarComo(idSignatario) {
+  const s = auth.atual();
+  if (!s?.papel) return true;            // modo local: a demo mostra o ciclo todo
+  return s.papel.signatario === idSignatario;
+}
+
 function CardProposta({ proposta, familia }) {
   const { state, dispatch } = useStore();
   const toast = useToast();
@@ -82,7 +96,18 @@ function CardProposta({ proposta, familia }) {
                 ? <span className="tag ok">assinou</span>
                 : executada
                   ? <span className="mini">não foi necessário</span>
-                  : <button className="acao sec" onClick={() => assinar(s)}>Assinar como {s.nome.split(' ')[0]}</button>}
+                  : podeAssinarComo(s.id)
+                    ? <button className="acao sec" onClick={() => assinar(s)}>Assinar como {s.nome.split(' ')[0]}</button>
+                    : (
+                      /* Com sessão aberta, só aparece o botão da SUA organização.
+                         Antes o app oferecia os três, o banco recusava os outros
+                         dois (policy ass_assinar) e a operação recusada entupia a
+                         fila de sincronização. Oferecer o que vai ser negado é
+                         convidar ao erro. */
+                      <span className="mini" title="Só a organização registrada no seu papel pode assinar por ela">
+                        aguardando {s.nome.split(' ')[0]}
+                      </span>
+                    )}
             </div>
           );
         })}

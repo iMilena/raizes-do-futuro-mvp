@@ -290,9 +290,17 @@ if (podeConsentir && rConsent.ok) {
 if (temContestacoes) {
   /* 7. com sessão, a operação lê e responde */
   if (TOKEN && ['validador', 'gestor'].includes(papel.papel)) {
+    /* A contestação de teste é de uma família SEM consentimento — de propósito.
+       Na migração 04 a policy de leitura exigia consentimento, e o efeito era
+       grave: o depósito não exige (o celular não tem sessão), então a família
+       sem consentimento reclamava e a operação nunca via. Reclamar sobre dado
+       inexato é direito independente do consentimento (LGPD art. 18, III), e a
+       migração 05 tirou esse gate. Esta asserção é o que trava a regressão. */
     const rLer = await fetch(`${BASE}contestacoes?id=eq.${CT}&select=motivo,status`, { headers: cabToken(TOKEN) });
     const vista = await rLer.json().catch(() => []);
     ok(rLer.ok, `a operação com papel ${papel.papel} lê a contestação (HTTP ${rLer.status})`);
+    ok(Array.isArray(vista) && vista.length === 1,
+      `e VÊ a linha mesmo sem consentimento da família (${Array.isArray(vista) ? vista.length : '?'} linha) — migração 05`);
     const rOk = await fetch(`${BASE}contestacoes?id=eq.${CT}`, {
       method: 'PATCH',
       headers: { ...cabToken(TOKEN), Prefer: 'return=minimal' },
