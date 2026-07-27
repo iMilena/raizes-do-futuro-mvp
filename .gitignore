@@ -5,6 +5,10 @@ dist/
 .env
 .env.*
 .dev.vars
+# ...menos o MODELO, que não tem segredo nenhum e é o que o README manda copiar.
+# Sem esta linha, `.env.*` engolia o próprio exemplo: ele nunca foi versionado, e
+# quem clonasse o projeto lia "copie .env.exemplo" sobre um arquivo inexistente.
+!.env.exemplo
 
 # Configuração do Supabase: contém a chave anon, que é pública por natureza
 # (vai no bundle do site). Fica fora do git só para cada ambiente ter a sua.
