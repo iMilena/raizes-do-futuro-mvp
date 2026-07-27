@@ -291,6 +291,15 @@ export async function escoarFila() {
  */
 export function mesclar(local, remoto) {
   if (!remoto) return local;
+  /* Campos que existem SÓ no aparelho e seriam apagados pelo pull:
+     · resp  — nome da pessoa, que nunca sobe (LGPD)
+     · pin   — segredo da família; se subisse, vazamento da base viraria
+               vazamento de acesso às contas
+     · consentimentos — a nuvem os guarda, mas `carregar()` não os traz de volta;
+               perdê-los aqui faria o app concluir "sem consentimento" e parar de
+               sincronizar os dados daquela família, em silêncio.
+     Sem este resgate, o primeiro pull destruiria os três. */
+  const locais = new Map((local?.familias || []).map(f => [f.id, f]));
   const nomes = new Map((local?.familias || []).map(f => [f.id, f.resp]));
 
   return {
@@ -305,6 +314,8 @@ export function mesclar(local, remoto) {
     familias: (remoto.familias || []).map(f => ({
       ...f,
       resp: nomes.get(f.id) || f.codigo || `Família ${f.id}`,
+      pin: locais.get(f.id)?.pin ?? null,
+      consentimentos: locais.get(f.id)?.consentimentos ?? [],
     })),
   };
 }

@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, fmt, trunc, BONUS_POR_CRIANCA } from '../store.jsx';
+import {
+  useStore, fmt, trunc, BONUS_POR_CRIANCA,
+  temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN,
+} from '../store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
 import { sha256Arquivo } from '../evidencia.js';
@@ -66,7 +69,7 @@ function QrFake({ semente = 7 }) {
 /* ------------------------------------------- onboarding gamificado (Tuca) ---- */
 const MISSOES = [
   { icone: '🧺', rot: 'Escolher onde guardar' },
-  { icone: '🔢', rot: 'Criar meu PIN' },
+  { icone: '🔢', rot: 'Meu PIN' },
   { icone: '📋', rot: 'Meus compromissos' },
   { icone: '💸', rot: 'Como retirar' },
 ];
@@ -140,19 +143,22 @@ function Onboarding({ familia, onDone }) {
         </div>
       )}
 
+      {/* O PIN já foi criado na entrada, e agora ele é conferido de verdade.
+          Pedir outro aqui faria a família ter dois segredos para a mesma conta —
+          e ninguém entende por quê. Esta missão passou a CONFIRMAR o que existe
+          e a explicar como funciona a recuperação. */}
       {!pronto && missao === 1 && (
         <div className="card">
-          <Mascote fala="Agora crie um PIN de 4 números. É ele que protege sua conta — igual à senha do cartão. Guarde bem!" />
-          <div className="pin">
-            {pin.map((d, i) => (
-              <input key={i} type="password" inputMode="numeric" maxLength={1} value={d}
-                onChange={e => setDigito(i, e.target.value)} aria-label={`Número ${i + 1} do PIN`} />
-            ))}
+          <Mascote fala="Seu PIN de 4 números já está guardado neste celular. É ele que protege sua conta — igual à senha do cartão." />
+          <div className="passo-a-passo">
+            <div><span>🔒</span><span>Só este celular conhece o seu PIN.</span></div>
+            <div><span>🙈</span><span>Ninguém do projeto consegue ver qual é — nem para te ajudar.</span></div>
+            <div><span>🤝</span><span>Se esquecer, o agente do Instituto Vivá destrava pessoalmente e você escolhe outro.</span></div>
           </div>
-          <div className="conceito">
-            💡 Nada de senhas complicadas de 12 palavras. Se esquecer o PIN, um agente do Instituto Vivá ajuda a recuperar com o seu celular.
+          <div className="conceito" style={{ marginTop: 10 }}>
+            💡 Nada de senhas complicadas de 12 palavras para decorar.
           </div>
-          <button className="acao bloco" disabled={!pinOk} onClick={avancar}>Missão cumprida → 🌟</button>
+          <button className="acao bloco" onClick={avancar}>Entendi, meu PIN está pronto → 🌟</button>
         </div>
       )}
 
@@ -278,6 +284,8 @@ export default function PaginaFamilia({ standalone = false }) {
   const { rodando, familiaDemo } = useDemo();
   const [famId, setFamId] = useState('');
   const [pin, setPin] = useState('');
+  const [pin2, setPin2] = useState('');   // confirmação, só na criação
+  const [erroPin, setErroPin] = useState('');
   const [entrou, setEntrou] = useState(false);
   const [onboardOk, setOnboardOk] = useState(false);
   const [onbFam, setOnbFam] = useState(null); // família no meio das missões
@@ -303,6 +311,44 @@ export default function PaginaFamilia({ standalone = false }) {
     if (logado && f && !f.carteira) setOnbFam(f.id);
   }, [logado, f]);
   const noOnboarding = logado && f && onbFam === f.id && !onboardOk;
+
+  /* ------------------------------------------------------------ PIN ------ */
+  /* A família escolhida na lista, antes de entrar — a tela precisa saber se ela
+     já tem PIN para pedir "crie" em vez de "digite". */
+  const escolhida = state.familias.find(x => x.id === Number(famId)) || null;
+  const primeiraVez = Boolean(escolhida) && !temPin(escolhida);
+  const bloqueada = Boolean(escolhida?.pin?.bloqueado);
+  const restantes = MAX_TENTATIVAS_PIN - (escolhida?.pin?.tentativas || 0);
+
+  const entrar = async () => {
+    if (!escolhida) return;
+    if (primeiraVez) {
+      if (pin !== pin2) { setErroPin('Os dois PINs não são iguais. Tente de novo.'); setPin2(''); return; }
+      if (/^(\d)\1{3}$/.test(pin) || ['1234', '4321', '0123'].includes(pin)) {
+        /* recusar 1111 e 1234 não é preciosismo: são os dois primeiros palpites
+           de qualquer pessoa, e o PIN é a única barreira do celular. */
+        setErroPin('Escolha um PIN menos fácil de adivinhar (evite 1111 ou 1234).');
+        return;
+      }
+      const sal = novoSal();
+      const hash = await hashPin(pin, sal);
+      if (!hash) { setErroPin('Este navegador não permite guardar o PIN com segurança.'); return; }
+      dispatch({ type: 'DEFINIR_PIN', familiaId: escolhida.id, hash, sal });
+      toast('PIN criado 🔒 — ele fica só neste celular');
+      setPin(''); setPin2(''); setEntrou(true);
+      return;
+    }
+    if (await conferirPin(escolhida, pin)) {
+      dispatch({ type: 'PIN_CERTO', familiaId: escolhida.id });
+      setPin(''); setErroPin(''); setEntrou(true);
+    } else {
+      dispatch({ type: 'PIN_ERRADO', familiaId: escolhida.id });
+      setPin('');
+      setErroPin(restantes <= 1
+        ? 'PIN errado. Este celular foi travado — procure o agente.'
+        : 'PIN errado. Confira e tente de novo.');
+    }
+  };
 
   const enviar = c => {
     if (rodando) {
@@ -348,18 +394,59 @@ export default function PaginaFamilia({ standalone = false }) {
         {!logado && (
           <div className="fam-entrada">
             <img className="fam-logo-entrada" src="./logo.png" alt="Raízes do Futuro" />
-            <Mascote fala="Bem-vinda de volta! Escolha sua família e digite o PIN para entrar." />
+            <Mascote fala={
+              !escolhida ? 'Oi! Escolha sua família para começar.'
+                : bloqueada ? 'Este celular está travado. Procure o agente do Instituto Vivá — ele destrava sem ver seu PIN.'
+                  : primeiraVez ? 'Primeira vez aqui! Escolha um PIN de 4 números só seu. Ele fica guardado neste celular.'
+                    : 'Bem-vinda de volta! Digite seu PIN para entrar.'} />
             <div className="card">
               <label>Quem é você?<span className="so-sim"> (simulação)</span></label>
-              <select value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); setOnbFam(null); }}>
+              <select value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); setOnbFam(null); setPin(''); setPin2(''); setErroPin(''); }}>
                 <option value="">Escolha a família…</option>
                 {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp}</option>)}
               </select>
-              <label>PIN (4 números<span className="so-sim"> — qualquer um na demo</span>)</label>
-              <input type="password" inputMode="numeric" maxLength={4} value={pin}
-                onChange={e => setPin(e.target.value.replace(/\D/g, ''))} placeholder="••••"
-                style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} />
-              <button className="acao grande" disabled={!famId || pin.length !== 4} onClick={() => setEntrou(true)}>Entrar</button>
+
+              {bloqueada ? (
+                <p className="conceito" style={{ marginTop: 14 }}>
+                  🔒 Depois de {MAX_TENTATIVAS_PIN} tentativas erradas, este celular travou
+                  para proteger sua conta. O agente destrava presencialmente — e você escolhe
+                  um PIN novo, que ninguém mais vê.
+                </p>
+              ) : (
+                <>
+                  <label htmlFor="pin-fam">
+                    {primeiraVez ? 'Escolha seu PIN (4 números)' : 'Seu PIN (4 números)'}
+                  </label>
+                  <input id="pin-fam" type="password" inputMode="numeric" maxLength={4} value={pin}
+                    onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setErroPin(''); }} placeholder="••••"
+                    style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} />
+
+                  {primeiraVez && (
+                    <>
+                      <label htmlFor="pin-fam2">Repita o PIN</label>
+                      <input id="pin-fam2" type="password" inputMode="numeric" maxLength={4} value={pin2}
+                        onChange={e => { setPin2(e.target.value.replace(/\D/g, '')); setErroPin(''); }} placeholder="••••"
+                        style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} />
+                      <p className="mini">
+                        Guarde bem: o PIN fica só neste celular, ninguém do projeto consegue ver.
+                        Se esquecer, o agente destrava e você escolhe outro.
+                      </p>
+                    </>
+                  )}
+
+                  {erroPin && <p className="mini alerta-txt" style={{ marginTop: 8 }}>{erroPin}</p>}
+                  {!primeiraVez && restantes < MAX_TENTATIVAS_PIN && restantes > 0 && (
+                    <p className="mini alerta-txt">
+                      {restantes === 1 ? 'Última tentativa antes de travar.' : `${restantes} tentativas restantes.`}
+                    </p>
+                  )}
+
+                  <button className="acao grande" disabled={!escolhida || pin.length !== 4 || (primeiraVez && pin2.length !== 4)}
+                    onClick={entrar}>
+                    {primeiraVez ? 'Criar meu PIN e entrar' : 'Entrar'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

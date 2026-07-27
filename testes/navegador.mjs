@@ -93,6 +93,23 @@ window.__t = {
 `;
 
 /** Estado da demo limpo, mas com o tour já marcado como visto (como um usuário que voltou). */
+/**
+ * Espera o app REALMENTE montar, em vez de dormir um tempo fixo.
+ *
+ * Existe porque uma asserção do tipo `conta('.tour') === 0` passa também com a
+ * página em branco: espera curta demais e o teste fica verde por vacuidade,
+ * escondendo que nada renderizou. Um caso desses só apareceu quando a asserção
+ * seguinte procurou texto e falhou.
+ */
+async function esperarApp(seletor = 'nav.tabs button', tentativas = 40) {
+  for (let i = 0; i < tentativas; i++) {
+    const n = await ev(`return document.querySelectorAll(${JSON.stringify(seletor)}).length`);
+    if (n > 0) return true;
+    await espera(150);
+  }
+  return false;
+}
+
 async function irPara(url, limparStorage = true) {
   await cdp('Page.navigate', { url });
   await espera(500);
@@ -190,9 +207,18 @@ try {
   await cdp('Page.reload', {});
   await espera(1200);
   await ev(HELPERS + ' return 1;');
+  ok(await esperarApp(), 'app remontou depois do reload');
   ok(await ev('return __t.conta(".tour") === 0'), 'não reabre depois de concluído');
 
-  ok(await ev('return __t.tem("Como funciona")'), 'botão "❔ Como funciona" no topo');
+  const diagTour = await ev(`
+    const b = document.querySelector('.btn-tour');
+    return { existe: !!b, display: b ? getComputedStyle(b).display : null,
+             texto: b ? b.innerText : null, largura: window.innerWidth,
+             classesBody: document.body.className, hash: location.hash };
+  `);
+  ok(await ev('return __t.tem("Como funciona")'),
+    `botão "❔ Como funciona" no topo${diagTour.existe ? '' : ' — ' + JSON.stringify(diagTour)}`);
+  if (!diagTour.existe || diagTour.display === 'none') console.log('    diag: ' + JSON.stringify(diagTour));
   await ev('return __t.clicar(".btn-tour")');
   await espera(400);
   ok(await ev('return __t.conta(".tour") === 1 && __t.tem("1 de 9")'), 'reabre pelo botão, do começo');
@@ -385,9 +411,8 @@ try {
   ok(cliqueAba === true, 'abre a aba do App da Família');
   ok(await ev('return __t.conta(".moldura-celular") === 1'), 'renderiza numa única moldura de celular');
   ok(await ev('return __t.conta(".mascote-bicho") >= 1 && __t.txt().includes("🐢")'), 'mascote tartaruga presente');
-  ok(await ev('return __t.tem("Escolha sua família e digite o PIN")'), 'mascote orienta a entrada');
+  ok(await ev('return __t.txt().toLowerCase().includes("escolha sua família")'), 'mascote orienta a entrada');
   ok(await ev('return __t.txt().toLowerCase().includes("quem é você")'), 'seleção de família na entrada');
-  ok(await ev('return __t.txt().toLowerCase().includes("pin (4 números")'), 'campo de PIN de 4 números');
 
   // entra como a primeira família (que já tem conta)
   const famAlvo = await ev(`
@@ -396,11 +421,47 @@ try {
     return { id: f.id, nome: f.resp, saldo: f.saldo };
   `);
   await ev(`return __t.preencher(".fam-entrada select", ${famAlvo.id})`);
-  await espera(250);
-  await ev('return __t.preencher(".fam-entrada input", "1234")');
-  await espera(250);
-  ok(await ev('return __t.clicar(".fam-entrada button.acao", "Entrar") === true'), 'Entrar habilita com família + PIN');
-  await espera(500);
+  await espera(300);
+
+  /* ---- PIN de verdade ----
+     A família da seed não tem PIN: no primeiro acesso ela CRIA um (dois campos,
+     com confirmação), e depois ele é conferido. Antes o teste digitava qualquer
+     coisa porque a tela aceitava qualquer coisa. */
+  ok(await ev('return __t.txt().toLowerCase().includes("escolha seu pin")'), 'primeiro acesso pede para CRIAR o PIN');
+  ok(await ev('return __t.conta(".fam-entrada input[type=password]") === 2'), 'com campo de confirmação');
+
+  // PIN fácil é recusado — é o primeiro palpite de qualquer pessoa
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "1111", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "1111", 1)');
+  await espera(200);
+  await ev('return __t.clicar(".fam-entrada button.acao", "Criar meu PIN")');
+  await espera(350);
+  ok(await ev('return __t.txt().toLowerCase().includes("menos fácil de adivinhar")'), 'recusa PIN óbvio (1111)');
+
+  // confirmação diferente é recusada
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "8317", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "8318", 1)');
+  await espera(200);
+  await ev('return __t.clicar(".fam-entrada button.acao", "Criar meu PIN")');
+  await espera(350);
+  ok(await ev('return __t.txt().toLowerCase().includes("não são iguais")'), 'recusa quando a confirmação não bate');
+
+  // cria de verdade
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "8317", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "8317", 1)');
+  await espera(200);
+  ok(await ev('return __t.clicar(".fam-entrada button.acao", "Criar meu PIN") === true'), 'cria o PIN e entra');
+  await espera(600);
+
+  const pinGuardado = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.id === ${famAlvo.id});
+    return { temHash: !!f.pin?.hash, tamanho: f.pin?.hash?.length || 0,
+             emClaro: JSON.stringify(f.pin).includes('8317') };
+  `);
+  ok(pinGuardado.temHash && pinGuardado.tamanho === 64, `guarda SHA-256 do PIN (${pinGuardado.tamanho} chars)`);
+  ok(!pinGuardado.emClaro, 'e nunca o PIN em claro');
+  ok(await ev('return __t.tem("Você tem")'), 'Entrar habilita com família + PIN');
 
   ok(await ev('return __t.tem("Você tem")'), 'saldo apresentado em linguagem simples');
   ok(await ev('return __t.conta(".saldo-numero") === 1'), 'saldo em destaque');
@@ -503,17 +564,19 @@ try {
     return { id: f.id, nome: f.resp };
   `);
   await ev(`return __t.preencher(".fam-entrada select", ${semConta.id})`);
+  await espera(300);
+  /* esta família também não tem PIN ainda: cria na entrada, como a de cima */
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "5274", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "5274", 1)');
   await espera(250);
-  await ev('return __t.preencher(".fam-entrada input", "1234")');
-  await espera(250);
-  await ev('return __t.clicar(".fam-entrada button.acao", "Entrar")');
-  await espera(600);
+  await ev('return __t.clicar(".fam-entrada button.acao", "Criar meu PIN")');
+  await espera(700);
 
   ok(await ev('return __t.conta(".fam-onb") === 1'), `família sem conta (${semConta.nome}) cai no onboarding`);
   ok(await ev('return __t.tem("Missão 1 de 4")'), 'barra de progresso indica missão 1 de 4');
   ok(await ev('return __t.conta(".progresso-fill") === 1'), 'barra de progresso presente');
   ok(await ev('return __t.conta(".missao-passo") === 4'), '4 missões na trilha');
-  ok(await ev('return __t.tem("Escolher onde guardar") && __t.tem("Criar meu PIN") && __t.tem("Meus compromissos") && __t.tem("Como retirar")'), 'as 4 missões sequenciais');
+  ok(await ev('return __t.tem("Escolher onde guardar") && __t.tem("Meu PIN") && __t.tem("Meus compromissos") && __t.tem("Como retirar")'), 'as 4 missões sequenciais');
   ok(await ev('return __t.conta(".balao") === 1'), 'mascote com balão de fala');
   ok(await ev('return __t.tem("tartaruga de Boipeba")'), 'mascote se apresenta como tartaruga de Boipeba');
   ok(await ev('return __t.tem("cofre digital que ninguém pode desviar")'), 'explica o conceito em 1 frase');
@@ -534,9 +597,15 @@ try {
   ok(await ev('return __t.conta(".missao-passo.feita") === 1'), 'missão 1 marcada como feita');
 
   // missão 2: PIN
-  ok(await ev('return __t.pin() === 4'), 'PIN de 4 caixas na missão 2');
+  /* A missão 2 deixou de PEDIR um PIN: a família já criou o dela na entrada, e
+     agora ele é conferido de verdade. Pedir outro aqui daria dois segredos para
+     a mesma conta. A missão passou a explicar como o PIN funciona. */
+  ok(await ev('return __t.tem("já está guardado neste celular")'), 'missão 2 confirma o PIN que já existe');
+  ok(await ev('return __t.pin() === 0'), 'e não pede um segundo PIN');
+  ok(await ev('return __t.tem("Ninguém do projeto consegue ver")'), 'explica que ninguém do projeto vê o PIN');
+  ok(await ev('return __t.tem("destrava pessoalmente")'), 'e como funciona a recuperação (presencial)');
   await espera(300);
-  ok(await ev('return __t.clicar(".fam-onb button.acao", "Missão cumprida") === true'), 'missão 2 conclui com PIN');
+  ok(await ev('return __t.clicar(".fam-onb button.acao", "meu PIN está pronto") === true'), 'missão 2 conclui');
   await espera(1200);
   ok(await ev('return __t.tem("Missão 3 de 4")'), 'avança para a missão 3');
   ok(await ev('return __t.conta(".lista-compromissos li") >= 2'), 'missão 3 lista os compromissos');

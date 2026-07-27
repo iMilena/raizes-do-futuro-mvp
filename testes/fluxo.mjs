@@ -10,10 +10,13 @@ import { pathToFileURL } from 'node:url';
 
 /* o store tem JSX; o runner o empacota antes e informa o caminho aqui */
 const caminho = process.env.STORE_BUNDLE ?? new URL('./.tmp/store.mjs', import.meta.url).pathname;
+/* `store` inteiro além dos nomes soltos: as seções de PIN e retenção usam uma
+   dúzia de helpers, e listar todos na desestruturação só cria ruído. */
+const store = await import(pathToFileURL(caminho).href);
 const {
   reducer, estadoInicial, disponivelCofre, fmt, trunc,
   BONUS_POR_CRIANCA, SIGNATARIOS, SPLIT, REDE, PROVIDER_CARTEIRA,
-} = await import(pathToFileURL(caminho).href);
+} = store;
 
 let falhas = 0, total = 0;
 const ok = (cond, msg) => {
@@ -327,6 +330,106 @@ ok(mesclado.familias[0].resp === base.familias[0].resp, 'merge recupera o nome d
 ok(mesclado.familias[0].saldo === 7, 'merge usa o saldo que veio da nuvem');
 ok(nuvemDifere(base, remoto) === true, 'detecta que a nuvem difere do local');
 ok(nuvemDifere(base, base) === false, 'e que estados iguais não disparam merge');
+
+/* ==========================================================================
+   14. PIN da família — verificado de verdade, e nunca sai do aparelho
+   ========================================================================== */
+secao('14. PIN da família');
+
+const salA = store.novoSal();
+const salB = store.novoSal();
+ok(salA.length === 32 && /^[0-9a-f]+$/.test(salA), `sal é hex de 16 bytes (${salA.length} chars)`);
+ok(salA !== salB, 'cada família recebe um sal diferente');
+
+const h1234 = await store.hashPin('1234', salA);
+const h9999 = await store.hashPin('9999', salA);
+/* Este é O teste que importa: a primeira versão chamava o `hex(str)` errado, que
+   recebia um ArrayBuffer e devolvia o hash de "[object ArrayBuffer]" — o MESMO
+   valor para qualquer PIN. O build compilava, a tela funcionava, e qualquer PIN
+   abriria qualquer conta. */
+ok(h1234.length === 64 && /^[0-9a-f]{64}$/.test(h1234), `hash é SHA-256 em hex (${h1234.length} chars)`);
+ok(h1234 !== h9999, 'PINs diferentes geram hashes diferentes');
+ok(h1234 !== await store.hashPin('1234', salB), 'o mesmo PIN com sal diferente gera hash diferente');
+
+const semPin = base.familias[0];
+ok(store.temPin(semPin) === false, 'família da seed começa SEM PIN (define no primeiro acesso)');
+ok(await store.conferirPin(semPin, '1234') === false, 'sem PIN definido, nenhum PIN é aceito');
+
+const comPin = d(base, { type: 'DEFINIR_PIN', familiaId: semPin.id, hash: h1234, sal: salA });
+const fPin = comPin.familias.find(f => f.id === semPin.id);
+ok(store.temPin(fPin), 'DEFINIR_PIN registra o PIN');
+ok(await store.conferirPin(fPin, '1234') === true, 'o PIN certo é aceito');
+ok(await store.conferirPin(fPin, '4321') === false, 'o PIN errado é recusado');
+ok(!('pin' in fPin) || fPin.pin.hash !== '1234', 'o PIN em claro nunca é guardado');
+
+/* bloqueio por tentativa */
+let sBloq = comPin;
+for (let i = 0; i < store.MAX_TENTATIVAS_PIN; i++) {
+  sBloq = d(sBloq, { type: 'PIN_ERRADO', familiaId: semPin.id });
+}
+const fBloq = sBloq.familias.find(f => f.id === semPin.id);
+ok(fBloq.pin.bloqueado === true, `bloqueia após ${store.MAX_TENTATIVAS_PIN} tentativas erradas`);
+const sOk = d(sBloq, { type: 'PIN_CERTO', familiaId: semPin.id });
+ok(sOk.familias.find(f => f.id === semPin.id).pin.tentativas === 0, 'PIN certo zera o contador');
+
+const sDestravado = d(sBloq, { type: 'DESTRAVAR_PIN', familiaId: semPin.id });
+const fDest = sDestravado.familias.find(f => f.id === semPin.id);
+ok(fDest.pin === null, 'o agente destrava apagando o PIN (a família escolhe outro)');
+ok(sDestravado.transacoes.length > sBloq.transacoes.length, 'destravar deixa registro no histórico');
+
+/* LGPD: o PIN NÃO PODE subir para a nuvem, em nenhuma operação */
+const opsPin = calcularDeltas(base, comPin);
+const serialPin = JSON.stringify(opsPin);
+ok(!/"pin"/.test(serialPin) && !serialPin.includes(h1234) && !serialPin.includes(salA),
+  'nenhuma operação de sincronização carrega o PIN, o hash ou o sal');
+
+/* e o pull da nuvem não pode APAGAR o PIN nem os consentimentos locais */
+const remotoSemPin = {
+  ...comPin,
+  familias: comPin.familias.map(f => ({ id: f.id, codigo: 'BOI-' + f.id, criancas: f.criancas, carteira: f.carteira, saldo: 0, condicoes: f.condicoes, extrato: [] })),
+};
+const depoisPull = mesclar(comPin, remotoSemPin);
+ok(store.temPin(depoisPull.familias.find(f => f.id === semPin.id)),
+  'o merge da nuvem NÃO apaga o PIN guardado no aparelho');
+
+/* ==========================================================================
+   15. Retenção — prazo, vencimento e renovação
+   ========================================================================== */
+secao('15. Retenção do consentimento');
+
+const fam0 = base.familias[0].id;
+const comCons = d(base, { type: 'REGISTRAR_CONSENTIMENTO', familiaId: fam0, termoHash: 'a'.repeat(64) });
+const cons = comCons.familias.find(f => f.id === fam0).consentimentos[0];
+ok(cons.validadeMeses === store.VALIDADE_MESES, `consentimento nasce com prazo de ${store.VALIDADE_MESES} meses`);
+ok(store.situacaoConsentimento(cons) === 'vigente', 'e nasce vigente');
+
+const agora = Date.now();
+const dia = 86_400_000;
+const venc = store.venceEm(cons).getTime();
+ok(venc > agora, 'vence no futuro');
+ok(store.situacaoConsentimento(cons, venc + dia) === 'vencido', 'depois do prazo, fica vencido');
+ok(store.situacaoConsentimento(cons, venc - 30 * dia) === 'vencendo', '30 dias antes, avisa que está vencendo');
+
+/* vencido = não autoriza mais. É o ponto todo do prazo. */
+const famVencida = { ...base.familias[0], consentimentos: [{ ...cons, coletadoEm: new Date(agora - 800 * dia).toISOString() }] };
+ok(store.consentimentoAtivo(famVencida) === null, 'consentimento vencido NÃO autoriza mais nada');
+ok(calcularDeltas(base, { ...base, familias: [famVencida, ...base.familias.slice(1)] })
+  .every(o => o.tipo !== 'familia'), 'e por isso a família vencida não sobe para a nuvem');
+
+/* renovar cria registro novo apontando para o anterior, sem alterar o antigo */
+const estadoVencido = { ...comCons, familias: comCons.familias.map(f => f.id === fam0 ? famVencida : f) };
+const renovado = d(estadoVencido, { type: 'REGISTRAR_CONSENTIMENTO', familiaId: fam0, termoHash: 'b'.repeat(64) });
+const lista = renovado.familias.find(f => f.id === fam0).consentimentos;
+ok(lista.length === 2, 'renovar não substitui: cria um segundo registro');
+ok(lista[1].renovadoDe === lista[0].id, 'o novo aponta para o anterior (histórico auditável)');
+ok(lista[0].coletadoEm !== lista[1].coletadoEm, 'e o registro antigo não foi alterado');
+ok(store.consentimentoAtivo(renovado.familias.find(f => f.id === fam0)) !== null, 'a renovação volta a autorizar');
+
+/* revogar continua funcionando junto com o prazo */
+const revog = d(comCons, { type: 'REVOGAR_CONSENTIMENTO', familiaId: fam0, motivo: 'pedido da família' });
+const cRev = revog.familias.find(f => f.id === fam0).consentimentos[0];
+ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe ao prazo');
+ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 console.log(`\n${'='.repeat(52)}`);
 console.log(falhas === 0 ? `✅ ${total} verificações, todas passaram` : `❌ ${falhas} de ${total} falharam`);

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA, REDE, MOEDA, PROVIDER_CARTEIRA,
-  VERSAO_TERMO, TEXTO_TERMO, hashTermo, consentimentoAtivo,
+  VERSAO_TERMO, TEXTO_TERMO, hashTermo, consentimentoAtivo, consentimentoMaisRecente,
+  situacaoConsentimento, venceEm, VALIDADE_MESES, CARENCIA_DIAS,
+  temPin, MAX_TENTATIVAS_PIN,
 } from '../store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
@@ -26,6 +28,7 @@ function Consentimento({ familia }) {
   const [forma, setForma] = useState('presencial-assinado');
   const [hash, setHash] = useState('');
   const ativo = consentimentoAtivo(familia);
+  const recente = consentimentoMaisRecente(familia);
   const revogado = (familia.consentimentos || []).find(c => c.revogadoEm);
 
   useEffect(() => { hashTermo().then(setHash).catch(() => setHash('')); }, []);
@@ -49,31 +52,58 @@ function Consentimento({ familia }) {
   };
 
   if (ativo) {
+    const sit = situacaoConsentimento(ativo);
+    const vence = venceEm(ativo);
+    const dias = Math.ceil((vence - Date.now()) / 86_400_000);
     return (
-      <div className="card" style={{ borderLeft: '3px solid var(--verde)' }}>
+      <div className="card" style={{ borderLeft: `3px solid var(--${sit === 'vencendo' ? 'alerta' : 'verde'})` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <b style={{ fontSize: 14 }}>✍️ Consentimento ativo</b>
+            <b style={{ fontSize: 14 }}>
+              {sit === 'vencendo' ? '⏳ Consentimento vencendo' : '✍️ Consentimento ativo'}
+            </b>
             <div className="mini">
               {ativo.versaoTermo} · {ativo.forma.replace('-', ' ')} · registrado em {new Date(ativo.coletadoEm).toLocaleDateString('pt-BR')}
+            </div>
+            {/* prazo em destaque: consentimento sem prazo visível é consentimento
+                que ninguém renova, e aí o dado fica para sempre por descuido */}
+            <div className={'mini' + (sit === 'vencendo' ? ' alerta-txt' : '')} style={{ fontWeight: 600 }}>
+              Vale até {vence.toLocaleDateString('pt-BR')} ({dias} dia{dias === 1 ? '' : 's'})
+              {ativo.renovadoDe ? ' · renovação' : ''}
             </div>
             <div className="hash" style={{ marginTop: 4 }}>termo SHA-256 {ativo.termoHash ? trunc(ativo.termoHash, 12, 12) : '—'}</div>
           </div>
           <button className="acao sec" onClick={revogar}>Revogar a pedido da família</button>
         </div>
+        {sit === 'vencendo' && (
+          <p className="mini" style={{ marginTop: 10 }}>
+            Renove na próxima visita. Vencido, os dados desta família saem da base
+            compartilhada, e {CARENCIA_DIAS} dias depois são expurgados.
+          </p>
+        )}
       </div>
     );
   }
 
   return (
     <div className="card" style={{ borderLeft: '3px solid var(--alerta)' }}>
-      <b style={{ fontSize: 14 }}>⚠️ Sem consentimento registrado</b>
+      <b style={{ fontSize: 14 }}>
+        {recente && situacaoConsentimento(recente) === 'vencido'
+          ? '⌛ Consentimento vencido'
+          : '⚠️ Sem consentimento registrado'}
+      </b>
       <p className="mini" style={{ marginTop: 4 }}>
         {revogado
           ? `A família revogou o consentimento em ${new Date(revogado.revogadoEm).toLocaleDateString('pt-BR')}. Os dados dela não são compartilhados.`
-          : 'Os dados desta família ficam só neste aparelho. A base compartilhada recusa família sem consentimento — é regra do banco, não da tela.'}
+          : recente && situacaoConsentimento(recente) === 'vencido'
+            ? `O prazo terminou em ${venceEm(recente).toLocaleDateString('pt-BR')}. Os dados saíram da base compartilhada; renove para voltar a acompanhar.`
+            : 'Os dados desta família ficam só neste aparelho. A base compartilhada recusa família sem consentimento — é regra do banco, não da tela.'}
       </p>
-      {!aberto && <button className="acao" style={{ marginTop: 10 }} onClick={() => setAberto(true)}>Registrar consentimento</button>}
+      {!aberto && (
+        <button className="acao" style={{ marginTop: 10 }} onClick={() => setAberto(true)}>
+          {recente ? 'Renovar consentimento' : 'Registrar consentimento'}
+        </button>
+      )}
       {aberto && (
         <>
           <label style={{ marginTop: 14 }}>Termo apresentado ({VERSAO_TERMO})</label>
@@ -88,7 +118,9 @@ function Consentimento({ familia }) {
           </select>
           <p className="mini" style={{ marginTop: 8 }}>
             O sistema guarda a <b>forma</b> e o <b>hash do termo</b> — nunca foto de documento
-            nem assinatura digitalizada.
+            nem assinatura digitalizada. Validade de <b>{VALIDADE_MESES} meses</b>, renovável
+            em visita de campo; vencido, os dados saem da base e são expurgados
+            após {CARENCIA_DIAS} dias.
           </p>
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button className="acao" onClick={registrar} disabled={!hash}>Confirmar consentimento</button>
@@ -96,6 +128,43 @@ function Consentimento({ familia }) {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/* ---------- destravar o PIN da família (presencial) ----------
+   Existe porque o PIN é hash local e não tem recuperação remota — de propósito.
+   Destravar APAGA o PIN: a família escolhe outro no próximo acesso. O agente
+   nunca vê nem define o PIN de ninguém. */
+function DestravarPin({ familia }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
+  if (!temPin(familia)) {
+    return (
+      <p className="mini" style={{ marginTop: 10 }}>
+        🔓 Esta família ainda não definiu PIN — ela escolhe um no primeiro acesso ao app.
+      </p>
+    );
+  }
+  const bloqueado = familia.pin.bloqueado;
+  const tentativas = familia.pin.tentativas || 0;
+  return (
+    <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span className={'tag ' + (bloqueado ? 'pend' : 'ok')}>
+        {bloqueado ? `PIN travado (${tentativas} erros)` : 'PIN definido'}
+      </span>
+      <span className="mini" style={{ flex: 1, minWidth: 180, margin: 0 }}>
+        {bloqueado
+          ? `Travou depois de ${MAX_TENTATIVAS_PIN} tentativas. Destravar apaga o PIN e a família escolhe outro.`
+          : 'O PIN fica só no celular da família — ninguém do projeto consegue vê-lo.'}
+      </span>
+      <button className="acao sec" onClick={() => {
+        if (!confirm('Apagar o PIN desta família? Ela definirá um novo no próximo acesso.')) return;
+        dispatch({ type: 'DESTRAVAR_PIN', familiaId: familia.id });
+        toast('PIN apagado 🔓 — a família define um novo no próximo acesso', 'info');
+      }}>
+        {bloqueado ? 'Destravar' : 'Apagar PIN'}
+      </button>
     </div>
   );
 }
@@ -249,6 +318,8 @@ export default function Carteira() {
               </div>
               <span className="mini">criada em {f.carteira.criadaEm}{f.carteira.celular ? ` · recuperação: ${f.carteira.celular}` : ''}</span>
             </div>
+
+            <DestravarPin familia={f} />
 
             <button className="acao" style={{ marginTop: 14 }} disabled={f.saldo <= 0} onClick={sacar}>
               💸 Sacar tudo via Pix

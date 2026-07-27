@@ -62,6 +62,58 @@ export const TEXTO_TERMO = [
   '· pedir para sair faz meus dados pararem de ser compartilhados.',
 ].join('\n');
 
+/* ------------------------------------------------------------------ PIN ----- */
+/**
+ * PIN da família: verificado de verdade, e NUNCA sai do aparelho.
+ *
+ * Antes a tela só checava `pin.length === 4` — qualquer quatro dígitos abriam a
+ * conta de qualquer família. Na demonstração isso estava escrito na tela, então
+ * não mentia; em campo significaria que o celular da família abre a conta dela
+ * sem segredo nenhum.
+ *
+ * Desenho:
+ *  · guarda SHA-256 de `sal + pin`, não o PIN. Sal por família, para dois PINs
+ *    iguais não terem o mesmo hash (com 4 dígitos, sem sal, uma tabela de 10 mil
+ *    entradas resolve tudo de uma vez).
+ *  · o hash fica SÓ no localStorage do aparelho: `recorteFamilia()` não o envia,
+ *    e há teste garantindo isso. PIN de família não é assunto da base
+ *    compartilhada — se subisse, um vazamento da base viraria vazamento de
+ *    acesso às contas.
+ *  · 4 dígitos são fracos por natureza. O que os torna aceitáveis é o bloqueio
+ *    por tentativas (abaixo) e o fato de o app não dar acesso a dinheiro sem o
+ *    agente humano no fluxo de saque.
+ */
+export const MAX_TENTATIVAS_PIN = 5;
+
+/* nome distinto do hex(str) de baixo, que serve a outra coisa (derivar os
+   endereços simulados). Dois hex no mesmo módulo derrubavam o build. */
+const bytesParaHex = bytes => [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
+
+/** Sal aleatório por família. Sem crypto disponível, degrada para pseudoaleatório. */
+export function novoSal() {
+  const c = globalThis.crypto;
+  if (c?.getRandomValues) return bytesParaHex(c.getRandomValues(new Uint8Array(16)));
+  return Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
+export async function hashPin(pin, sal) {
+  const sub = globalThis.crypto?.subtle;
+  if (!sub) return '';
+  /* bytesParaHex, NÃO o hex(str) de baixo. Passar um ArrayBuffer para aquele
+     devolve o hash de "[object ArrayBuffer]" — idêntico para qualquer PIN, e o
+     build compila sem reclamar. É o tipo de erro que só um teste pega. */
+  return bytesParaHex(await sub.digest('SHA-256', new TextEncoder().encode(`${sal}:${pin}`)));
+}
+
+/** A família já definiu PIN neste aparelho? */
+export const temPin = f => Boolean(f?.pin?.hash);
+
+/** Confere o PIN. Devolve false também quando não há PIN definido. */
+export async function conferirPin(f, pin) {
+  if (!temPin(f)) return false;
+  return (await hashPin(pin, f.pin.sal)) === f.pin.hash;
+}
+
 /** SHA-256 do termo exato apresentado. Prova qual texto a pessoa aceitou. */
 export async function hashTermo(texto = TEXTO_TERMO) {
   const cripto = globalThis.crypto?.subtle;
@@ -70,8 +122,53 @@ export async function hashTermo(texto = TEXTO_TERMO) {
   return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Consentimento ativo da família, se houver. */
-export const consentimentoAtivo = f => (f?.consentimentos || []).find(c => !c.revogadoEm) || null;
+/* ------------------------------------------------------------- retenção ----- */
+/**
+ * Prazo padrão do consentimento. Dado sem prazo é dado para sempre — a LGPD
+ * (art. 15/16) exige que o tratamento termine quando a finalidade acaba.
+ * 24 meses cobrem um ciclo de piloto com folga para renovar em visita de campo.
+ */
+export const VALIDADE_MESES = 24;
+/** Carência entre o fim da autorização e o expurgo, para dar tempo de renovar. */
+export const CARENCIA_DIAS = 30;
+
+const maisMeses = (iso, meses) => {
+  const d = new Date(iso);
+  d.setMonth(d.getMonth() + meses);
+  return d;
+};
+
+/** Quando este consentimento vence. */
+export const venceEm = c => (c ? maisMeses(c.coletadoEm, c.validadeMeses ?? VALIDADE_MESES) : null);
+
+/**
+ * Situação do consentimento: 'vigente' | 'vencendo' | 'vencido' | 'revogado'.
+ * Espelha a view `retencao_status` da migração 03 — se divergirem, a tela mente
+ * sobre o que o banco vai fazer.
+ */
+export function situacaoConsentimento(c, agora = Date.now()) {
+  if (!c) return 'ausente';
+  if (c.revogadoEm) return 'revogado';
+  const v = venceEm(c).getTime();
+  if (v <= agora) return 'vencido';
+  if (v <= agora + 60 * 24 * 3600 * 1000) return 'vencendo';
+  return 'vigente';
+}
+
+/**
+ * Consentimento que de fato autoriza tratar o dado: não revogado E no prazo.
+ *
+ * Antes bastava não estar revogado. Sem a checagem de prazo, a validade seria
+ * decoração: venceria e o dado seguiria sendo compartilhado.
+ */
+export const consentimentoAtivo = f =>
+  (f?.consentimentos || []).find(c => ['vigente', 'vencendo'].includes(situacaoConsentimento(c))) || null;
+
+/** O último registro, mesmo vencido/revogado — é o que a tela precisa explicar. */
+export const consentimentoMaisRecente = f => {
+  const l = f?.consentimentos || [];
+  return l.length ? l[l.length - 1] : null;
+};
 
 /** Saldo do cofre menos o comprometido em propostas ainda aguardando assinatura. */
 export const disponivelCofre = s =>
@@ -374,6 +471,48 @@ function reducer(state, action) {
       return s;
     }
 
+    /* ---------------------------------------------------------- PIN ------- */
+    /* Define o PIN na primeira entrada. Recebe já o hash e o sal: o reducer é
+       sincrono e o hash é assíncrono (Web Crypto), então quem chama calcula. */
+    case 'DEFINIR_PIN': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f && action.hash && action.sal) {
+        f.pin = { hash: action.hash, sal: action.sal, definidoEm: new Date().toISOString(), tentativas: 0, bloqueado: false };
+      }
+      return s;
+    }
+
+    /* Tentativa errada conta; ao chegar no limite, bloqueia. O bloqueio é local
+       e só o agente de campo destrava — de propósito: recuperação automática por
+       SMS seria mais um canal para falhar em cima de quem tem menos recurso. */
+    case 'PIN_ERRADO': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f?.pin) {
+        f.pin.tentativas = (f.pin.tentativas || 0) + 1;
+        if (f.pin.tentativas >= MAX_TENTATIVAS_PIN) f.pin.bloqueado = true;
+      }
+      return s;
+    }
+
+    case 'PIN_CERTO': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f?.pin) { f.pin.tentativas = 0; f.pin.bloqueado = false; }
+      return s;
+    }
+
+    /* Destravar é ato do agente, presencialmente, e apaga o PIN: a família
+       escolhe um novo. O agente nunca vê nem escolhe o PIN de ninguém. */
+    case 'DESTRAVAR_PIN': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f) {
+        f.pin = null;
+        pushTx(s, 'CONSENTIMENTO',
+          `PIN da família de ${f.resp} destravado pelo agente de campo — a família define um novo no próximo acesso`,
+          0, { familiaId: f.id });
+      }
+      return s;
+    }
+
     /* ------------------------------------------------- consentimento ----- */
     /* Registro do consentimento do responsável (LGPD art. 8º: específico,
        informado e DEMONSTRÁVEL). Nada de família vai para a nuvem sem isto —
@@ -381,7 +520,11 @@ function reducer(state, action) {
        digitalizada nem documento: guardo a forma e o hash do termo exato. */
     case 'REGISTRAR_CONSENTIMENTO': {
       const f = s.familias.find(f => f.id === action.familiaId);
-      if (f && !(f.consentimentos || []).some(c => !c.revogadoEm)) {
+      /* renovar é permitido: cria registro NOVO apontando para o anterior, sem
+         alterar o antigo — o histórico de prazos tem de continuar legível. */
+      const anterior = consentimentoMaisRecente(f);
+      if (f && !consentimentoAtivo(f)) {
+        const validade = action.validadeMeses || VALIDADE_MESES;
         f.consentimentos = [...(f.consentimentos || []), {
           id: novoId(),
           versaoTermo: action.versaoTermo || VERSAO_TERMO,
@@ -390,10 +533,13 @@ function reducer(state, action) {
           termoHash: action.termoHash || '',
           coletadoPor: action.coletadoPor || null,
           coletadoEm: new Date().toISOString(),
+          validadeMeses: validade,
           revogadoEm: null,
+          renovadoDe: anterior?.id ?? null,
         }];
+        const renovacao = anterior ? 'renovado' : 'registrado';
         pushTx(s, 'CONSENTIMENTO',
-          `Consentimento registrado para a família de ${f.resp} (${action.forma || 'presencial-assinado'}) — termo ${action.versaoTermo || VERSAO_TERMO}`,
+          `Consentimento ${renovacao} para a família de ${f.resp} (${action.forma || 'presencial-assinado'}) — termo ${action.versaoTermo || VERSAO_TERMO}, válido por ${validade} meses`,
           0, { familiaId: f.id });
       }
       return s;

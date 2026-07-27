@@ -121,10 +121,27 @@ Sem login o app roda 100% local — é o modo da demonstração e do vídeo. Ent
 
 Detalhes, o SQL e os dois passos manuais de configuração: [`SUPABASE.md`](SUPABASE.md).
 
+### Prazo, revogação e expurgo
+
+O consentimento **vale 24 meses** e é renovável em visita de campo. Vencido, os dados daquela família saem da base compartilhada; **30 dias depois** (carência para renovar) podem ser expurgados.
+
+O expurgo apaga o que é pessoal — `familias`, `condicoes`, `extrato`, `propostas` — e **mantém** `transacoes` e `movimentos`, que são contabilidade pseudonimizada sem nome nem código de família, com base legal distinta do consentimento. O registro do consentimento fica, marcado como expurgado: apagar a prova de que houve consentimento, prazo e expurgo destruiria a demonstrabilidade que a LGPD pede.
+
+Não é "apaguei tudo" nem "guardei tudo". Detalhes e comandos: [`supabase/migracao-03-retencao.sql`](supabase/migracao-03-retencao.sql).
+
+**O expurgo não roda sozinho.** Agendador que ninguém monitora apaga dado em silêncio; a rotina mensal está em [`IMPLANTACAO.md`](IMPLANTACAO.md).
+
+### PIN da família
+
+O PIN é **verificado de verdade** e nunca sai do celular: guarda-se SHA-256 de `sal + pin`, com sal por família. Cinco tentativas erradas travam o aparelho, e só o agente destrava — presencialmente, apagando o PIN para a família escolher outro. Ninguém do projeto consegue ver o PIN de ninguém, nem para ajudar.
+
+Não há recuperação por SMS de propósito: seria mais um canal para falhar justamente com quem tem menos recurso.
+
 ### O que ainda falta para campo
 
-- **Política de retenção**: por quanto tempo o dado fica e o que acontece com ele ao fim do piloto.
-- Os dados de demonstração que já estão na base foram criados pelos testes, **sem termo de consentimento** — e não há registro fabricado para eles, porque consentimento inventado é pior que consentimento nenhum: mente na prova. Eles simplesmente deixam de ser lidos. O bloco para limpar a base está no fim da migração 02.
+Está em [`IMPLANTACAO.md`](IMPLANTACAO.md) — e o que falta agora **não é código**: distribuir as três credenciais entre as três organizações (sem isso o 2-de-3 é cumprido por uma pessoa), definir o responsável pela rotina mensal de retenção, e limpar os dados de demonstração ([`supabase/limpar-demonstracao.sql`](supabase/limpar-demonstracao.sql)).
+
+Os dados de demonstração na base foram criados pelos testes, **sem termo de consentimento** — e não há registro fabricado para eles, porque consentimento inventado é pior que consentimento nenhum: mente exatamente na prova.
 
 ## Ancoragem real na Solana devnet
 
