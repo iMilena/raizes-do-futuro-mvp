@@ -1,7 +1,7 @@
 import React from 'react';
-import { useStore, fmt, trunc, vendaPorRastreio, SPLIT, BONUS_POR_CRIANCA } from '../store.jsx';
-import { EstadoVazio, QrCode } from '../ui.jsx';
-import { useIdioma } from '../i18n.jsx';
+import { useStore, fmt, trunc, vendaPorRastreio, SPLIT, BONUS_POR_CRIANCA } from '../estado/store.jsx';
+import { EstadoVazio, QrCode } from '../componentes/ui.jsx';
+import { useIdioma } from '../lib/i18n.jsx';
 
 /* ---------------------------------------------------------------------------
    Página pública de rastreio — o que o turista vê ao escanear o QR do produto.

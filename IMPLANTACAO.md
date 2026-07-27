@@ -90,7 +90,7 @@ Rode primeiro **`npm test -- migracoes`**: ele sonda o banco e diz quais migraç
 - [x] **04** canal de contestação — `npm test -- canal`, 17 verificações
 - [x] **05** contestação sem gate de consentimento
 - [x] **06** vínculo coleta↔família e ciclos — aplicada. As coletas que subiram antes dela estão na nuvem com vínculo nulo; o app repara sozinho no próximo pull, reenviando o vínculo de quem o tem.
-- [ ] Dados de demonstração limpos (`supabase/limpar-demonstracao.sql`) — a base tem bastante lixo de teste, inclusive famílias `TESTE-*` e contestações `[teste]`
+- [ ] Dados de demonstração limpos (`supabase/scripts/limpar-demonstracao.sql`) — a base tem bastante lixo de teste, inclusive famílias `TESTE-*` e contestações `[teste]`
 - [ ] Usuário `raizes.testes@gmail.com` removido, quando não for mais rodar a suíte
 
 ### Com pessoas — não verificável por código

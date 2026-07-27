@@ -7,7 +7,7 @@
      npm test -- qr           só o encoder de QR
 
    Cuida da infraestrutura para quem roda não precisar pensar nela:
-     · empacota src/store.jsx (tem JSX, o Node não lê direto)
+     · empacota src/estado/store.jsx (tem JSX, o Node não lê direto)
      · sobe o servidor de desenvolvimento se ainda não estiver no ar, e derruba no fim
      · pula com aviso claro — em vez de falhar — quando o ambiente não tem
        o que a suíte exige (Edge para o navegador, internet para o QR)
@@ -121,9 +121,9 @@ console.log('\n🌱 Raízes do Futuro — testes\n');
 
 let servidor = null;
 try {
-  const store = empacotar('store.jsx', 'store.mjs');
-  const sinc = empacotar('sincronizacao.js', 'sinc.mjs');
-  const ancoragem = empacotar('ancoragem.js', 'ancoragem.mjs');
+  const store = empacotar('estado/store.jsx', 'store.mjs');
+  const sinc = empacotar('lib/sincronizacao.js', 'sinc.mjs');
+  const ancoragem = empacotar('lib/ancoragem.js', 'ancoragem.mjs');
 
   if (querem('fluxo')) {
     console.log('── fluxo (reducer, sem navegador) ' + '─'.repeat(24));

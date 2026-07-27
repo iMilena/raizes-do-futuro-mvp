@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer, useRef, useState } from 'react';
-import * as nuvem from './nuvem.js';
-import * as sinc from './sincronizacao.js';
+import * as nuvem from '../lib/nuvem.js';
+import * as sinc from '../lib/sincronizacao.js';
 
 const KEY = 'raizes-mvp-v2';
 
@@ -433,7 +433,13 @@ function seed() {
   const state = {
     cofre: {
       endereco: solAddr('cofre-fundo-infancia-boipeba'),
-      programa: solAddr('programa-multisig-squads'),
+      /* O cofre real na devnet usa o multisig NATIVO do SPL Token
+         (`createMultisig` em onchain/implantar-devnet.mjs), não o programa da
+         Squads. A tela dizia "padrão Squads" e mostrava este endereço simulado
+         ao lado — nomear um programa de terceiro que não roda aqui é afirmação
+         falsa, ainda que o painel todo seja simulado. Squads é alternativa para
+         produção (ver onchain/README.md), não o que está implantado. */
+      programa: solAddr('programa-multisig-spl-token'),
       limiar: 2,
     },
     slot: 4021,

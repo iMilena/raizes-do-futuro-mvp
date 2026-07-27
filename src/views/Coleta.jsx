@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { useStore, trunc } from '../store.jsx';
-import { useToast, Badge, EstadoVazio } from '../ui.jsx';
-import { useDestaque } from '../demo.jsx';
-import { sha256Arquivo, pegarGeo } from '../evidencia.js';
+import { useStore, trunc } from '../estado/store.jsx';
+import { useToast, Badge, EstadoVazio } from '../componentes/ui.jsx';
+import { useDestaque } from '../componentes/demo.jsx';
+import { sha256Arquivo, pegarGeo } from '../lib/evidencia.js';
 
 export default function Coleta() {
   const { state, dispatch } = useStore();

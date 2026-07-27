@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useStore, fmt, trunc } from './store.jsx';
-import * as auth from './auth.js';
-import * as nuvem from './nuvem.js';
-import { IdiomaProvider, useIdioma, TRADUZIDAS } from './i18n.jsx';
-import { ToastProvider, useToast } from './ui.jsx';
-import { DemoProvider, DemoNarrador } from './demo.jsx';
-import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from './tour.jsx';
+import { useStore, fmt, trunc } from './estado/store.jsx';
+import * as auth from './lib/auth.js';
+import * as nuvem from './lib/nuvem.js';
+import { IdiomaProvider, useIdioma, TRADUZIDAS } from './lib/i18n.jsx';
+import { ToastProvider, useToast } from './componentes/ui.jsx';
+import { DemoProvider, DemoNarrador } from './componentes/demo.jsx';
+import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from './componentes/tour.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import Coleta from './views/Coleta.jsx';
 import Validacao from './views/Validacao.jsx';
@@ -411,7 +411,7 @@ function Painel({ tab, setTab }) {
     <div className={'app-shell' + (menuAberto ? ' menu-aberto' : '')}>
       <aside className="lateral">
         <div className="lat-marca">
-          <img className="logo-emblema" src="./emblema.png" alt="Raízes do Futuro" />
+          <img className="logo-emblema" src="./imagens/emblema.png" alt="Raízes do Futuro" />
           <div>
             <h1>Raízes do Futuro</h1>
             <p>{t('Boipeba · Cairu/BA')}</p>

@@ -100,7 +100,7 @@ console.log(`faixa de teste: ${N}`);
   const sonda = await chamar('movimentos?select=transacao_sig&limit=1');
   if (sonda.status !== 200) {
     console.log('\n  ✗ MIGRAÇÃO PENDENTE');
-    console.log('    rode supabase/migracao-01-chave-e-idempotencia.sql no SQL Editor do Supabase.');
+    console.log('    rode supabase/migracoes/01-chave-e-idempotencia.sql no SQL Editor do Supabase.');
     console.log('');
     console.log('    Sem ela, dois problemas ficam abertos:');
     console.log('      · `seq` como chave primária descarta em silêncio a transação de um');

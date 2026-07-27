@@ -49,7 +49,7 @@ Se em algum momento um nome for gravado aqui, isso deixa de ser verdade e passa 
 
 ## Autorização por papel e consentimento
 
-Migração: [`supabase/migracao-02-auth-papeis-consentimento.sql`](supabase/migracao-02-auth-papeis-consentimento.sql). Ela troca as policies `piloto_tudo` (`using (true)`, ou seja, leitura pública) por três regras.
+Migração: [`supabase/migracoes/02-auth-papeis-consentimento.sql`](supabase/migracoes/02-auth-papeis-consentimento.sql). Ela troca as policies `piloto_tudo` (`using (true)`, ou seja, leitura pública) por três regras.
 
 **1. Quem não entrou não lê nada.** Nenhuma policy responde ao papel `anon`. Quem abre o site sem sessão continua com o app inteiro funcionando — ele é local-first e nunca dependeu da nuvem. Esse é o modo da demonstração: nada é lido, nada é enviado.
 
@@ -95,7 +95,7 @@ Um detalhe que engana: RLS sem policy devolve **200 com lista vazia**, não 403.
 
 ## O canal da família, sem conta
 
-Migração: [`supabase/migracao-04-contestacoes.sql`](supabase/migracao-04-contestacoes.sql).
+Migração: [`supabase/migracoes/04-contestacoes.sql`](supabase/migracoes/04-contestacoes.sql).
 
 A família **não tem conta** — decisão de desenho. Mas desde a migração 02 a base só responde a quem tem sessão, e isso criou um problema que só aparece em campo: **tudo o que ela faz no celular dela ficava preso no aparelho**, inclusive reclamar de um peso errado. Na demonstração o app da família e o painel rodam no mesmo navegador e parece funcionar. Não funciona.
 

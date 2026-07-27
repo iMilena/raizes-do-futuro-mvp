@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, fmt, trunc, SPLIT, urlRastreio } from '../store.jsx';
-import { useToast, ValorAnimado, EstadoVazio, Modal, QrCode } from '../ui.jsx';
-import { useDestaque } from '../demo.jsx';
+import { useStore, fmt, trunc, SPLIT, urlRastreio } from '../estado/store.jsx';
+import { useToast, ValorAnimado, EstadoVazio, Modal, QrCode } from '../componentes/ui.jsx';
+import { useDestaque } from '../componentes/demo.jsx';
 
 const PRODUTOS = [
   { nome: 'Luminária de vidro reaproveitado', preco: 80, img: 'luminaria.jpg', material: 'Vidro', emoji: '💡' },
@@ -76,6 +76,7 @@ function AnimacaoSplit({ venda }) {
 
   useEffect(() => {
     if (!venda) return;
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) { setT(1); return; }
     setT(0);
     let inicio = null;
     const passo = agora => {
@@ -85,7 +86,10 @@ function AnimacaoSplit({ venda }) {
       if (p < 1) rafRef.current = requestAnimationFrame(passo);
     };
     rafRef.current = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(rafRef.current);
+    /* Mesmo motivo do useContagem em ui.jsx: sem quadros, `t` ficava em 0 e as
+       três barras mostravam R$ 0,00 como se a venda tivesse rendido nada. */
+    const fecho = setTimeout(() => setT(1), 1500 + 40);
+    return () => { cancelAnimationFrame(rafRef.current); clearTimeout(fecho); };
   }, [venda]);
 
   if (!venda) {
@@ -126,7 +130,13 @@ function AnimacaoSplit({ venda }) {
           );
         })}
       </div>
-      {t >= 1 && <div className="split-ok">✅ Divisão executada pelo contrato — sem intermediário decidindo</div>}
+      {/* Dizia "executada pelo contrato". Não há contrato executando o split: ele
+          é código do aplicativo (aplicarSplit em store.jsx), aplicado no instante
+          do registro. O que roda em contrato on-chain é a LIBERAÇÃO do fundo, com
+          2-de-3 assinaturas — e isso a aba Cofre mostra. Esta tela vai para o
+          vídeo do pitch; nomear um contrato que não existe aqui é afirmar o que
+          não se cumpre. */}
+      {t >= 1 && <div className="split-ok">✅ Divisão executada por código, no instante da venda — sem intermediário decidindo</div>}
     </div>
   );
 }

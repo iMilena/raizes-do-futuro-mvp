@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useStore, fmt, trunc, tipoTx, TIPOS_TX, disponivelCofre,
   BONUS_POR_CRIANCA, SIGNATARIOS, signatarioPor, REDE, MOEDA, PROVIDER_CARTEIRA, TAXA_SOLANA,
-} from '../store.jsx';
-import { useToast, Modal, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
-import { useDestaque } from '../demo.jsx';
-import OnchainDevnet from '../OnchainDevnet.jsx';
+} from '../estado/store.jsx';
+import { useToast, Modal, Badge, EstadoVazio, ValorAnimado } from '../componentes/ui.jsx';
+import { useDestaque } from '../componentes/demo.jsx';
+import OnchainDevnet from '../componentes/OnchainDevnet.jsx';
 import {
   assinaturaValida, comandoLiberacao, comandoDecisao, hashDecisaoColetiva,
-} from '../ancoragem.js';
-import * as auth from '../auth.js';
+} from '../lib/ancoragem.js';
+import * as auth from '../lib/auth.js';
 
 const STATUS = {
   pendente: ['pend', 'aguardando comprovação'],
@@ -475,7 +475,7 @@ export default function Fundo() {
           <div className="hash sel">{state.cofre.endereco}</div>
         </div>
         <div>
-          <span className="mini">programa multisig (padrão Squads)</span>
+          <span className="mini">programa multisig (SPL Token, nativo)</span>
           <div className="hash sel">{state.cofre.programa}</div>
         </div>
       </div>

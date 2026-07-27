@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useStore, fmt, trunc, disponivelCofre, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA } from '../store.jsx';
-import { useToast, EstadoVazio, Modal, Badge } from '../ui.jsx';
-import { useDestaque } from '../demo.jsx';
-import { hashRelatorio, comandoAncoragem, assinaturaValida, urlExplorer, REDE_ANCORAGEM } from '../ancoragem.js';
+import { useStore, fmt, trunc, disponivelCofre, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA } from '../estado/store.jsx';
+import { useToast, EstadoVazio, Modal, Badge } from '../componentes/ui.jsx';
+import { useDestaque } from '../componentes/demo.jsx';
+import { hashRelatorio, comandoAncoragem, assinaturaValida, urlExplorer, REDE_ANCORAGEM } from '../lib/ancoragem.js';
 
 /* ---------------------------------------------------------------------------
    Ancoragem do relatório na Solana devnet.

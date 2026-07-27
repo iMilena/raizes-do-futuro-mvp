@@ -58,35 +58,35 @@ const H = { apikey: cred.anonKey, Authorization: 'Bearer ' + SESSAO.access_token
  */
 const MIGRACOES = [
   {
-    n: '02', arquivo: 'migracao-02-auth-papeis-consentimento.sql',
+    n: '02', arquivo: 'migracoes/02-auth-papeis-consentimento.sql',
     sonda: 'papeis?select=user_id&limit=1',
     cria: 'papéis, consentimento, RLS por papel',
     semEla: 'a base responderia ao papel anônimo: qualquer um com a URL lê tudo',
     mente: true,
   },
   {
-    n: '03', arquivo: 'migracao-03-retencao.sql',
+    n: '03', arquivo: 'migracoes/03-retencao.sql',
     sonda: 'consentimentos?select=validade_meses&limit=1',
     cria: 'prazo do consentimento, view retencao_status, expurgo',
     semEla: 'a TELA diz "vale até tal data" e o banco não tem prazo — consentimento vencido continua autorizando, e não há expurgo para rodar',
     mente: true,
   },
   {
-    n: '04', arquivo: 'migracao-04-contestacoes.sql',
+    n: '04', arquivo: 'migracoes/04-contestacoes.sql',
     sonda: 'contestacoes?select=id&limit=1',
     cria: 'canal de contestação da família',
     semEla: 'a família reclama e nada sai do aparelho dela',
     mente: true,
   },
   {
-    n: '05', arquivo: 'migracao-05-contestacao-sem-consentimento.sql',
+    n: '05', arquivo: 'migracoes/05-contestacao-sem-consentimento.sql',
     sonda: null, // é troca de policy: verificada por comportamento em autorizacao.mjs
     cria: 'leitura da contestação sem gate de consentimento',
     semEla: 'família sem consentimento reclama e a operação nunca vê',
     mente: true,
   },
   {
-    n: '06', arquivo: 'migracao-06-vinculo-coleta-familia-e-ciclos.sql',
+    n: '06', arquivo: 'migracoes/06-vinculo-coleta-familia-e-ciclos.sql',
     sonda: 'coletas?select=familia_id&limit=1',
     cria: 'vínculo coleta↔família e tabela de ciclos',
     semEla: 'o vínculo e os fechamentos de ciclo não atravessam aparelhos (o app tolera: grava sem eles)',

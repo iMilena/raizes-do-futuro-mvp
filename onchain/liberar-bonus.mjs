@@ -41,8 +41,8 @@ import { fileURLToPath } from 'url';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RPC = process.env.RPC ?? 'https://api.devnet.solana.com';
-const ENDERECOS = path.join(AQUI, 'enderecos.json');
-const REGISTRO = path.join(AQUI, 'liberacoes.json');
+const ENDERECOS = path.join(AQUI, 'dados', 'enderecos.json');
+const REGISTRO = path.join(AQUI, 'dados', 'liberacoes.json');
 
 const ORGS = {
   viva: { arquivo: 'signatario-viva.json', nome: 'Instituto Vivá', chave: 'institutoViva' },
@@ -66,7 +66,7 @@ function argumentos() {
 
 function endereços() {
   if (!fs.existsSync(ENDERECOS)) {
-    console.error('✗ enderecos.json não encontrado. Rode `node implantar-devnet.mjs` primeiro.');
+    console.error('✗ dados/enderecos.json não encontrado. Rode `node implantar-devnet.mjs` primeiro.');
     process.exit(1);
   }
   return JSON.parse(fs.readFileSync(ENDERECOS, 'utf8'));

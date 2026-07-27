@@ -364,13 +364,42 @@ try {
   ok(await ev('return __t.conta(".split-anim") === 1'), 'animação do split aparece após a venda');
   ok(await ev('return __t.conta(".split-linha") === 3'), '3 barras (60/25/15)');
   ok(await ev('return __t.tem("Renda direta") && __t.tem("Fundo Infância") && __t.tem("Operação")'), 'os 3 destinos rotulados');
+  /* O NÚMERO NÃO PODE DEPENDER DA ANIMAÇÃO.
+     requestAnimationFrame não roda em aba de segundo plano, janela encoberta ou
+     economia de bateria. Enquanto o contador só avançava por quadro, ele ficava
+     preso no valor inicial — R$ 0,00 aqui, e o saldo ANTIGO na tela da família
+     depois de um saque. Foi esta suíte que pegou: falhou num momento em que a
+     janela estava encoberta, e a leitura fácil seria "teste instável".
+
+     A afirmação antiga era "os contadores animam", que é ENFEITE e depende do
+     ambiente — afirmar enfeite é o que tornava a suíte instável. O que se afirma
+     agora é o valor, e ele vale com ou sem quadros. Quando o ambiente não
+     entrega quadros, estas mesmas linhas passam a ser a prova do caminho de
+     fallback. */
+  await ev('window.__q = 0; requestAnimationFrame(function () { window.__q++; }); return true');
+  await espera(200);
+  const temQuadros = await ev('return window.__q > 0');
   const v1 = await ev('return document.querySelectorAll(".split-valor")[0].innerText');
   await espera(900);
   const v2 = await ev('return document.querySelectorAll(".split-valor")[0].innerText');
-  ok(v1 !== v2, `contadores animam ("${v1}" → "${v2}")`);
+  if (temQuadros) {
+    ok(v1 !== v2, `contadores animam ("${v1}" → "${v2}")`);
+  } else {
+    console.log('    · sem quadros de animação neste ambiente — o movimento não é');
+    console.log('      observável, e as afirmações abaixo passam a cobrir o fallback');
+    console.log('      que garante o valor certo sem rAF (ui.jsx, Mercado.jsx).');
+  }
   await espera(900);
-  ok(await ev('return __t.tem("Divisão executada pelo contrato")'), 'animação conclui');
+  ok(await ev('return __t.tem("Divisão executada por código, no instante da venda")'), 'animação conclui');
+  /* A tela não pode atribuir o split a um contrato: ele é código do app. O que é
+     garantido on-chain é a liberação do fundo (2-de-3), na aba Cofre. */
+  ok(await ev('return !__t.tem("Divisão executada pelo contrato")'), 'não atribui o split a um contrato inexistente');
   ok(await ev('return document.querySelectorAll(".split-valor")[0].innerText.includes("48,00")'), '60% de R$ 80 = R$ 48,00');
+
+  /* O fallback sem rAF é exercido de propósito na seção 16, no fim da suíte:
+     provar isso exige uma venda nova, e uma venda a mais aqui mexe na renda que
+     as seções seguintes conferem (foi o que aconteceu — quebrou o saldo da
+     família na seção 8). */
 
   /* ---------- 5. coleta e validação ---------- */
   secao('5. Coletor → Instituto Vivá');
@@ -1325,6 +1354,32 @@ try {
   secao('15. Erros e avisos do console (app, sem extensões)');
   if (erros.length) erros.slice(0, 12).forEach(e => console.log('    ' + e));
   ok(erros.length === 0, `nenhum erro/aviso do app no console (${erros.length})`);
+
+  /* ---------- 16. o número sem animação ----------
+     Por último de propósito: prova exige uma venda nova, e venda mexe na renda
+     que as seções anteriores conferem.
+
+     requestAnimationFrame não roda em aba de segundo plano, janela encoberta ou
+     economia de bateria. Enquanto os contadores só avançavam por quadro, ficavam
+     presos no valor de partida: R$ 0,00 nas barras do split, e na tela da família
+     o saldo ANTIGO depois de um saque — a pessoa sacaria e continuaria vendo o
+     dinheiro na conta. Aqui os quadros são desligados de propósito. */
+  secao('16. O número não depende da animação (rAF desligado)');
+  await ev(`localStorage.removeItem('raizes-idioma-v1'); window.location.hash = '#/'; return 1;`);
+  await espera(400);
+  await ev('return __t.clicar("nav.tabs button", "Mercado")');
+  await espera(350);
+  await ev('window.__raf = window.requestAnimationFrame; window.requestAnimationFrame = function () { return 0; }; return true');
+  await ev('return __t.clicar(".produto button", "Comprar")');
+  await espera(500);
+  const semQuadro1 = await ev('const n = document.querySelectorAll(".split-valor")[0]; return n ? n.innerText : "(sem barra)"');
+  await espera(1800);
+  const semQuadro2 = await ev('const n = document.querySelectorAll(".split-valor")[0]; return n ? n.innerText : "(sem barra)"');
+  ok(/R\$\s?0,00/.test(semQuadro1), `sem quadros a contagem nem começa (${semQuadro1})`);
+  ok(/[1-9]/.test(semQuadro2), `e o valor certo aparece de todo jeito (${semQuadro2})`);
+  ok(await ev('return __t.tem("Divisão executada por código, no instante da venda")'),
+    'a divisão se conclui sem um único quadro de animação');
+  await ev('window.requestAnimationFrame = window.__raf; return true');
 
 } catch (e) {
   console.log('\n💥 ERRO NO TESTE: ' + e.message);

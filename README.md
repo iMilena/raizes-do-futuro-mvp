@@ -133,7 +133,7 @@ O consentimento **vale 24 meses** e é renovável em visita de campo. Vencido, o
 
 O expurgo apaga o que é pessoal — `familias`, `condicoes`, `extrato`, `propostas` — e **mantém** `transacoes` e `movimentos`, que são contabilidade pseudonimizada sem nome nem código de família, com base legal distinta do consentimento. O registro do consentimento fica, marcado como expurgado: apagar a prova de que houve consentimento, prazo e expurgo destruiria a demonstrabilidade que a LGPD pede.
 
-Não é "apaguei tudo" nem "guardei tudo". Detalhes e comandos: [`supabase/migracao-03-retencao.sql`](supabase/migracao-03-retencao.sql).
+Não é "apaguei tudo" nem "guardei tudo". Detalhes e comandos: [`supabase/migracoes/03-retencao.sql`](supabase/migracoes/03-retencao.sql).
 
 **O expurgo não roda sozinho.** Agendador que ninguém monitora apaga dado em silêncio; a rotina mensal está em [`IMPLANTACAO.md`](IMPLANTACAO.md).
 
@@ -195,7 +195,7 @@ Não há recuperação por SMS de propósito: seria mais um canal para falhar ju
 
 ### O que ainda falta para campo
 
-Está em [`IMPLANTACAO.md`](IMPLANTACAO.md) — e o que falta agora **não é código**: distribuir as três credenciais entre as três organizações (sem isso o 2-de-3 é cumprido por uma pessoa), definir o responsável pela rotina mensal de retenção, e limpar os dados de demonstração ([`supabase/limpar-demonstracao.sql`](supabase/limpar-demonstracao.sql)).
+Está em [`IMPLANTACAO.md`](IMPLANTACAO.md) — e o que falta agora **não é código**: distribuir as três credenciais entre as três organizações (sem isso o 2-de-3 é cumprido por uma pessoa), definir o responsável pela rotina mensal de retenção, e limpar os dados de demonstração ([`supabase/scripts/limpar-demonstracao.sql`](supabase/scripts/limpar-demonstracao.sql)).
 
 Os dados de demonstração na base foram criados pelos testes, **sem termo de consentimento** — e não há registro fabricado para eles, porque consentimento inventado é pior que consentimento nenhum: mente exatamente na prova.
 
@@ -242,7 +242,7 @@ cd onchain
 node ancorar-relatorio.mjs <sha256> "<período>"
 ```
 
-O script usa a mesma conta pagadora do `implantar-devnet.mjs`, grava o histórico em `onchain/ancoragens.json` e imprime o link do explorer. No app: aba **Instituto Vivá** → relatório → *ancorar na Solana devnet*.
+O script usa a mesma conta pagadora do `implantar-devnet.mjs`, grava o histórico em `onchain/dados/ancoragens.json` e imprime o link do explorer. No app: aba **Instituto Vivá** → relatório → *ancorar na Solana devnet*.
 
 ### Exemplo já ancorado
 
@@ -270,24 +270,51 @@ Para restaurar os dados da demo: botão **Resetar demo** no rodapé (traz també
 
 ```
 src/
-  store.jsx          estado + reducer + cadeia de transações (base58/slot) + multisig
-  ui.jsx             toasts, modal, contadores animados, badges, estados vazios, confete
-  graficos.jsx       barras (kg/semana) e donut (receita por fonte) em SVG puro
-  demo.jsx           motor do modo demo guiado e card narrador
-  tour.jsx           tour de primeira visita do painel (9 passos)
-  qr.js              gerador de QR Code real (Reed-Solomon), sem dependência
-  ancoragem.js       hash SHA-256 do relatório + validação da assinatura Solana
-  evidencia.js       SHA-256 da foto no aparelho + geolocalização
-  nuvem.js           cliente do esquema compartilhado (Supabase)
+  main.jsx           ponto de entrada Vite
   App.jsx            abas + rotas por hash (#/familia, #/rastreio/CÓDIGO)
+  estado/
+    store.jsx        estado + reducer + cadeia de transações (base58/slot) + multisig
+  componentes/
+    ui.jsx           toasts, modal, contadores animados, badges, estados vazios, confete
+    graficos.jsx     barras (kg/semana) e donut (receita por fonte) em SVG puro
+    demo.jsx         motor do modo demo guiado e card narrador
+    tour.jsx         tour de primeira visita do painel (9 passos)
+    OnchainDevnet.jsx painel de liberações/fechamentos reais na devnet
+  lib/
+    qr.js            gerador de QR Code real (Reed-Solomon), sem dependência
+    ancoragem.js     hash SHA-256 do relatório + validação da assinatura Solana
+    evidencia.js     SHA-256 da foto no aparelho + geolocalização
+    nuvem.js         cliente do esquema compartilhado (Supabase)
+    sincronizacao.js fila offline-first entre aparelho e nuvem
+    auth.js          sessão, papel e permissões da operação
+    i18n.jsx         seletor e strings PT/EN
+    preferencias.js  letra grande, voz da Tuca etc. (guardadas no aparelho)
+    voz.js           Web Speech — números por extenso, sem emoji
+  estilos/
+    styles.css           casco do painel + app da família
+    estilos-rastreio.css página pública de rastreio (PT/EN)
   views/
     Dashboard.jsx  Coleta.jsx  Validacao.jsx  Mercado.jsx
-    Fundo.jsx      Carteira.jsx  PaginaFamilia.jsx  Rastreio.jsx
+    Fundo.jsx      Carteira.jsx  PaginaFamilia.jsx  Rastreio.jsx  Cadastro.jsx
+public/
+  manifest.json      fica na raiz por convenção de PWA
+  sw.js              fica na raiz — scope do service worker cobre o app inteiro
+  imagens/           logo.png, emblema.png
+  dados/             onchain.json (cópia gerada por onchain/implantar-devnet.mjs)
+  produtos/          fotos dos produtos reciclados (ver LEIA-ME.txt)
+contracts/
+  FundoInfancia.sol  contrato EVM, marcado como não implantado (piloto ficou só na Solana)
+  build/             bytecode compilado
 onchain/
   implantar-devnet.mjs   cria o token cRED e o cofre multisig 2-de-3 na devnet
   ancorar-relatorio.mjs  grava o hash do relatório numa transação real
+  ancorar-decisao.mjs    registra a decisão coletiva de fechamento de ciclo
+  liberar-bonus.mjs      prepara/assina a liberação 2-de-3 do cofre
+  dados/                 enderecos.json, ancoragens.json, liberacoes.json (gerados pelos scripts acima)
 supabase/
   schema.sql             tabelas por entidade, transações append-only
+  migracoes/             01 a 06, aplicadas em ordem no SQL Editor
+  scripts/                seeds e manutenção avulsos (não são migração)
 testes/
   executar.mjs           runner do `npm test`
   fluxo.mjs              regras de negócio no reducer (sem navegador)
@@ -334,7 +361,7 @@ As suítes `nuvem`, `aparelhos` e a metade da operação do `canal` precisam de 
 O `.env` já vem apontando para um **usuário de testes** criado pela suíte, com senha gerada na hora — não é a senha de ninguém. Para ele funcionar, dois passos no painel do Supabase, uma vez só:
 
 1. **Authentication → Users** → encontre `raizes.testes@gruporedemais.com` → confirme o usuário.
-2. **SQL Editor** → cole e rode [`supabase/papel-usuario-de-teste.sql`](supabase/papel-usuario-de-teste.sql).
+2. **SQL Editor** → cole e rode [`supabase/scripts/papel-usuario-de-teste.sql`](supabase/scripts/papel-usuario-de-teste.sql).
 
 Depois disso, `npm.cmd test` roda tudo. Se preferir usar uma conta de pessoa real em vez do usuário de testes, há duas formas de dar a senha, e a segunda é melhor:
 

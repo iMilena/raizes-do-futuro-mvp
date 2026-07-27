@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { useStore, fmt, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA, REDE } from './store.jsx';
+import { useStore, fmt, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA, REDE } from '../estado/store.jsx';
 import { useToast, BarraProgresso } from './ui.jsx';
 
 /* ---------------------------------------------------------------------------

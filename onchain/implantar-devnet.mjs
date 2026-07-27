@@ -6,7 +6,7 @@
    assinada por 2 dos 3 signatários — tudo verificável no explorer.
 
    Uso:  npm install && node implantar-devnet.mjs
-   Saída: enderecos.json (+ cópia em ../public/onchain.json para o app)
+   Saída: dados/enderecos.json (+ cópia em ../public/dados/onchain.json para o app)
    ⚠️ Chaves geradas em ./chaves são APENAS de teste (devnet, sem valor real).
 --------------------------------------------------------------------------- */
 import { Connection, Keypair, LAMPORTS_PER_SOL } from '@solana/web3.js';
@@ -126,13 +126,13 @@ const main = async () => {
     },
   };
 
-  fs.writeFileSync('enderecos.json', JSON.stringify(dados, null, 2));
+  fs.writeFileSync('dados/enderecos.json', JSON.stringify(dados, null, 2));
   try {
     fs.writeFileSync(path.join('..', 'public', 'onchain.json'), JSON.stringify(dados, null, 2));
-    console.log('\n✅ Tudo no ar! enderecos.json salvo e copiado para ../public/onchain.json');
+    console.log('\n✅ Tudo no ar! dados/enderecos.json salvo e copiado para ../public/dados/onchain.json');
     console.log('   Rode `npm run build` na raiz do projeto e republique o site — a aba Cofre Multisig vai exibir o cofre real automaticamente.');
   } catch (e) {
-    console.log('\n✅ Tudo no ar! Copie enderecos.json para public/onchain.json do app.');
+    console.log('\n✅ Tudo no ar! Copie dados/enderecos.json para public/dados/onchain.json do app.');
   }
   console.log('\n🔗 Prova para a banca:');
   console.log('   Cofre multisig:', dados.links.multisig);

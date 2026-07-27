@@ -4,10 +4,10 @@ import {
   VERSAO_TERMO, TEXTO_TERMO, hashTermo, consentimentoAtivo, consentimentoMaisRecente,
   situacaoConsentimento, venceEm, VALIDADE_MESES, CARENCIA_DIAS,
   temPin, MAX_TENTATIVAS_PIN,
-} from '../store.jsx';
-import { useToast, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
-import { useDestaque } from '../demo.jsx';
-import * as auth from '../auth.js';
+} from '../estado/store.jsx';
+import { useToast, Badge, EstadoVazio, ValorAnimado } from '../componentes/ui.jsx';
+import { useDestaque } from '../componentes/demo.jsx';
+import * as auth from '../lib/auth.js';
 
 const STATUS = {
   pendente: ['pend', 'enviar comprovação'],

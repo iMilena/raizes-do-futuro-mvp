@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fmt } from './store.jsx';
+import { fmt } from '../estado/store.jsx';
 import { EstadoVazio } from './ui.jsx';
 
 /* ---------- agrupamento por semana ---------- */

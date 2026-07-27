@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { trunc } from './store.jsx';
+import { trunc } from '../estado/store.jsx';
 
 /* ---------------------------------------------------------------------------
    Painel do cofre REAL na Solana devnet.
-   Aparece automaticamente quando public/onchain.json existe (gerado pelo
+   Aparece automaticamente quando public/dados/onchain.json existe (gerado pelo
    script onchain/implantar-devnet.mjs). Lê os saldos ao vivo da rede.
 --------------------------------------------------------------------------- */
 
@@ -25,7 +25,7 @@ export default function OnchainDevnet() {
   const [erroRpc, setErroRpc] = useState(false);
 
   useEffect(() => {
-    fetch('./onchain.json')
+    fetch('./dados/onchain.json')
       .then(r => (r.ok ? r.json() : null))
       .then(d => { if (d?.multisig) setDados(d); })
       .catch(() => {});

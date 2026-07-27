@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA,
   temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN, progressoMeta,
-} from '../store.jsx';
-import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
-import { useDemo, useDestaque } from '../demo.jsx';
-import { sha256Arquivo } from '../evidencia.js';
-import { letraGrande, salvarLetra } from '../preferencias.js';
+} from '../estado/store.jsx';
+import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../componentes/ui.jsx';
+import { useDemo, useDestaque } from '../componentes/demo.jsx';
+import { sha256Arquivo } from '../lib/evidencia.js';
+import { letraGrande, salvarLetra } from '../lib/preferencias.js';
 import {
   vozDisponivel, vozLigada, ligarVoz, falar, parar as pararVoz, aoMudarVozes,
-} from '../voz.js';
+} from '../lib/voz.js';
 
 /* ---------------------------------------------------------------------------
    App da Família — a tela que a família usa no celular.
@@ -772,7 +772,7 @@ export default function PaginaFamilia({ standalone = false }) {
     <div className={'fam-tela' + (letraG ? ' letra-g' : '')}>
       <div className="fam-topo">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img className="fam-logo" src="./emblema.png" alt="" aria-hidden="true" />
+          <img className="fam-logo" src="./imagens/emblema.png" alt="" aria-hidden="true" />
           <div>
             <div className="fam-marca">Raízes do Futuro</div>
             <div className="fam-sub">conta da família{logado && f ? ` · ${f.resp.split(' ')[0]}` : ''}</div>
@@ -805,7 +805,7 @@ export default function PaginaFamilia({ standalone = false }) {
         {/* entrada */}
         {!logado && (
           <div className="fam-entrada">
-            <img className="fam-logo-entrada" src="./logo.png" alt="Raízes do Futuro" />
+            <img className="fam-logo-entrada" src="./imagens/logo.png" alt="Raízes do Futuro" />
             <Mascote fala={
               !escolhida ? 'Oi! Escolha sua família para começar.'
                 : bloqueada ? 'Este celular está travado. Procure o agente do Instituto Vivá — ele destrava sem ver seu PIN.'

@@ -65,5 +65,5 @@ export function avisoSemSessao(nome) {
   console.log(`  ⏭️  ${nome} precisa de sessão da operação.`);
   console.log('     A nuvem não responde mais a anônimo (por desenho). Defina');
   console.log('     SUPABASE_TEST_EMAIL e SUPABASE_TEST_SENHA de um usuário com papel');
-  console.log('     e rode de novo. Ver supabase/migracao-02-auth-papeis-consentimento.sql.');
+  console.log('     e rode de novo. Ver supabase/migracoes/02-auth-papeis-consentimento.sql.');
 }

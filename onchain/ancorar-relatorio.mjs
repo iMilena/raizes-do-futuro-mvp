@@ -104,11 +104,11 @@ try {
     url: explorer('tx', assinatura),
     em: new Date().toISOString(),
   };
-  const arq = 'ancoragens.json';
+  const arq = 'dados/ancoragens.json';
   const antes = fs.existsSync(arq) ? JSON.parse(fs.readFileSync(arq, 'utf8')) : [];
   antes.push(registro);
   fs.writeFileSync(arq, JSON.stringify(antes, null, 2));
-  console.log('   histórico salvo em onchain/ancoragens.json\n');
+  console.log('   histórico salvo em onchain/dados/ancoragens.json\n');
 } catch (e) {
   console.error('\n❌ falhou:', e.message);
   process.exit(1);

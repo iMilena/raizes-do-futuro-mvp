@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA, VERSAO_TERMO, TEXTO_TERMO, hashTermo,
   VALIDADE_MESES, consentimentoAtivo, situacaoConsentimento, venceEm, temPin,
-} from '../store.jsx';
-import { useToast, Badge, EstadoVazio } from '../ui.jsx';
-import * as auth from '../auth.js';
+} from '../estado/store.jsx';
+import { useToast, Badge, EstadoVazio } from '../componentes/ui.jsx';
+import * as auth from '../lib/auth.js';
 
 /* ---------------------------------------------------------------------------
    Cadastro de famílias — o que faltava para o piloto crescer de dentro do app.

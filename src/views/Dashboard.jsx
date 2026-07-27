@@ -2,11 +2,11 @@ import React from 'react';
 import {
   useStore, fmt, trunc, tipoTx, disponivelCofre, REDE, PROVIDER_CARTEIRA,
   BONUS_POR_CRIANCA, rendaCreditada,
-} from '../store.jsx';
-import { ValorAnimado, EstadoVazio, useContagem } from '../ui.jsx';
-import { BarrasKgSemana, DonutReceita } from '../graficos.jsx';
-import { useDemo, useDestaque } from '../demo.jsx';
-import { useIdioma } from '../i18n.jsx';
+} from '../estado/store.jsx';
+import { ValorAnimado, EstadoVazio, useContagem } from '../componentes/ui.jsx';
+import { BarrasKgSemana, DonutReceita } from '../componentes/graficos.jsx';
+import { useDemo, useDestaque } from '../componentes/demo.jsx';
+import { useIdioma } from '../lib/i18n.jsx';
 
 const METAS = { kg: 12000, familias: 30, criancas: 60, receita: 42000 };
 

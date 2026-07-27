@@ -44,7 +44,7 @@ const H = { apikey: cred.anonKey, Authorization: 'Bearer ' + cred.anonKey, 'cont
 /* migração 04 aplicada? */
 const sonda = await fetch(`${BASE}contestacoes?select=id&limit=1`, { headers: H });
 if (sonda.status === 404) {
-  console.log('  ⏭️  migração 04 não aplicada — rode supabase/migracao-04-contestacoes.sql');
+  console.log('  ⏭️  migração 04 não aplicada — rode supabase/migracoes/04-contestacoes.sql');
   process.exit(77);
 }
 

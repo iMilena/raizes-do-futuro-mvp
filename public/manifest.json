@@ -19,7 +19,7 @@
   "theme_color": "#1b7a43",
   "lang": "pt-BR",
   "icons": [
-    { "src": "./emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
-    { "src": "./emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "maskable" }
+    { "src": "./imagens/emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "./imagens/emblema.png", "sizes": "256x256", "type": "image/png", "purpose": "maskable" }
   ]
 }

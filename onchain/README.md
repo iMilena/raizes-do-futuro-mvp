@@ -18,7 +18,7 @@ npm install
 node implantar-devnet.mjs
 ```
 
-O script imprime todos os endereços e os links do Solana Explorer (devnet). Ele também copia `enderecos.json` para `../public/onchain.json` — depois disso:
+O script imprime todos os endereços e os links do Solana Explorer (devnet). Ele também copia `dados/enderecos.json` para `../public/dados/onchain.json` — depois disso:
 
 ```bash
 cd ..

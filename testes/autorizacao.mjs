@@ -83,7 +83,7 @@ ok(true, aplicada
   : 'tabela `papeis` NÃO existe — migração 02 ainda não foi aplicada');
 
 if (!aplicada) {
-  console.log('\n  ⏭️  Rode supabase/migracao-02-auth-papeis-consentimento.sql no SQL Editor');
+  console.log('\n  ⏭️  Rode supabase/migracoes/02-auth-papeis-consentimento.sql no SQL Editor');
   console.log('     e depois esta suíte verifica as garantias de autorização.');
   console.log(`\n✅ ${total} verificação (migração pendente, nada a verificar ainda)`);
   return;
@@ -130,7 +130,7 @@ secao('7. Contestação: caixa de entrada, não acesso');
 
 const rTab = await fetch(`${BASE}contestacoes?select=id&limit=1`, { headers: cabAnon() });
 if (rTab.status === 404) {
-  console.log('     ⏭️  migração 04 não aplicada — rode supabase/migracao-04-contestacoes.sql');
+  console.log('     ⏭️  migração 04 não aplicada — rode supabase/migracoes/04-contestacoes.sql');
 } else {
   temContestacoes = true;
   /* 1. o anônimo NÃO lê nada */
