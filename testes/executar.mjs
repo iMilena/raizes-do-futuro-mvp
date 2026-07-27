@@ -78,11 +78,20 @@ async function temInternet() {
 }
 
 /* ------------------------------------------------------------- execução ---- */
+/**
+ * Código 77 = a suíte se recusou a rodar por falta de pré-requisito.
+ *
+ * Antes elas saíam com 0 ao pular, e o resumo mostrava ✅ para uma suíte que
+ * não verificou nada — "tudo verde" escondendo cobertura perdida, que é pior do
+ * que vermelho. Agora pular aparece como pular.
+ */
+const PULADO = 77;
+
 function rodar(arquivo, env = {}) {
   const r = spawnSync(process.execPath, [join(AQUI, arquivo)], {
     stdio: 'inherit', env: { ...process.env, ...env }, cwd: RAIZ,
   });
-  return r.status === 0;
+  return r.status === PULADO ? 'pulado' : r.status === 0 ? 'ok' : 'falhou';
 }
 
 const resultados = [];
@@ -97,7 +106,7 @@ try {
 
   if (querem('fluxo')) {
     console.log('── fluxo (reducer, sem navegador) ' + '─'.repeat(24));
-    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }) ? 'ok' : 'falhou');
+    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }));
   }
 
   if (querem('qr')) {
@@ -110,13 +119,18 @@ try {
       console.log('  ⏭️  pulado: sem internet para baixar o decodificador de referência');
       registrar('qr', 'pulado');
     } else {
-      registrar('qr', rodar('qr.mjs', { EDGE: edge }) ? 'ok' : 'falhou');
+      registrar('qr', rodar('qr.mjs', { EDGE: edge }));
     }
   }
 
   if (querem('nuvem')) {
     console.log('\n── esquema compartilhado (Supabase real) ' + '─'.repeat(17));
-    registrar('nuvem', rodar('nuvem.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }) ? 'ok' : 'falhou');
+    registrar('nuvem', rodar('nuvem.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }));
+  }
+
+  if (querem('autorizacao')) {
+    console.log('\n── autorização e consentimento (Supabase real) ' + '─'.repeat(11));
+    registrar('autorizacao', rodar('autorizacao.mjs'));
   }
 
   if (querem('aparelhos')) {
@@ -127,7 +141,7 @@ try {
       registrar('aparelhos', 'pulado');
     } else {
       servidor = servidor || await subirServidor();
-      registrar('aparelhos', rodar('dois-aparelhos.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+      registrar('aparelhos', rodar('dois-aparelhos.mjs', { EDGE: edge, ALVO }));
     }
   }
   if (querem('navegador')) {
@@ -138,7 +152,7 @@ try {
       registrar('navegador', 'pulado');
     } else {
       servidor = await subirServidor();
-      registrar('navegador', rodar('navegador.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+      registrar('navegador', rodar('navegador.mjs', { EDGE: edge, ALVO }));
     }
   }
   /* fora do conjunto padrão: só roda quando pedido (`npm test -- telas`),
@@ -151,7 +165,7 @@ try {
       registrar('telas', 'pulado');
     } else {
       servidor = servidor || await subirServidor();
-      registrar('telas', rodar('telas.mjs', { EDGE: edge, ALVO }) ? 'ok' : 'falhou');
+      registrar('telas', rodar('telas.mjs', { EDGE: edge, ALVO }));
     }
   }
 } catch (e) {
@@ -168,5 +182,10 @@ for (const r of resultados) {
   console.log(`  ${marca} ${r.nome}`);
 }
 const falhou = resultados.some(r => r.estado === 'falhou');
-console.log(falhou ? '\n❌ há suíte(s) falhando\n' : '\n✅ tudo verde\n');
+const pulados = resultados.filter(r => r.estado === 'pulado');
+if (pulados.length) {
+  console.log(`\n⏭️  ${pulados.length} suíte(s) pulada(s): ${pulados.map(p => p.nome).join(', ')}`);
+  console.log('   Pular NÃO é passar — a garantia daquela suíte não foi verificada.');
+}
+console.log(falhou ? '\n❌ há suíte(s) falhando\n' : pulados.length ? '\n✅ o que rodou passou (veja as puladas acima)\n' : '\n✅ tudo verde\n');
 process.exit(falhou ? 1 : 0);

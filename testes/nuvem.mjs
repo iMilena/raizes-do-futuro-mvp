@@ -44,9 +44,22 @@ if (!cred) {
 }
 
 const BASE = cred.url.replace(/\/$/, '') + '/rest/v1/';
+
+/* Esta suíte exige sessão da operação. Não é escolha de teste: o cliente de
+   nuvem passou a recusar trabalhar sem sessão (`nuvem.ativo()`), e o banco não
+   tem policy para o papel anônimo depois da migração 02. Fingir uma sessão aqui
+   testaria um caminho que não existe no app. */
+const { abrirSessao, avisoSemSessao } = await import('./ajuda/sessao.mjs');
+const SESSAO = await abrirSessao(cred);
+if (!SESSAO) {
+  avisoSemSessao('a suíte do esquema compartilhado');
+  process.exit(77); // 77 = pulado, ver testes/executar.mjs
+}
+const TOKEN = SESSAO.access_token;
+
 const H = () => ({
   apikey: cred.anonKey,
-  Authorization: 'Bearer ' + cred.anonKey,
+  Authorization: 'Bearer ' + (TOKEN || cred.anonKey),
   'content-type': 'application/json',
 });
 
@@ -224,6 +237,9 @@ if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
   // o proprio modulo de sincronizacao reexporta a nuvem, garantindo mesma instancia
   const nuvem = sinc;
   await sinc.configurar(cred);
+  /* a mesma sessão de cima, injetada no módulo empacotado: é isto que faz
+     `nuvem.ativo()` responder true e o token entrar nos cabeçalhos */
+  sinc.auth._definirSessao(SESSAO);
 
   secao('8. Ida e volta: estado do app → nuvem → estado do app');
   /* faixa própria para não misturar com o piloto: ids deslocados */
@@ -231,8 +247,21 @@ if (!process.env.STORE_BUNDLE || !process.env.SYNC_BUNDLE) {
   const desloca = st => ({
     ...st,
     nextId: N + 100,
+    /* consentimento entra aqui porque sem ele NADA de família sobe — nem a
+       família, nem condição, nem extrato. É a regra nova, e o round-trip
+       precisa exercitá-la em vez de contorná-la. */
     familias: st.familias.map(f => ({ ...f, id: f.id + N, codigo: 'RT-' + (f.id + N),
-      condicoes: f.condicoes.map(c => ({ ...c, id: c.id + N })) })),
+      condicoes: f.condicoes.map(c => ({ ...c, id: c.id + N })),
+      consentimentos: [{
+        id: f.id + N + 500_000,
+        versaoTermo: 'termo-teste-roundtrip',
+        finalidades: ['[teste] ida e volta'],
+        forma: 'presencial-assinado',
+        termoHash: 'b'.repeat(64),
+        coletadoPor: SESSAO.usuario.id,
+        coletadoEm: new Date().toISOString(),
+        revogadoEm: null,
+      }] })),
     coletas: st.coletas.map(c => ({ ...c, id: c.id + N })),
     relatorios: st.relatorios.map(r => ({ ...r, id: r.id + N })),
     // rastreio e unique (duas pecas nao compartilham codigo): a faixa entra nele tambem

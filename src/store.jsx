@@ -31,8 +31,47 @@ export const TIPOS_TX = {
   'CARTEIRA': { rot: 'Conta da família conectada', cor: '#1cabe2' },
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
   'ANCORAGEM': { rot: 'Relatório ancorado na Solana devnet (registro real)', cor: '#0f7a6c' },
+  'CONSENTIMENTO': { rot: 'Consentimento do responsável registrado ou revogado', cor: '#6d4de8' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
+
+/* ------------------------------------------------------- consentimento ----- */
+/**
+ * Termo apresentado ao responsável. Fica no código de propósito: o hash que vai
+ * para o registro tem de ser o hash DESTE texto, e um texto que mora só no banco
+ * pode ser trocado depois sem ninguém notar. Aqui ele é versionado com o app.
+ */
+export const VERSAO_TERMO = 'termo-piloto-boipeba-v1';
+export const FINALIDADES_PADRAO = [
+  'registrar a coleta de resíduos da família',
+  'comprovar as condições de saúde e educação das crianças',
+  'transferir o bônus para a conta indicada',
+  'prestar contas do piloto de forma agregada',
+];
+export const TEXTO_TERMO = [
+  'Autorizo o Instituto Vivá a registrar, no sistema Raízes do Futuro, os dados',
+  'necessários para participar do piloto de Boipeba: as coletas realizadas pela',
+  'minha família, a comprovação das condições de saúde e educação das crianças e',
+  'a conta para receber o bônus.',
+  '',
+  'Sei que:',
+  '· meu nome NÃO é enviado para a base compartilhada — ela usa um código;',
+  '· as fotos dos comprovantes ficam no aparelho, e o sistema guarda apenas um',
+  '  código de verificação (hash) que prova que a foto não foi trocada;',
+  '· posso pedir para sair a qualquer momento, sem perder o que já recebi;',
+  '· pedir para sair faz meus dados pararem de ser compartilhados.',
+].join('\n');
+
+/** SHA-256 do termo exato apresentado. Prova qual texto a pessoa aceitou. */
+export async function hashTermo(texto = TEXTO_TERMO) {
+  const cripto = globalThis.crypto?.subtle;
+  if (!cripto) return '';
+  const bytes = await cripto.digest('SHA-256', new TextEncoder().encode(texto));
+  return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Consentimento ativo da família, se houver. */
+export const consentimentoAtivo = f => (f?.consentimentos || []).find(c => !c.revogadoEm) || null;
 
 /** Saldo do cofre menos o comprometido em propostas ainda aguardando assinatura. */
 export const disponivelCofre = s =>
@@ -332,6 +371,46 @@ function reducer(state, action) {
       }
       s.vendas.push(venda);
       aplicarSplit(s, venda);
+      return s;
+    }
+
+    /* ------------------------------------------------- consentimento ----- */
+    /* Registro do consentimento do responsável (LGPD art. 8º: específico,
+       informado e DEMONSTRÁVEL). Nada de família vai para a nuvem sem isto —
+       ver policies em supabase/migracao-02. Aqui não guardo assinatura
+       digitalizada nem documento: guardo a forma e o hash do termo exato. */
+    case 'REGISTRAR_CONSENTIMENTO': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f && !(f.consentimentos || []).some(c => !c.revogadoEm)) {
+        f.consentimentos = [...(f.consentimentos || []), {
+          id: novoId(),
+          versaoTermo: action.versaoTermo || VERSAO_TERMO,
+          finalidades: action.finalidades || FINALIDADES_PADRAO,
+          forma: action.forma || 'presencial-assinado',
+          termoHash: action.termoHash || '',
+          coletadoPor: action.coletadoPor || null,
+          coletadoEm: new Date().toISOString(),
+          revogadoEm: null,
+        }];
+        pushTx(s, 'CONSENTIMENTO',
+          `Consentimento registrado para a família de ${f.resp} (${action.forma || 'presencial-assinado'}) — termo ${action.versaoTermo || VERSAO_TERMO}`,
+          0, { familiaId: f.id });
+      }
+      return s;
+    }
+
+    /* Revogar é direito do titular, e tem de ser tão fácil quanto conceder.
+       Revogado, o dado da família para de subir e sai da leitura na nuvem. */
+    case 'REVOGAR_CONSENTIMENTO': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      const c = (f?.consentimentos || []).find(c => !c.revogadoEm);
+      if (c) {
+        c.revogadoEm = new Date().toISOString();
+        c.revogadoMotivo = action.motivo || '';
+        pushTx(s, 'CONSENTIMENTO',
+          `Consentimento REVOGADO pela família de ${f.resp} — dados deixam de ser compartilhados`,
+          0, { familiaId: f.id });
+      }
       return s;
     }
 

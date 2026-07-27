@@ -237,6 +237,17 @@ header.top{
 .perfil-linha{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--borda)}
 .perfil-linha:last-child{border-bottom:none}
 .perfil-linha span{color:var(--cinza)}
+.perfil-av.anon{background:var(--areia);border:1px solid var(--borda-forte);color:var(--cinza);font-size:14px}
+.perfil-painel form label:first-child{margin-top:2px}
+.perfil-painel .acao.bloco{margin-top:12px}
+
+/* termo de consentimento: texto legal precisa respirar e não pode ser reflow
+   agressivo — quebra onde o autor quebrou. */
+.termo{
+  font-family:var(--fonte);font-size:12.5px;line-height:1.55;white-space:pre-wrap;
+  background:var(--areia);border:1px solid var(--borda);border-radius:12px;
+  padding:13px 15px;margin:0 0 9px;max-height:220px;overflow-y:auto;color:var(--texto);
+}
 
 .btn-tour{
   background:#fff;color:var(--verde-escuro);

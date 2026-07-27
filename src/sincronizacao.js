@@ -27,7 +27,7 @@ import * as nuvem from './nuvem.js';
 /* Reexportados para quem usa a sincronização não precisar importar os dois
    módulos — e, no teste, para garantir que é a MESMA instância de nuvem.js
    (bundles separados teriam cópias distintas, cada uma com sua configuração). */
-export { configurar, carregar, ativo, contarTransacoes } from './nuvem.js';
+export { configurar, carregar, ativo, configuradoSemSessao, contarTransacoes, auth } from './nuvem.js';
 
 const CHAVE_FILA = 'raizes-fila-sync';
 
@@ -71,6 +71,17 @@ function fazTradutor(familias) {
 }
 
 const codigoDe = f => f.codigo || `BOI-${String(f.id).padStart(3, '0')}`;
+
+/**
+ * A família tem consentimento ativo para os dados dela irem à nuvem?
+ *
+ * O banco já recusa (policies `fam_criar`, `cond_escrever`, `ext_inserir`), mas
+ * a fila é FIFO e para no primeiro erro: uma família sem consentimento travaria
+ * todo o resto do trabalho atrás dela. Então o filtro também vive aqui, e o
+ * banco continua sendo a garantia — não a única checagem.
+ */
+export const temConsentimentoAtivo = f =>
+  (f?.consentimentos || []).some(c => !c.revogadoEm);
 const CAIXAS = [
   ['renda', 'renda'],
   ['fundo', 'fundo'],
@@ -96,9 +107,24 @@ export function calcularDeltas(antes, depois) {
   // âncora é a signature (chave natural), não o seq — ver migracao-01
   const ancora = novasTx.length ? novasTx[novasTx.length - 1].signature : null;
 
-  /* famílias: só o que não é dado pessoal */
+  /* consentimentos novos e revogações — SEMPRE antes das famílias */
+  const consAntes = porId((a.familias || []).flatMap(f => f.consentimentos || []));
+  for (const f of depois.familias) {
+    for (const c of f.consentimentos || []) {
+      const ant = consAntes.get(c.id);
+      if (!ant) ops.push({ tipo: 'consentimento', consentimento: { ...c, familiaId: f.id } });
+      else if (!ant.revogadoEm && c.revogadoEm) {
+        ops.push({ tipo: 'consentimento-revoga', id: c.id, motivo: c.revogadoMotivo });
+      }
+    }
+  }
+
+  /* famílias: só o que não é dado pessoal.
+     Família SEM consentimento ativo não sobe — a policy recusaria e a fila
+     entupiria. Barrar aqui deixa o motivo explícito em vez de virar 403. */
   const famAntes = porId(a.familias);
   for (const f of depois.familias) {
+    if (!temConsentimentoAtivo(f)) continue;
     const ant = famAntes.get(f.id);
     if (!ant) {
       ops.push({ tipo: 'familia', familia: recorteFamilia(f) });
@@ -110,6 +136,7 @@ export function calcularDeltas(antes, depois) {
   /* condições */
   const condAntes = porId((a.familias || []).flatMap(f => f.condicoes.map(c => ({ ...c, familiaId: f.id }))));
   for (const f of depois.familias) {
+    if (!temConsentimentoAtivo(f)) continue;
     for (const c of f.condicoes) {
       const ant = condAntes.get(c.id);
       if (!ant || ant.status !== c.status || ant.evidHash !== c.evidHash) {
@@ -156,6 +183,7 @@ export function calcularDeltas(antes, depois) {
 
   /* extrato da família: idem, linha por linha nova */
   for (const f of depois.familias) {
+    if (!temConsentimentoAtivo(f)) continue;
     const ant = famAntes.get(f.id);
     const novas = (f.extrato || []).slice((ant?.extrato || []).length);
     for (const e of novas) {
@@ -185,6 +213,10 @@ const motivoDe = txs => (txs.length ? `${txs[txs.length - 1].tipo}: ${txs[txs.le
 async function executar(op) {
   switch (op.tipo) {
     case 'transacao': return nuvem.registrarTransacao(op.tx);
+    /* consentimento vem antes da família de propósito: a policy `fam_criar`
+       recusa família sem consentimento ativo. A ordem FIFO da fila garante. */
+    case 'consentimento': return nuvem.registrarConsentimento(op.consentimento);
+    case 'consentimento-revoga': return nuvem.revogarConsentimento(op.id, op.motivo);
     case 'familia': return nuvem.registrarFamilia(op.familia);
     case 'condicao': return nuvem.registrarCondicao(op.familiaId, op.condicao);
     case 'coleta': return nuvem.registrarColeta(op.coleta);

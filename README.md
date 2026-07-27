@@ -99,6 +99,32 @@ Há também um **🎥 Modo gravação** no rodapé: esconde os elementos que den
 - **Bônus reservado, nunca perdido** — condição não cumprida mantém o valor reservado para liberação retroativa.
 - **Nenhum dado sensível na rede** — a foto do comprovante não sai do aparelho da família: o app calcula o SHA-256 e só o hash é registrado.
 - **Sem barreira digital** — sem seed phrase, sem taxa de rede para a família, com agente humano de apoio.
+- **Consentimento é pré-requisito, não formulário** — o banco recusa criar família sem consentimento ativo, e revogar tira os dados da leitura na hora.
+
+## Acesso, papéis e consentimento
+
+O app tem **dois modos, e a tela diz qual está valendo**:
+
+| | sem sessão | com sessão da operação |
+|---|---|---|
+| App funciona | sim, inteiro, offline | sim |
+| Lê a base compartilhada | **não** | sim, conforme o papel |
+| Envia para a base | **não** | sim, conforme o papel |
+
+Sem login o app roda 100% local — é o modo da demonstração e do vídeo. Entrar (canto superior direito) serve para sincronizar entre os aparelhos da operação.
+
+**Papéis:** `coletor` registra coleta e não valida; `validador` e `gestor` validam, criam proposta e cadastram. Sem papel atribuído, estar autenticado não dá acesso a nada.
+
+**A família não tem senha.** Ela entra no app dela com PIN, no celular. Quem tem credencial é a operação, no aparelho de trabalho — dar login e senha para a mãe em Boipeba seria transferir a ela o custo de um problema nosso.
+
+**2-de-3 de verdade:** cada pessoa só assina em nome da organização registrada no seu papel. Antes, quem tivesse a chave do frontend produzia as três assinaturas e o multisig não protegia ninguém.
+
+Detalhes, o SQL e os dois passos manuais de configuração: [`SUPABASE.md`](SUPABASE.md).
+
+### O que ainda falta para campo
+
+- **Política de retenção**: por quanto tempo o dado fica e o que acontece com ele ao fim do piloto.
+- Os dados de demonstração que já estão na base foram criados pelos testes, **sem termo de consentimento** — e não há registro fabricado para eles, porque consentimento inventado é pior que consentimento nenhum: mente na prova. Eles simplesmente deixam de ser lidos. O bloco para limpar a base está no fim da migração 02.
 
 ## Ancoragem real na Solana devnet
 
@@ -172,6 +198,9 @@ testes/
   navegador.mjs          app inteiro no Edge, via DevTools Protocol
   qr.mjs                 QR gerado é decodificado por leitor independente
   nuvem.mjs              garantias do esquema, contra o Supabase real
+  autorizacao.mjs        anônimo barrado, papel, consentimento (Supabase real)
+  dois-aparelhos.mjs     dois navegadores, um offline durante uma coleta
+  telas.mjs              capturas para conferir o visual com o olho
 ```
 
 ## Testes
@@ -180,8 +209,14 @@ testes/
 npm test                  # tudo o que o ambiente permitir
 npm test -- fluxo         # só o reducer, em segundos
 npm test -- navegador     # só o app no navegador
+npm test -- autorizacao   # RLS por papel e consentimento, no banco real
+npm test -- telas         # grava capturas/ para conferir o visual
 ```
 
-O runner sobe o servidor de desenvolvimento sozinho e o derruba no fim, e **pula com aviso** — em vez de falhar — quando falta Edge, internet ou credencial do Supabase.
+O runner sobe o servidor de desenvolvimento sozinho e o derruba no fim, e **pula com aviso** — em vez de falhar — quando falta Edge, internet, credencial do Supabase ou usuário de operação.
+
+**Pular não é passar.** Suíte pulada aparece como ⏭️ no resumo e o runner diz explicitamente que aquela garantia não foi verificada — antes ela saía com código 0 e o resumo mostrava ✅ para uma suíte que não conferiu nada, o que é pior que vermelho.
+
+As suítes `nuvem` e `aparelhos` precisam de sessão da operação (`SUPABASE_TEST_EMAIL` / `SUPABASE_TEST_SENHA`), porque a nuvem não responde mais a anônimo — por desenho.
 
 Sem dependências além de React + Vite no app. O `@solana/web3.js` vive num `package.json` separado em `onchain/`, então não entra no bundle do site; o `esbuild` é dependência de desenvolvimento, usada pelos testes.

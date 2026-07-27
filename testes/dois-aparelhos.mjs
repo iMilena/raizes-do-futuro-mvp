@@ -40,6 +40,15 @@ if (!cred) {
   process.exit(0);
 }
 
+/* Os dois aparelhos precisam estar LOGADOS: sem sessão o app é local por
+   desenho e não haveria sincronização nenhuma para testar. */
+const { abrirSessao, avisoSemSessao, CHAVE_SESSAO } = await import('./ajuda/sessao.mjs');
+const SESSAO = await abrirSessao(cred);
+if (!SESSAO) {
+  avisoSemSessao('o teste de dois aparelhos');
+  process.exit(77); // 77 = pulado, ver testes/executar.mjs
+}
+
 /* limpa a nuvem da faixa deste teste inserindo com ids próprios não é possível
    (append-only), então o teste trabalha com o que existe e mede DELTAS. */
 const H = { apikey: cred.anonKey, Authorization: 'Bearer ' + cred.anonKey };
@@ -60,7 +69,14 @@ try {
   const preparar = async (nav, rotulo) => {
     await nav.cdp('Page.navigate', { url: ALVO });
     await espera(900);
-    await nav.ev("localStorage.clear(); localStorage.setItem('raizes-tour-v1','visto'); return 1;");
+    /* injeta a sessão como se a pessoa tivesse entrado na tela: src/auth.js
+       restaura desta chave no boot. Assim os dois aparelhos sincronizam. */
+    await nav.ev(`
+      localStorage.clear();
+      localStorage.setItem('raizes-tour-v1','visto');
+      localStorage.setItem(${JSON.stringify(CHAVE_SESSAO)}, ${JSON.stringify(JSON.stringify(SESSAO))});
+      return 1;
+    `);
     await nav.cdp('Page.reload', {});
     await espera(2500); // deixa o boot puxar da nuvem
     await nav.ev(AJUDANTES + ' return 1;');

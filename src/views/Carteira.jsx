@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useStore, fmt, BONUS_POR_CRIANCA, REDE, MOEDA, PROVIDER_CARTEIRA } from '../store.jsx';
+import {
+  useStore, fmt, trunc, BONUS_POR_CRIANCA, REDE, MOEDA, PROVIDER_CARTEIRA,
+  VERSAO_TERMO, TEXTO_TERMO, hashTermo, consentimentoAtivo,
+} from '../store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
+import * as auth from '../auth.js';
 
 const STATUS = {
   pendente: ['pend', 'enviar comprovação'],
@@ -10,6 +14,91 @@ const STATUS = {
   liberada: ['ok', 'bônus recebido'],
   'validada-aguardando': ['info', 'validado — reservado'],
 };
+
+/* ---------- consentimento do responsável (LGPD) ----------
+   Fica ANTES de tudo na tela por um motivo prático: é o que autoriza o resto.
+   Sem consentimento ativo, os dados desta família não vão para a base
+   compartilhada — e a policy do banco recusa, não é só a tela que evita. */
+function Consentimento({ familia }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
+  const [aberto, setAberto] = useState(false);
+  const [forma, setForma] = useState('presencial-assinado');
+  const [hash, setHash] = useState('');
+  const ativo = consentimentoAtivo(familia);
+  const revogado = (familia.consentimentos || []).find(c => c.revogadoEm);
+
+  useEffect(() => { hashTermo().then(setHash).catch(() => setHash('')); }, []);
+
+  const registrar = () => {
+    dispatch({
+      type: 'REGISTRAR_CONSENTIMENTO',
+      familiaId: familia.id,
+      forma,
+      termoHash: hash,
+      coletadoPor: auth.atual()?.usuario?.id || null,
+    });
+    toast('Consentimento registrado ✍️ — dados desta família passam a ser compartilhados', 'info', 5000);
+    setAberto(false);
+  };
+
+  const revogar = () => {
+    const motivo = prompt('Motivo da revogação (opcional):') ?? '';
+    dispatch({ type: 'REVOGAR_CONSENTIMENTO', familiaId: familia.id, motivo });
+    toast('Consentimento revogado — os dados desta família param de ser compartilhados', 'alerta', 6000);
+  };
+
+  if (ativo) {
+    return (
+      <div className="card" style={{ borderLeft: '3px solid var(--verde)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div>
+            <b style={{ fontSize: 14 }}>✍️ Consentimento ativo</b>
+            <div className="mini">
+              {ativo.versaoTermo} · {ativo.forma.replace('-', ' ')} · registrado em {new Date(ativo.coletadoEm).toLocaleDateString('pt-BR')}
+            </div>
+            <div className="hash" style={{ marginTop: 4 }}>termo SHA-256 {ativo.termoHash ? trunc(ativo.termoHash, 12, 12) : '—'}</div>
+          </div>
+          <button className="acao sec" onClick={revogar}>Revogar a pedido da família</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card" style={{ borderLeft: '3px solid var(--alerta)' }}>
+      <b style={{ fontSize: 14 }}>⚠️ Sem consentimento registrado</b>
+      <p className="mini" style={{ marginTop: 4 }}>
+        {revogado
+          ? `A família revogou o consentimento em ${new Date(revogado.revogadoEm).toLocaleDateString('pt-BR')}. Os dados dela não são compartilhados.`
+          : 'Os dados desta família ficam só neste aparelho. A base compartilhada recusa família sem consentimento — é regra do banco, não da tela.'}
+      </p>
+      {!aberto && <button className="acao" style={{ marginTop: 10 }} onClick={() => setAberto(true)}>Registrar consentimento</button>}
+      {aberto && (
+        <>
+          <label style={{ marginTop: 14 }}>Termo apresentado ({VERSAO_TERMO})</label>
+          <pre className="termo">{TEXTO_TERMO}</pre>
+          <div className="hash">SHA-256 do termo: {hash ? trunc(hash, 16, 16) : 'calculando…'}</div>
+          <label htmlFor="forma-consent">Como o consentimento foi colhido</label>
+          <select id="forma-consent" value={forma} onChange={e => setForma(e.target.value)}>
+            <option value="presencial-assinado">Presencial, com assinatura no papel</option>
+            <option value="presencial-verbal">Presencial, verbal com testemunha</option>
+            <option value="whatsapp">Por WhatsApp, com confirmação escrita</option>
+            <option value="formulario">Formulário preenchido pela família</option>
+          </select>
+          <p className="mini" style={{ marginTop: 8 }}>
+            O sistema guarda a <b>forma</b> e o <b>hash do termo</b> — nunca foto de documento
+            nem assinatura digitalizada.
+          </p>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+            <button className="acao" onClick={registrar} disabled={!hash}>Confirmar consentimento</button>
+            <button className="acao sec" onClick={() => setAberto(false)}>Cancelar</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 /* ---------- conectar carteira Picnic (sem seed phrase) ---------- */
 function Onboarding({ familia, onDone }) {
@@ -137,6 +226,8 @@ export default function Carteira() {
         {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp} ({fa.criancas} criança{fa.criancas > 1 ? 's' : ''})</option>)}
       </select>
       <div style={{ height: 14 }} />
+
+      <Consentimento familia={f} />
 
       {noWizard && <Onboarding familia={f} onDone={() => setFeito(true)} />}
 

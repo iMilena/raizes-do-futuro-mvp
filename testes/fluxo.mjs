@@ -267,8 +267,13 @@ ok(opsVenda[0].tipo === 'transacao', 'transação vem primeiro: movimento refere
 
 /* assinatura é linha, e a segunda executa e mexe em dinheiro */
 const p0 = comVenda.propostas.find(p => p.status === 'aguardando');
-const s1 = d(comVenda, { type: 'ASSINAR_PROPOSTA', propostaId: p0.id, signatario: 'detrash' });
-const opsAss = calcularDeltas(comVenda, s1);
+/* o extrato é dado ligado à família, então também depende de consentimento */
+const comConsent = d(comVenda, {
+  type: 'REGISTRAR_CONSENTIMENTO', familiaId: p0.familiaId,
+  forma: 'presencial-verbal', termoHash: 'e'.repeat(64),
+});
+const s1 = d(comConsent, { type: 'ASSINAR_PROPOSTA', propostaId: p0.id, signatario: 'detrash' });
+const opsAss = calcularDeltas(comConsent, s1);
 const assinaturas = opsAss.filter(o => o.tipo === 'assinatura');
 ok(assinaturas.length === 1 && assinaturas[0].signatario === 'detrash', 'só a assinatura nova sobe');
 ok(opsAss.some(o => o.tipo === 'extrato' && o.valor === p0.valor), 'liberação gera linha de extrato com o valor do bônus');
@@ -279,10 +284,30 @@ ok(opsAss.every(o => o.tipo !== 'extrato' || o.transacaoSig != null), 'todo extr
 /* nada mudou → nada sobe */
 ok(calcularDeltas(s1, s1).length === 0, 'estado igual não gera operação nenhuma');
 
-/* LGPD: o nome da família não pode sair daqui */
+/* LGPD: consentimento é PRÉ-REQUISITO. Sem ele, nada da família sobe — nem
+   condição, nem extrato, nem a própria família. A policy do banco recusa, e a
+   fila é FIFO: se deixássemos entrar, uma família sem consentimento travaria
+   todo o trabalho atrás dela. */
 const semConta = base.familias.find(f => !f.carteira);
-const comConta = d(base, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
-const opsFam = calcularDeltas(base, comConta);
+const semConsent = d(base, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
+const opsSemConsent = calcularDeltas(base, semConsent);
+ok(!opsSemConsent.some(o => o.tipo === 'familia'),
+  'família SEM consentimento não gera operação de família');
+ok(!opsSemConsent.some(o => ['condicao', 'extrato'].includes(o.tipo)),
+  'e nem condição nem extrato dela sobem');
+
+const consentida = d(base, {
+  type: 'REGISTRAR_CONSENTIMENTO', familiaId: semConta.id,
+  forma: 'presencial-assinado', termoHash: 'f'.repeat(64),
+});
+const opsConsent = calcularDeltas(base, consentida);
+const opCons = opsConsent.find(o => o.tipo === 'consentimento');
+ok(Boolean(opCons), 'registrar consentimento gera a operação de consentimento');
+ok(opCons.consentimento.termoHash.length === 64, 'com o hash do termo apresentado');
+ok(!('resp' in opCons.consentimento), 'e sem o nome da pessoa');
+
+const comConta = d(consentida, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
+const opsFam = calcularDeltas(consentida, comConta);
 const opFamilia = opsFam.find(o => o.tipo === 'familia');
 ok(Boolean(opFamilia), 'criar conta gera operação de família');
 ok(!('resp' in opFamilia.familia), 'a operação NÃO carrega o nome da pessoa');

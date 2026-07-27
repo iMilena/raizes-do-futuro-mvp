@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, fmt, trunc } from './store.jsx';
+import * as auth from './auth.js';
+import * as nuvem from './nuvem.js';
 import { ToastProvider, useToast } from './ui.jsx';
 import { DemoProvider, DemoNarrador } from './demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from './tour.jsx';
@@ -163,33 +165,107 @@ function Notificacoes({ setTab }) {
 
 /* --------------------------------------------------------- perfil ------- */
 /**
- * O app ainda NÃO tem autenticação — ver README, seção de limites. Então este
- * bloco mostra o papel de operação, e o menu diz em voz alta que é perfil de
- * demonstração. Desenhar um usuário logado com nome próprio faria a tela
- * afirmar um login que não existe.
+ * Perfil e sessão da operação.
+ *
+ * Duas situações honestas, e a tela diz qual é:
+ *  · sem sessão → o app roda LOCAL. Nada é lido nem enviado à nuvem, e está
+ *    escrito assim. Este é o modo da demonstração e do júri.
+ *  · com sessão → sincroniza sob o papel da pessoa (coletor, validador, gestor).
+ *
+ * Não existe login de família aqui: a família usa o app dela com PIN e não tem
+ * conta. Ver src/auth.js.
  */
 function Perfil() {
   const [aberto, setAberto] = useState(false);
+  const [form, setForm] = useState({ email: '', senha: '' });
+  const [erro, setErro] = useState('');
+  const [ocupado, setOcupado] = useState(false);
+  const [sessao, setSessao] = useState(() => auth.atual());
+  const toast = useToast();
+
+  useEffect(() => auth.aoMudar(setSessao), []);
+
+  const papel = sessao?.papel;
+  const iniciais = (papel?.nome || sessao?.usuario?.email || 'operação')
+    .split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+
+  const submeter = async e => {
+    e.preventDefault();
+    setErro('');
+    setOcupado(true);
+    try {
+      const cfg = await nuvem.configurar();
+      if (!cfg) throw new Error('Este aparelho não tem projeto de nuvem configurado (public/supabase.json). O app segue funcionando local.');
+      const s = await auth.entrar(cfg, form.email.trim(), form.senha);
+      toast(`Sessão aberta: ${s.papel.nome} (${s.papel.papel}) 🔐`, 'info');
+      setForm({ email: '', senha: '' });
+      setAberto(false);
+    } catch (e2) {
+      setErro(e2.message);
+      if (e2.semPapel) toast('Login válido, mas sem papel definido', 'alerta', 6000);
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const sair = async () => {
+    await auth.sair(await nuvem.configurar());
+    toast('Sessão encerrada. O app continua funcionando local. 👋', 'info');
+    setAberto(false);
+  };
+
   return (
     <div className="perfil-wrap">
       <button className="perfil" onClick={() => setAberto(a => !a)}>
-        <span className="perfil-av">IV</span>
+        <span className={'perfil-av' + (papel ? '' : ' anon')}>{papel ? iniciais : '🔓'}</span>
         <span className="perfil-txt">
-          <b>Instituto Vivá</b>
-          <small>Operação · Boipeba</small>
+          <b>{papel?.nome || 'Modo local'}</b>
+          <small>{papel ? `${papel.papel} · ${papel.organizacao || 'operação'}` : 'sem sincronização'}</small>
         </span>
         <span className="perfil-seta">▾</span>
       </button>
       {aberto && (
         <div className="perfil-painel">
-          <p className="perfil-nota so-sim">
-            <b>Perfil de demonstração.</b> Esta versão não tem login: qualquer pessoa
-            com o endereço abre o painel inteiro. Autenticação por papel é o passo
-            anterior ao uso com famílias reais.
-          </p>
-          <div className="perfil-linha"><span>Organização</span><b>Instituto Vivá</b></div>
-          <div className="perfil-linha"><span>Papel no cofre</span><b>Signatário 1 de 3</b></div>
-          <div className="perfil-linha"><span>Piloto</span><b>Boipeba · Cairu/BA</b></div>
+          {papel ? (
+            <>
+              <div className="perfil-linha"><span>Pessoa</span><b>{papel.nome}</b></div>
+              <div className="perfil-linha"><span>E-mail</span><b className="hash">{sessao.usuario?.email}</b></div>
+              <div className="perfil-linha"><span>Papel</span><b>{papel.papel}</b></div>
+              <div className="perfil-linha"><span>Organização</span><b>{papel.organizacao || '—'}</b></div>
+              <div className="perfil-linha">
+                <span>Assina no cofre</span>
+                <b>{papel.signatario ? `sim, como ${papel.signatario}` : 'não'}</b>
+              </div>
+              <p className="perfil-nota" style={{ marginTop: 11 }}>
+                A base só aceita a sua assinatura em nome de <b>{papel.signatario || 'nenhuma organização'}</b>.
+                Por isso o 2-de-3 exige duas organizações de verdade.
+              </p>
+              <button className="acao sec bloco" onClick={sair}>Sair da sessão</button>
+            </>
+          ) : (
+            <>
+              <p className="perfil-nota">
+                <b>O app está rodando local.</b> Sem sessão ele não lê nem envia nada
+                para a base compartilhada — e funciona inteiro assim, inclusive offline.
+                Entrar serve para sincronizar entre os aparelhos da operação.
+              </p>
+              <form onSubmit={submeter}>
+                <label htmlFor="op-email">E-mail da operação</label>
+                <input id="op-email" type="email" autoComplete="username" required
+                  value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                <label htmlFor="op-senha">Senha</label>
+                <input id="op-senha" type="password" autoComplete="current-password" required
+                  value={form.senha} onChange={e => setForm({ ...form, senha: e.target.value })} />
+                {erro && <p className="mini alerta-txt" style={{ marginTop: 9 }}>{erro}</p>}
+                <button className="acao bloco" type="submit" disabled={ocupado}>
+                  {ocupado ? 'Entrando…' : 'Entrar e sincronizar'}
+                </button>
+              </form>
+              <p className="mini" style={{ marginTop: 10 }}>
+                A família <b>não</b> usa senha: ela entra no app dela com PIN, no celular.
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>

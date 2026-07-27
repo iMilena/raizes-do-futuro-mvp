@@ -9,7 +9,13 @@
    Sem public/supabase.json nada disto roda e o app é 100% local.
 --------------------------------------------------------------------------- */
 
+import * as auth from './auth.js';
+
 let cfg = null;
+
+/* Reexportado para quem usa a nuvem não precisar montar a configuração duas
+   vezes: as telas chamam auth pelo módulo, mas os testes e o store pegam daqui. */
+export { auth };
 
 /**
  * Lê public/supabase.json. Sem o arquivo, tudo aqui vira no-op silencioso.
@@ -32,12 +38,28 @@ export async function configurar(injetada) {
   return cfg;
 }
 
-export const ativo = () => Boolean(cfg);
+/**
+ * A nuvem só está ativa com projeto configurado E sessão da operação aberta.
+ *
+ * Antes bastava o `supabase.json`: a chave anônima lia e escrevia tudo. Desde a
+ * migração 02 nenhuma policy responde ao papel anônimo, então falar com a nuvem
+ * sem sessão só produziria 401 e fila entupida. Sem sessão, o app é local — que
+ * é o modo em que ele foi desenhado para funcionar de qualquer forma.
+ */
+export const ativo = () => Boolean(cfg) && auth.logado();
 
-function cabecalhos(extra = {}) {
+/** Configurado, mas ninguém entrou: a interface usa isto para convidar ao login. */
+export const configuradoSemSessao = () => Boolean(cfg) && !auth.logado();
+
+export const configuracao = () => cfg;
+
+async function cabecalhos(extra = {}) {
+  const t = await auth.token(cfg);
   return {
     apikey: cfg.anonKey,
-    Authorization: 'Bearer ' + cfg.anonKey,
+    // token da pessoa quando há sessão; sem ele o PostgREST trata como `anon`,
+    // e desde a migração 02 `anon` não tem policy nenhuma.
+    Authorization: 'Bearer ' + (t || cfg.anonKey),
     'content-type': 'application/json',
     ...extra,
   };
@@ -45,7 +67,7 @@ function cabecalhos(extra = {}) {
 
 async function req(caminho, opcoes = {}) {
   if (!(await configurar())) return null;
-  const r = await fetch(`${cfg.url}/rest/v1/${caminho}`, { ...opcoes, headers: cabecalhos(opcoes.headers) });
+  const r = await fetch(`${cfg.url}/rest/v1/${caminho}`, { ...opcoes, headers: await cabecalhos(opcoes.headers) });
   const texto = await r.text();
   if (!r.ok) throw new Error(`Supabase ${r.status}: ${texto.slice(0, 160)}`);
   // `Prefer: return=minimal` devolve 201 com corpo VAZIO — não é só o 204.
@@ -206,7 +228,7 @@ export const registrarCarteira = f => atualizar('familias', `id=eq.${f.id}`, {
 export async function contarTransacoes() {
   if (!(await configurar())) return null;
   const r = await fetch(`${cfg.url}/rest/v1/transacoes?select=seq`, {
-    headers: { ...cabecalhos(), Prefer: 'count=exact', Range: '0-0' },
+    headers: { ...(await cabecalhos()), Prefer: 'count=exact', Range: '0-0' },
   });
   const faixa = r.headers.get('content-range'); // ex.: "0-0/42"
   const total = faixa?.split('/')?.[1];
@@ -223,6 +245,35 @@ export const atualizarProposta = (id, campos) => atualizar('propostas', `id=eq.$
 /** Append-only: a PK (proposta, signatário) faz a idempotência no banco. */
 export const registrarAssinatura = (propostaId, signatario) =>
   inserir('assinaturas', { proposta_id: propostaId, signatario }, 'proposta_id,signatario');
+
+/**
+ * Registro de consentimento do responsável. Vai ANTES da família — a policy
+ * `fam_criar` recusa criar família sem consentimento ativo, então esta é
+ * literalmente a porta de entrada de qualquer dado de família na nuvem.
+ */
+export const registrarConsentimento = c => inserir('consentimentos', {
+  id: c.id,
+  familia_id: c.familiaId,
+  versao_termo: c.versaoTermo,
+  finalidades: c.finalidades,
+  forma: c.forma,
+  termo_hash: c.termoHash,
+  coletado_por: c.coletadoPor,
+});
+
+/** Revogação: direito do titular. Único UPDATE que a policy permite na tabela. */
+export const revogarConsentimento = (id, motivo) =>
+  atualizar('consentimentos', `id=eq.${id}`, {
+    revogado_em: new Date().toISOString(),
+    revogado_motivo: motivo || null,
+  });
+
+/** Quem sou eu para a nuvem: papel, organização e se assino pelo cofre. */
+export async function meuPapel() {
+  if (!(await configurar()) || !auth.logado()) return null;
+  const r = await req('papeis?select=papel,nome,organizacao,signatario');
+  return Array.isArray(r) && r.length ? r[0] : null;
+}
 
 /** Append-only: `signature` é unique, então reenvio não duplica. */
 export const registrarTransacao = t => inserir('transacoes', {
