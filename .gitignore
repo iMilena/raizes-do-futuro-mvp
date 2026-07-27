@@ -28,3 +28,4 @@ testes/.tmp*/
 # capturas de tela geradas por 
 pm test -- telas (conferência visual)
 capturas/
+SUBMISSAO.md
