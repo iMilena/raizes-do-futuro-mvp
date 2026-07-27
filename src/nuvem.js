@@ -121,7 +121,7 @@ const atualizar = (tabela, filtro, campos) => req(`${tabela}?${filtro}`, {
 export async function carregar() {
   if (!(await configurar())) return null;
 
-  const [familias, condicoes, coletas, relatorios, vendas, propostas, transacoes, saldos, extrato, saldoFam] =
+  const [familias, condicoes, coletas, relatorios, vendas, propostas, transacoes, saldos, extrato, saldoFam, contestacoes] =
     await Promise.all([
       ler('familias', 'select=*&order=id'),
       ler('condicoes', 'select=*&order=id'),
@@ -133,11 +133,33 @@ export async function carregar() {
       ler('saldos', 'select=*'),
       ler('extrato', 'select=*&order=id'),
       ler('saldo_familia', 'select=*'),
+      /* contestações: SEM ISTO o circuito não fecha entre aparelhos.
+         A família deposita na nuvem (sem sessão, ver enviarContestacao), mas o
+         aparelho da operação nunca puxava — então o Instituto Vivá não via a
+         reclamação. Na demonstração parecia funcionar porque as duas telas
+         dividem o mesmo estado local; em campo ela reclamava para o vazio. */
+      ler('contestacoes', 'select=*&order=id'),
     ]);
 
   const caixa = c => Number(saldos?.find(s => s.caixa === c)?.saldo ?? 0);
 
   return {
+    /* de volta ao formato do app (camelCase). `chaveLeitura` NÃO vem: o segredo
+       é da família, e o aparelho da operação não tem o que fazer com ele. */
+    contestacoes: (contestacoes || []).map(c => ({
+      id: Number(c.id),
+      familiaId: Number(c.familia_id),
+      tipo: c.tipo,
+      alvoId: c.alvo_id == null ? null : Number(c.alvo_id),
+      alvoDesc: c.alvo_desc || '',
+      motivo: c.motivo,
+      detalhe: c.detalhe || '',
+      criadoEm: c.criado_em,
+      status: c.status,
+      resposta: c.resposta,
+      respondidoEm: c.respondido_em,
+      respondidoPor: c.respondido_por,
+    })),
     coletas: coletas.map(c => ({ ...c, kg: Number(c.kg) })),
     relatorios,
     vendas,

@@ -444,6 +444,43 @@ ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe a
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 /* ==========================================================================
+   22. O circuito da contestação fecha entre APARELHOS
+   ========================================================================== */
+secao('22. Contestação entre aparelhos (merge da nuvem)');
+
+const localCt = estadoInicial();
+const ctLocal = {
+  id: 111, familiaId: localCt.familias[0].id, tipo: 'coleta', alvoId: 1,
+  motivo: 'O peso está errado', detalhe: '', criadoEm: '2026-07-27T10:00:00.000Z',
+  status: 'aberta', resposta: null, respondidoEm: null, chaveLeitura: 'a'.repeat(32),
+};
+const ctSoLocal = {
+  ...ctLocal, id: 222, criadoEm: '2026-07-27T11:00:00.000Z', chaveLeitura: 'b'.repeat(32),
+};
+const comDuas = { ...localCt, contestacoes: [ctLocal, ctSoLocal] };
+
+/* a nuvem trouxe a MESMA contestação, já respondida pela operação — e não
+   conhece a segunda, que este aparelho abriu offline */
+const daNuvem = {
+  ...localCt,
+  contestacoes: [{
+    ...ctLocal, resposta: 'Conferimos e corrigimos.', status: 'resolvida',
+    respondidoEm: '2026-07-27T12:00:00.000Z', chaveLeitura: undefined,
+  }],
+};
+
+const juntou = mesclar(comDuas, daNuvem);
+ok(juntou.contestacoes.length === 2, 'o merge une as duas: a da nuvem e a que só existe aqui');
+const j1 = juntou.contestacoes.find(c => c.id === 111);
+const j2 = juntou.contestacoes.find(c => c.id === 222);
+ok(j1.resposta === 'Conferimos e corrigimos.' && j1.status === 'resolvida',
+  'a nuvem manda no status e na resposta (é onde a operação respondeu)');
+ok(j1.chaveLeitura === 'a'.repeat(32),
+  'mas o SEGREDO fica com o aparelho — ele não volta da nuvem');
+ok(Boolean(j2), 'e a contestação aberta offline NÃO é apagada pelo merge');
+ok(j2.chaveLeitura === 'b'.repeat(32), 'com o segredo dela preservado');
+
+/* ==========================================================================
    21. A família pode conferir e CONTESTAR o que foi registrado sobre ela
    ========================================================================== */
 secao('21. Contestação: a família discorda de um registro');

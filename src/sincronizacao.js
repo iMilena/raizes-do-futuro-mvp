@@ -335,6 +335,24 @@ export function mesclar(local, remoto) {
        (relógio + aleatório), justamente para não depender de contador local
        compartilhado entre aparelhos. Ver store.jsx. */
     slot: Math.max(local?.slot || 0, remoto.transacoes?.length ? remoto.transacoes[remoto.transacoes.length - 1].slot : 0),
+
+    /* Contestações: UNIÃO, não substituição.
+       Adotar as da nuvem apagaria a que este aparelho abriu offline e ainda não
+       enviou — e reclamação perdida é o pior tipo de dado perdido. Para as que
+       existem nos dois lados, a nuvem manda no status e na resposta (é onde a
+       operação respondeu); `chaveLeitura` fica sempre com o local, porque o
+       segredo é da família e não volta da nuvem. */
+    contestacoes: (() => {
+      const locais = new Map((local?.contestacoes || []).map(c => [c.id, c]));
+      const juntas = (remoto.contestacoes || []).map(r => ({
+        ...locais.get(r.id),
+        ...r,
+        chaveLeitura: locais.get(r.id)?.chaveLeitura ?? null,
+      }));
+      const idsRemotos = new Set(juntas.map(c => c.id));
+      for (const c of local?.contestacoes || []) if (!idsRemotos.has(c.id)) juntas.push(c);
+      return juntas.sort((a, b) => String(a.criadoEm).localeCompare(String(b.criadoEm)));
+    })(),
     cofre: local?.cofre || remoto.cofre,
     familias: (remoto.familias || []).map(f => ({
       ...f,

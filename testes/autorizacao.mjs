@@ -57,7 +57,16 @@ const secao = t => console.log('\n' + t);
 const cabAnon = () => ({ apikey: cred.anonKey, Authorization: 'Bearer ' + cred.anonKey, 'content-type': 'application/json' });
 const cabToken = t => ({ apikey: cred.anonKey, Authorization: 'Bearer ' + t, 'content-type': 'application/json' });
 
-const ID = 9_900_000 + (process.pid % 90_000); // id estável dentro da execução
+/**
+ * Faixa de id deste teste. Estável DENTRO da execução, diferente ENTRE execuções.
+ *
+ * Antes vinha de `process.pid % 90000` — e pid repete. Quando repetia, o INSERT
+ * batia na chave primária de uma execução anterior, voltava 409, e a asserção
+ * "o aparelho da família deposita sem sessão" falhava por colisão, não por
+ * policy. Falhou uma vez na rodada completa e passou sozinha, que é a assinatura
+ * clássica de teste com id não-único.
+ */
+const ID = 9_900_000 + (Date.now() % 80_000) + Math.floor(Math.random() * 900);
 
 /* Corpo dentro de uma função para poder sair no meio com `return`.
    `process.exit()` logo depois de um fetch derruba o Node no Windows com
@@ -131,7 +140,10 @@ if (rTab.status === 404) {
 
   /* 2. mas DEPOSITA — é o que faz o canal existir para quem não tem conta */
   CT = ID + 10;
-  segredo = 'seg' + 'a'.repeat(20) + (ID % 1000);
+  /* segredo único por execução: reaproveitar faz a leitura por chave devolver a
+     linha de OUTRA execução (a função tem `limit 1`) e a asserção mede a coisa
+     errada */
+  segredo = 'seg-' + ID + '-' + Math.random().toString(16).slice(2, 14);
   const rDep = await fetch(`${BASE}contestacoes`, {
     method: 'POST',
     headers: { ...cabAnon(), Prefer: 'return=minimal' },

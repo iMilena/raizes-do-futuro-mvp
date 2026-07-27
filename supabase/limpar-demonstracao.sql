@@ -38,7 +38,16 @@ select 'vendas de teste', count(*)
   from vendas where descricao like '%[teste]%' or rastreio like 'RT%'
 union all
 select 'consentimentos de teste', count(*)
-  from consentimentos where versao_termo like '%teste%';
+  from consentimentos where versao_termo like '%teste%'
+union all
+-- a tabela de contestações veio depois deste script; sem esta linha o lixo de
+-- teste do canal da família ficaria na base de piloto sem ninguém notar
+select 'contestações de teste', count(*)
+  from contestacoes
+ where coalesce(detalhe, '') like '%[teste]%'
+    or coalesce(alvo_desc, '') like '%[teste]%'
+    or coalesce(resposta, '') like '%[teste]%'
+    or motivo = 'forjada';
 
 -- ---------------------------------------------------------------- PARTE 2
 -- A ordem respeita as chaves estrangeiras: filhos antes dos pais.
@@ -74,12 +83,27 @@ delete from relatorios where periodo like '%[teste]%';
 -- 4. consentimentos criados pelos testes
 delete from consentimentos where versao_termo like '%teste%';
 
+-- 5. contestações de teste.
+--    O app NÃO consegue apagar contestação (não há policy de DELETE, e isso é de
+--    propósito: reclamação se responde, não se apaga). O SQL Editor roda como
+--    dono e ignora RLS — este é o único caminho, e exige um humano decidindo.
+delete from contestacoes
+ where coalesce(detalhe, '') like '%[teste]%'
+    or coalesce(alvo_desc, '') like '%[teste]%'
+    or coalesce(resposta, '') like '%[teste]%'
+    or motivo = 'forjada';
+
+-- e as contestações de famílias que deixaram de existir no passo 1
+delete from contestacoes c
+ where not exists (select 1 from familias f where f.id = c.familia_id);
+
 commit;
 
 -- ---------------------------------------------------------------- conferência
 -- O esperado depois disso: base vazia ou só com dado real, e nenhuma família
 -- sem consentimento.
 select 'familias' as tabela, count(*) from familias
+union all select 'contestacoes', count(*) from contestacoes
 union all select 'consentimentos', count(*) from consentimentos
 union all select 'transacoes', count(*) from transacoes
 union all select 'movimentos', count(*) from movimentos

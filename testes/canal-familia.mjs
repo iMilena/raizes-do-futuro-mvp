@@ -146,6 +146,63 @@ try {
   const vazouCt = await lerComoOAparelho('contestacoes');
   ok(vazouCt === 0, 'nem as contestações das outras famílias — depositar não dá leitura');
 
+  /* ------------------------------------------------------------------------
+     5. O OUTRO LADO: o aparelho da operação tem de VER a reclamação.
+     Precisa de sessão, porque a base não responde a anônimo — é o mesmo motivo
+     pelo qual o canal da família precisou de desenho próprio. Sem credencial de
+     teste este trecho é pulado, e o resumo diz que foi pulado.
+     ------------------------------------------------------------------------ */
+  secao('5. O Instituto Vivá, em outro aparelho, vê a reclamação');
+  const { abrirSessao, avisoSemSessao, CHAVE_SESSAO } = await import('./ajuda/sessao.mjs');
+  const SESSAO = await abrirSessao(cred);
+  if (!SESSAO) {
+    avisoSemSessao('a metade da operação neste teste');
+    console.log('     (a ida — celular → nuvem — já foi verificada acima)');
+  } else {
+    const op = await abrirNavegador({ porta: 9356 });
+    try {
+      await op.cdp('Page.navigate', { url: ALVO });
+      await espera(900);
+      await op.ev(`
+        localStorage.clear();
+        localStorage.setItem('raizes-tour-v1','visto');
+        localStorage.setItem(${JSON.stringify(CHAVE_SESSAO)}, ${JSON.stringify(JSON.stringify(SESSAO))});
+        return 1;
+      `);
+      await op.cdp('Page.reload', {});
+      await espera(3000);
+      await op.ev(AJUDANTES + ' return 1;');
+
+      /* espera o pull trazer a contestação criada no OUTRO aparelho */
+      let viu = false;
+      for (let i = 0; i < 14 && !viu; i++) {
+        await espera(1500);
+        viu = await op.ev(`
+          const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+          return (s.contestacoes || []).some(c => c.id === ${chave.id});
+        `);
+      }
+      ok(viu, 'a reclamação feita no celular da família CHEGOU ao aparelho da operação');
+
+      if (viu) {
+        await op.ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+        await espera(900);
+        await op.ev(AJUDANTES + ' return 1;');
+        ok(await op.ev('return __t.tem("Contestações das famílias")'), 'e aparece na tela de quem valida');
+
+        const segredoNaTela = await op.ev(`
+          const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+          const c = (s.contestacoes || []).find(c => c.id === ${chave.id});
+          return { temSegredo: !!c.chaveLeitura, corpo: document.body.innerText.includes(${JSON.stringify(chave.chave)}) };
+        `);
+        ok(!segredoNaTela.temSegredo && !segredoNaTela.corpo,
+          'e o SEGREDO da família não chega nem ao estado nem à tela da operação');
+      }
+    } finally {
+      await op.fechar();
+    }
+  }
+
   const erros = nav.erros.filter(e => !/supabase|401|403/i.test(e));
   ok(erros.length === 0, `nenhum erro de console no app (${erros.length})`);
   if (erros.length) erros.slice(0, 5).forEach(e => console.log('    · ' + e.slice(0, 160)));
