@@ -87,6 +87,29 @@ async function req(caminho, opcoes = {}) {
 const ler = (tabela, query = '') => req(`${tabela}?${query || 'select=*'}`);
 
 /**
+ * Lê uma tabela que pode AINDA NÃO EXISTIR, sem derrubar o resto.
+ *
+ * ── POR QUE ISTO É NECESSÁRIO ─────────────────────────────────────────────
+ * Quem aplica migração e quem publica o app podem ser pessoas e momentos
+ * diferentes. Ao adicionar a leitura de `ciclos`, o app passou a receber 404 e
+ * `carregar()` inteiro rejeitava — ou seja, uma tabela nova ainda não criada
+ * derrubava TODA a sincronização, inclusive o que já funcionava. Trocar uma
+ * lacuna por uma pane é pior que a lacuna.
+ *
+ * O cliente tem de ser compatível com esquema mais antigo do que ele.
+ */
+const lerOpcional = async (tabela, query = '') => {
+  try {
+    return await ler(tabela, query);
+  } catch (e) {
+    if (e?.status === 404 || /does not exist|42P01/i.test(String(e?.corpo || e?.message))) {
+      return null; // migração pendente: segue sem esta tabela
+    }
+    throw e;
+  }
+};
+
+/**
  * INSERT que não falha se a linha já existe — usado nas tabelas append-only.
  *
  * Duas armadilhas aprendidas na prática:
@@ -130,7 +153,7 @@ const atualizar = (tabela, filtro, campos) => req(`${tabela}?${filtro}`, {
 export async function carregar() {
   if (!(await configurar())) return null;
 
-  const [familias, condicoes, coletas, relatorios, vendas, propostas, transacoes, saldos, extrato, saldoFam, contestacoes] =
+  const [familias, condicoes, coletas, relatorios, vendas, propostas, transacoes, saldos, extrato, saldoFam, contestacoes, ciclos] =
     await Promise.all([
       ler('familias', 'select=*&order=id'),
       ler('condicoes', 'select=*&order=id'),
@@ -147,7 +170,10 @@ export async function carregar() {
          aparelho da operação nunca puxava — então o Instituto Vivá não via a
          reclamação. Na demonstração parecia funcionar porque as duas telas
          dividem o mesmo estado local; em campo ela reclamava para o vazio. */
-      ler('contestacoes', 'select=*&order=id'),
+      /* opcionais: tabelas que podem nao existir se a migracao correspondente
+         ainda nao rodou. 404 aqui nao pode derrubar a sincronizacao toda. */
+      lerOpcional('contestacoes', 'select=*&order=id'),
+      lerOpcional('ciclos', 'select=*&order=id'),
     ]);
 
   const caixa = c => Number(saldos?.find(s => s.caixa === c)?.saldo ?? 0);
@@ -169,7 +195,17 @@ export async function carregar() {
       respondidoEm: c.respondido_em,
       respondidoPor: c.respondido_por,
     })),
-    coletas: coletas.map(c => ({ ...c, kg: Number(c.kg) })),
+    /* familiaId de volta em camelCase: e o vinculo que faz a renda ser atribuida
+       e a familia poder conferir a propria entrega (migracao 06) */
+    coletas: coletas.map(c => ({
+      ...c, kg: Number(c.kg),
+      familiaId: c.familia_id == null ? null : Number(c.familia_id),
+    })),
+    ciclos: (ciclos || []).map(c => ({
+      id: Number(c.id), ciclo: c.ciclo, acao: c.acao, valor: Number(c.valor),
+      comoFoiDecidido: c.como_foi_decidido, participantes: c.participantes || '',
+      data: c.data, hash: c.hash || '', ancoragem: c.ancoragem ?? null,
+    })),
     relatorios,
     vendas,
     propostas: propostas.map(p => ({
@@ -222,11 +258,29 @@ export const registrarFamilia = f => gravar('familias', {
   carteira_rede: f.carteira?.rede ?? null,
 });
 
-export const registrarColeta = c => gravar('coletas', {
-  id: c.id, coletor: c.coletor, material: c.material, kg: c.kg, local: c.local,
-  data: c.data, status: c.status, signature: c.signature,
-  geo_lat: c.geo?.lat ?? null, geo_lng: c.geo?.lng ?? null, evid_hash: c.evidHash ?? null,
-});
+/**
+ * Grava a coleta. O VÍNCULO com a família vai junto — sem ele o primeiro pull
+ * devolvia a coleta sem família, o vínculo desaparecia do aparelho, a renda
+ * parava de ser atribuída e "Suas entregas" esvaziava, em silêncio (migração 06).
+ *
+ * Se a coluna ainda não existe, grava SEM o vínculo em vez de falhar: assim o
+ * app funciona com esquema anterior à migração 06 e a coleta não fica presa na
+ * fila de recusadas. O vínculo volta a subir quando a migração rodar.
+ */
+export const registrarColeta = async c => {
+  const base = {
+    id: c.id, coletor: c.coletor, material: c.material, kg: c.kg, local: c.local,
+    data: c.data, status: c.status, signature: c.signature,
+    geo_lat: c.geo?.lat ?? null, geo_lng: c.geo?.lng ?? null,
+    evid_hash: c.evidHash ?? null,
+  };
+  try {
+    return await gravar('coletas', { ...base, familia_id: c.familiaId ?? null });
+  } catch (e) {
+    if (/familia_id/.test(String(e?.corpo || e?.message))) return gravar('coletas', base);
+    throw e;
+  }
+};
 
 export const marcarColetaValidada = (id, signature) =>
   atualizar('coletas', `id=eq.${id}`, { status: 'validada', signature });
@@ -371,6 +425,19 @@ export const responderContestacao = (id, resposta, resolver, uid) =>
     respondido_em: new Date().toISOString(),
     respondido_por: uid ?? null,
   });
+
+/* ------------------------------------------------- fechamento de ciclo -----
+   Regra 4: residual → ações coletivas. Ficava só no aparelho, então em outro
+   computador a operação não via a decisão nem a prova. Prestação de contas que
+   existe em uma máquina só não é prestação de contas.                        */
+export const registrarCiclo = c => inserir('ciclos', {
+  id: c.id, ciclo: c.ciclo, acao: c.acao, valor: c.valor,
+  como_foi_decidido: c.comoFoiDecidido, participantes: c.participantes || null,
+  data: c.data, hash: c.hash || null, ancoragem: c.ancoragem ?? null,
+});
+
+export const ancorarCiclo = (id, ancoragem) =>
+  atualizar('ciclos', `id=eq.${id}`, { ancoragem });
 
 /** Quem sou eu para a nuvem: papel, organização e se assino pelo cofre. */
 export async function meuPapel() {

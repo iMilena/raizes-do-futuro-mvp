@@ -124,6 +124,16 @@ export function calcularDeltas(antes, depois) {
     }
   }
 
+  /* fechamentos de ciclo (regra 4) e a ancoragem da decisão */
+  const cicAntes = porId(a.ciclos || []);
+  for (const c of depois.ciclos || []) {
+    const ant = cicAntes.get(c.id);
+    if (!ant) ops.push({ tipo: 'ciclo', ciclo: c });
+    else if (!ant.ancoragem && c.ancoragem) {
+      ops.push({ tipo: 'ciclo-ancora', id: c.id, ancoragem: c.ancoragem });
+    }
+  }
+
   /* consentimentos novos e revogações — SEMPRE antes das famílias */
   const consAntes = porId((a.familias || []).flatMap(f => f.consentimentos || []));
   for (const f of depois.familias) {
@@ -234,6 +244,20 @@ async function executar(op) {
        recusa família sem consentimento ativo. A ordem FIFO da fila garante. */
     case 'consentimento': return nuvem.registrarConsentimento(op.consentimento);
     case 'consentimento-revoga': return nuvem.revogarConsentimento(op.id, op.motivo);
+    /* ciclos podem não ter tabela ainda (migração 06). 404 aqui não é recusa
+       definitiva de conteúdo, é migração pendente: engolir mantém o resto da
+       fila andando, e o ciclo volta a subir quando a tabela existir — o delta é
+       recalculado do estado, não perdido. */
+    case 'ciclo':
+      try { return await nuvem.registrarCiclo(op.ciclo); } catch (e) {
+        if (e?.status === 404) return null;
+        throw e;
+      }
+    case 'ciclo-ancora':
+      try { return await nuvem.ancorarCiclo(op.id, op.ancoragem); } catch (e) {
+        if (e?.status === 404) return null;
+        throw e;
+      }
     case 'contestacao': return nuvem.enviarContestacao(op.contestacao);
     case 'contestacao-resposta': return nuvem.responderContestacao(op.id, op.resposta, op.resolver, op.uid);
     case 'familia': return nuvem.registrarFamilia(op.familia);
@@ -391,6 +415,27 @@ export function mesclar(local, remoto) {
        (relógio + aleatório), justamente para não depender de contador local
        compartilhado entre aparelhos. Ver store.jsx. */
     slot: Math.max(local?.slot || 0, remoto.transacoes?.length ? remoto.transacoes[remoto.transacoes.length - 1].slot : 0),
+
+    /* Coletas: a nuvem manda, MENOS quando ela não sabe o vínculo.
+       Se a base ainda não tem `coletas.familia_id` (migração 06 não aplicada) ou
+       a linha subiu antes dela, o remoto vem com familiaId nulo — e adotar isso
+       apagaria o vínculo do aparelho, parando a atribuição de renda e esvaziando
+       "Suas entregas". Mesmo princípio de `remotoUtilizavel`: vazio não
+       substitui dado. */
+    coletas: (remoto.coletas || []).map(c => {
+      const localC = (local?.coletas || []).find(x => x.id === c.id);
+      return { ...c, familiaId: c.familiaId ?? localC?.familiaId ?? null };
+    }),
+
+    /* Ciclos: união, pela mesma razão das contestações — o que este aparelho
+       registrou e ainda não enviou não pode desaparecer no pull. */
+    ciclos: (() => {
+      const locais = new Map((local?.ciclos || []).map(c => [c.id, c]));
+      const juntos = (remoto.ciclos || []).map(r => ({ ...locais.get(r.id), ...r }));
+      const ids = new Set(juntos.map(c => c.id));
+      for (const c of local?.ciclos || []) if (!ids.has(c.id)) juntos.push(c);
+      return juntos;
+    })(),
 
     /* Contestações: UNIÃO, não substituição.
        Adotar as da nuvem apagaria a que este aparelho abriu offline e ainda não

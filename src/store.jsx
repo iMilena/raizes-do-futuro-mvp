@@ -1110,6 +1110,10 @@ export function StoreProvider({ children }) {
   ------------------------------------------------------------------------ */
   const [nuvemAtiva, setNuvemAtiva] = useState(false);
   const [fila, setFila] = useState(0);
+  /* recusadas pelo servidor: nao voltam a ser tentadas (o banco nunca vai
+     aceitar), entao alguem TEM de ver. Silencio aqui seria pior que fila
+     parada -- ver escoarFila em sincronizacao.js. */
+  const [recusadas, setRecusadas] = useState(() => sinc.tamanhoRecusadas());
   const anteriorRef = useRef(state);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -1179,7 +1183,7 @@ export function StoreProvider({ children }) {
     if (!ops.length) return;
     sinc.enfileirar(ops);
     setFila(sinc.tamanhoFila());
-    sinc.escoarFila().then(r => setFila(r.restantes));
+    sinc.escoarFila().then(r => { setFila(r.restantes); setRecusadas(sinc.tamanhoRecusadas()); });
   }, [state, nuvemAtiva]);
 
   /* 3. de tempo em tempo: reenvia o que ficou preso e busca o que os outros
@@ -1190,6 +1194,7 @@ export function StoreProvider({ children }) {
     const bater = async () => {
       const r = await sinc.escoarFila();
       setFila(r.restantes);
+      setRecusadas(sinc.tamanhoRecusadas());
       if (r.restantes > 0) return;
       try {
         // sempre baixa e compara por impressão digital: contar transações não
@@ -1207,7 +1212,7 @@ export function StoreProvider({ children }) {
   }, [nuvemAtiva]);
 
   return (
-    <Ctx.Provider value={{ state, dispatch, sincronizado: nuvemAtiva, pendentes: fila }}>
+    <Ctx.Provider value={{ state, dispatch, sincronizado: nuvemAtiva, pendentes: fila, recusadas, listaRecusadas: sinc.recusadas }}>
       {children}
     </Ctx.Provider>
   );

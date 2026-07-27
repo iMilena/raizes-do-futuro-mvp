@@ -1350,3 +1350,17 @@ body.gravando .so-sim{display:none!important}
   background:var(--areia);border:1px solid var(--borda);border-radius:10px;padding:9px 11px;
 }
 .corrigir-peso input{width:90px}
+
+/* ---- operações recusadas pelo servidor ----
+   Aparecem no sino e, detalhadas, no painel de Configurações. Recusa silenciosa
+   é dado perdido sem ninguém notar. */
+.recusadas-lista{
+  margin:10px 0;padding:9px 11px;border-radius:10px;
+  background:#fdf6e9;border:1px solid #f0dfb8;color:#6b5314;
+}
+.recusadas-lista b{font-size:12px;display:block}
+.recusadas-lista .mini{margin:4px 0 0}
+.recusada-item{
+  font-family:var(--fonte-mono);font-size:10.5px;word-break:break-word;
+  border-top:1px dashed #e2cfa4;padding-top:5px;margin-top:5px;
+}

@@ -126,11 +126,31 @@ function BuscaGlobal({ setTab }) {
  * duas assinaturas. Contador inventado seria ruído.
  */
 function Notificacoes({ setTab }) {
-  const { state } = useStore();
+  const { state, recusadas, listaRecusadas } = useStore();
   const [aberto, setAberto] = useState(false);
 
   const itens = useMemo(() => {
     const l = [];
+    /* PRIMEIRO da lista: operação que o servidor recusou em definitivo. Ela saiu
+       da fila para não travar o resto (ver escoarFila), e por isso alguém tem de
+       ficar sabendo — recusa que desaparece em silêncio é dado perdido sem
+       ninguém notar. */
+    if (recusadas > 0) {
+      const ultima = (listaRecusadas?.() || []).slice(-1)[0];
+      l.push({
+        tab: 'fundo', cor: 'atencao',
+        tit: `${recusadas} operação(ões) recusadas pelo servidor`,
+        sub: ultima ? String(ultima.motivo).slice(0, 90) : 'não serão reenviadas — veja Configurações',
+      });
+    }
+    const cts = (state.contestacoes || []).filter(c => c.status === 'aberta');
+    if (cts.length) {
+      l.push({
+        tab: 'validacao', cor: 'atencao',
+        tit: `${cts.length} contestação(ões) de família em aberto`,
+        sub: 'a família está esperando resposta',
+      });
+    }
     const coletasPend = state.coletas.filter(c => c.status === 'pendente').length;
     if (coletasPend) l.push({ tab: 'validacao', cor: 'atencao', tit: `${coletasPend} coleta(s) aguardando validação`, sub: 'Instituto Vivá' });
     const cond = state.familias.flatMap(f => (f.condicoes || []).map(c => ({ ...c, f })));
@@ -143,7 +163,7 @@ function Notificacoes({ setTab }) {
     const pend = cond.filter(c => c.status === 'pendente').length;
     if (pend) l.push({ tab: 'carteira', cor: 'neutro', tit: `${pend} compromisso(s) sem evidência`, sub: 'agente de campo' });
     return l;
-  }, [state]);
+  }, [state, recusadas, listaRecusadas]);
 
   return (
     <div className="sino-wrap">
@@ -330,7 +350,7 @@ function NavJornada({ tab, setTab }) {
 
 /* ------------------------------------------------------------ painel ---- */
 function Painel({ tab, setTab }) {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, recusadas: recusadasApp, listaRecusadas: listaRecusadasApp } = useStore();
   const { t } = useIdioma();
   const toast = useToast();
   const [tourAberto, setTourAberto] = useState(() => !tourVisto());
@@ -467,6 +487,20 @@ function Painel({ tab, setTab }) {
                 <summary>⚙︎ {t('Configurações')}</summary>
                 <div className="painel-config-corpo">
                   <p className="mini">Controles de apresentação e de simulação.</p>
+                  {recusadasApp > 0 && (
+                    <div className="recusadas-lista">
+                      <b>⚠️ {recusadasApp} operação(ões) recusadas</b>
+                      <p className="mini">
+                        O servidor negou em definitivo — não serão reenviadas. Saíram da fila
+                        para não travar o resto do trabalho.
+                      </p>
+                      {(listaRecusadasApp?.() || []).slice(-4).reverse().map((r, i) => (
+                        <div key={i} className="mini recusada-item">
+                          <b>{r.op?.tipo}</b> · {String(r.motivo).slice(0, 120)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <button className="acao sec bloco" onClick={ligarGravacao}>🎥 Modo gravação</button>
                   <button className="acao sec bloco" onClick={resetar}>Resetar demo</button>
                 </div>

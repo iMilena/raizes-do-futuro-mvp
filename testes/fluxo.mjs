@@ -444,6 +444,65 @@ ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe a
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 /* ==========================================================================
+   23. Vínculo coleta↔família e ciclos sobrevivem ao pull
+   ========================================================================== */
+secao('23. O que a nuvem não sabe não pode apagar o que o aparelho sabe');
+
+const b23 = estadoInicial();
+const comVinculo = b23.coletas.filter(c => c.familiaId);
+ok(comVinculo.length >= 2, `a seed liga coletas a famílias (${comVinculo.length})`);
+
+/* o vínculo VAI na operação de sincronização — sem isso a nuvem nunca soube dele */
+const opsColeta = calcularDeltas(
+  { ...b23, coletas: [] },
+  b23,
+).filter(o => o.tipo === 'coleta');
+ok(opsColeta.length >= 2, `as coletas sobem (${opsColeta.length} operações)`);
+/* só as que TÊM vínculo — coleta de quem não é de família cadastrada nasce sem a
+   chave, e exigir que ela exista mediria a estrutura do objeto, não a regra */
+const comVincOps = opsColeta.filter(o => b23.coletas.find(c => c.id === o.coleta.id)?.familiaId);
+ok(comVincOps.length >= 2 && comVincOps.every(o => o.coleta.familiaId),
+  `as coletas vinculadas levam o familiaId (${comVincOps.length}) — é o que faz a renda ser atribuída`);
+
+/* nuvem SEM a migração 06: devolve coleta sem familiaId. Isso não pode apagar. */
+const nuvemAntiga = {
+  ...b23,
+  coletas: b23.coletas.map(c => ({ ...c, familiaId: null })),
+};
+const apos23 = mesclar(b23, nuvemAntiga);
+ok(apos23.coletas.every(c => {
+  const orig = b23.coletas.find(x => x.id === c.id);
+  return !orig?.familiaId || c.familiaId === orig.familiaId;
+}), 'nuvem sem o vínculo NÃO apaga o vínculo do aparelho (migração 06 pendente)');
+
+/* mas quando a nuvem SABE, ela manda — inclusive para corrigir */
+const nuvemNova = {
+  ...b23,
+  coletas: b23.coletas.map(c => ({ ...c, familiaId: c.familiaId ? 999 : null })),
+};
+ok(mesclar(b23, nuvemNova).coletas.some(c => c.familiaId === 999),
+  'e quando a nuvem sabe o vínculo, ele vem dela');
+
+/* ciclos: sobem, e o pull não apaga o que ainda não subiu */
+const c23 = d(b23, {
+  type: 'FECHAR_CICLO', acao: 'kit escolar', valor: 10,
+  comoFoiDecidido: 'assembleia comunitária', ciclo: '2026-08', hash: 'e'.repeat(64),
+});
+const opsCiclo = calcularDeltas(b23, c23).filter(o => o.tipo === 'ciclo');
+ok(opsCiclo.length === 1, 'fechamento de ciclo gera operação de sincronização');
+ok(opsCiclo[0].ciclo.hash.length === 64, 'com o hash da decisão');
+
+const ancorado23 = d(c23, {
+  type: 'ANCORAR_DECISAO', cicloId: c23.ciclos[0].id, txId: 'z'.repeat(88),
+});
+const opsAncora = calcularDeltas(c23, ancorado23).filter(o => o.tipo === 'ciclo-ancora');
+ok(opsAncora.length === 1, 'ancorar a decisão também sobe');
+
+const semCiclosNaNuvem = { ...c23, ciclos: [] };
+ok(mesclar(c23, semCiclosNaNuvem).ciclos.length === 1,
+  'e o pull não apaga o ciclo que este aparelho registrou e ainda não enviou');
+
+/* ==========================================================================
    22. O circuito da contestação fecha entre APARELHOS
    ========================================================================== */
 secao('22. Contestação entre aparelhos (merge da nuvem)');
