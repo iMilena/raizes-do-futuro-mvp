@@ -33,6 +33,7 @@ export const TIPOS_TX = {
   'ANCORAGEM': { rot: 'Relatório ancorado na Solana devnet (registro real)', cor: '#0f7a6c' },
   'CONSENTIMENTO': { rot: 'Consentimento do responsável registrado ou revogado', cor: '#6d4de8' },
   'RENDA': { rot: 'Renda incondicional da coleta, direto para a família', cor: '#0b7ba8' },
+  'CONTESTACAO': { rot: 'Família contestou um registro — e foi respondida', cor: '#b3541e' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -451,6 +452,9 @@ function seed() {
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
     ciclos: [],   // fechamentos de ciclo (regra 4: residual → ações coletivas)
+    /* contestações: append-only. Reclamação não é apagada, é respondida —
+       apagar e o jeito mais facil de um programa parecer que nao tem nenhuma. */
+    contestacoes: [],
     familias: [
       {
         id: 1, resp: 'Maria de Lourdes', criancas: 2, saldo: 0,
@@ -685,6 +689,86 @@ function reducer(state, action) {
           `PIN da família de ${f.resp} destravado pelo agente de campo — a família define um novo no próximo acesso`,
           0, { familiaId: f.id });
       }
+      return s;
+    }
+
+    /* ----------------------------------------------- contestação ---------- */
+    /**
+     * A família discorda de um registro.
+     *
+     * ── A INVERSÃO QUE ISTO CORRIGE ──────────────────────────────────────
+     * O projeto vende verificabilidade: o turista audita a jornada da peça, o
+     * júri audita o cofre no explorer, a operação vê tudo. A FAMÍLIA via
+     * dinheiro, e não o registro que produziu aquele dinheiro — não tinha como
+     * saber se os 60 kg que entregou foram lançados como 60 ou como 6. E não
+     * tinha como discordar: o único canal era um chat que não virava pendência
+     * de ninguém.
+     *
+     * Num programa que condiciona dinheiro a comprovação, quem é avaliado
+     * precisa poder contestar a avaliação. Sem isso, "erro do sistema" é sempre
+     * problema da família.
+     *
+     * O registro é APPEND-ONLY: contestação não é apagada, é respondida. Apagar
+     * reclamação é o modo mais fácil de um programa parecer que não tem nenhuma.
+     */
+    case 'ABRIR_CONTESTACAO': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (!f || !action.motivo) return s;
+      /* uma contestação aberta por alvo: reclamar duas vezes do mesmo item não
+         acelera nada e polui a fila de quem vai responder */
+      const jaAberta = (s.contestacoes || []).some(c =>
+        c.alvoId === action.alvoId && c.status === 'aberta');
+      if (jaAberta) return s;
+
+      s.contestacoes = [...(s.contestacoes || []), {
+        id: novoId(),
+        familiaId: f.id,
+        tipo: action.tipo || 'coleta',
+        alvoId: action.alvoId ?? null,
+        alvoDesc: action.alvoDesc || '',
+        motivo: action.motivo,
+        detalhe: String(action.detalhe || '').slice(0, 300),
+        criadoEm: new Date().toISOString(),
+        status: 'aberta',
+        resposta: null,
+        respondidoEm: null,
+      }];
+      /* a transação usa o CÓDIGO, não o nome: ela vai para a base compartilhada */
+      pushTx(s, 'CONTESTACAO',
+        `Família ${f.codigo || f.id} contestou um registro (${action.motivo})`,
+        0, { familiaId: f.id, contestacaoId: s.contestacoes[s.contestacoes.length - 1].id });
+      return s;
+    }
+
+    case 'RESPONDER_CONTESTACAO': {
+      const c = (s.contestacoes || []).find(c => c.id === action.id);
+      if (!c || !action.resposta) return s;
+      c.resposta = String(action.resposta).slice(0, 500);
+      c.respondidoEm = new Date().toISOString();
+      c.status = action.resolver ? 'resolvida' : 'respondida';
+      const f = s.familias.find(f => f.id === c.familiaId);
+      pushTx(s, 'CONTESTACAO',
+        `Contestação da família ${f?.codigo || c.familiaId} ${action.resolver ? 'resolvida' : 'respondida'} pelo Instituto Vivá`,
+        0, { familiaId: c.familiaId, contestacaoId: c.id });
+      return s;
+    }
+
+    /**
+     * Corrige o peso de uma coleta — o caso concreto que mais aparece.
+     *
+     * Só antes da validação: depois dela o peso já entrou em relatório e pode ter
+     * virado receita, e mudar o número sem refazer a cadeia produziria um
+     * relatório que não fecha com as coletas que o compõem.
+     */
+    case 'CORRIGIR_COLETA': {
+      const c = s.coletas.find(c => c.id === action.id);
+      const kg = Number(action.kg);
+      if (!c || !(kg > 0) || c.status !== 'pendente') return s;
+      const antigo = c.kg;
+      c.kg = kg;
+      pushTx(s, 'CONTESTACAO',
+        `Peso da coleta corrigido de ${antigo} kg para ${kg} kg após contestação`,
+        0, { coletaId: c.id });
       return s;
     }
 

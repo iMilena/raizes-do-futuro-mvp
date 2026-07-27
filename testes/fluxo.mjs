@@ -444,6 +444,74 @@ ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe a
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 /* ==========================================================================
+   21. A família pode conferir e CONTESTAR o que foi registrado sobre ela
+   ========================================================================== */
+secao('21. Contestação: a família discorda de um registro');
+
+const b21 = estadoInicial();
+ok(Array.isArray(b21.contestacoes) && b21.contestacoes.length === 0, 'estado nasce sem contestações');
+
+/* a família só pode conferir o que está no nome dela — isso é o pré-requisito
+   do item: sem coleta vinculada, ela não tem o que auditar */
+const minhas21 = b21.coletas.filter(c => c.familiaId === b21.familias[0].id);
+ok(minhas21.length >= 1, `a família tem entrega no nome dela para conferir (${minhas21.length})`);
+
+const alvo21 = minhas21[0];
+const contestado = d(b21, {
+  type: 'ABRIR_CONTESTACAO', familiaId: b21.familias[0].id, tipo: 'coleta',
+  alvoId: alvo21.id, alvoDesc: `${alvo21.kg} kg`, motivo: 'O peso está errado',
+  detalhe: 'entreguei mais que isso',
+});
+ok(contestado.contestacoes.length === 1, 'a família abre a contestação');
+const ct = contestado.contestacoes[0];
+ok(ct.status === 'aberta' && ct.resposta === null, 'ela nasce aberta e sem resposta');
+ok(ct.alvoId === alvo21.id, 'ligada ao registro exato que ela contesta');
+ok(contestado.transacoes.some(t => t.tipo === 'CONTESTACAO'), 'e entra no registro auditável');
+
+/* LGPD: a transação pública não pode carregar o nome da pessoa */
+const txCt = contestado.transacoes.filter(t => t.tipo === 'CONTESTACAO').pop();
+ok(!/Maria de Lourdes|José Raimundo|Ana Cláudia/.test(txCt.desc),
+  'a transação usa o código da família, não o nome');
+
+/* reclamar duas vezes do mesmo item não acelera nada e polui a fila */
+const duas = d(contestado, {
+  type: 'ABRIR_CONTESTACAO', familiaId: b21.familias[0].id, tipo: 'coleta',
+  alvoId: alvo21.id, motivo: 'O peso está errado',
+});
+ok(duas.contestacoes.length === 1, 'duas contestações abertas no mesmo item não são criadas');
+
+/* a operação responde, e a família passa a ver a resposta */
+const respondido = d(contestado, {
+  type: 'RESPONDER_CONTESTACAO', id: ct.id, resposta: 'Conferimos e corrigimos para 62 kg.', resolver: true,
+});
+const ct2 = respondido.contestacoes[0];
+ok(ct2.status === 'resolvida' && /62 kg/.test(ct2.resposta), 'a operação responde e resolve');
+ok(ct2.respondidoEm, 'com data da resposta');
+ok(respondido.transacoes.filter(t => t.tipo === 'CONTESTACAO').length === 2,
+  'a resposta também fica registrada (o ciclo inteiro é auditável)');
+
+/* APPEND-ONLY: não existe ação para apagar contestação */
+const acoes = ['REMOVER_CONTESTACAO', 'APAGAR_CONTESTACAO', 'EXCLUIR_CONTESTACAO'];
+ok(acoes.every(a => d(respondido, { type: a, id: ct.id }).contestacoes.length === 1),
+  'não há como apagar uma contestação — reclamação se responde, não se apaga');
+
+/* correção de peso: só antes da validação */
+const pend21 = d(b21, {
+  type: 'NOVA_COLETA',
+  payload: { coletor: 'Dona Nilza', material: 'Vidro', kg: 10, local: 'Cueira', data: '2026-07-26', familiaId: b21.familias[0].id },
+});
+const novaColeta = pend21.coletas[pend21.coletas.length - 1];
+const corrigida = d(pend21, { type: 'CORRIGIR_COLETA', id: novaColeta.id, kg: 62 });
+ok(corrigida.coletas.find(c => c.id === novaColeta.id).kg === 62, 'peso de coleta PENDENTE pode ser corrigido');
+ok(corrigida.transacoes.some(t => /corrigido de 10 kg para 62 kg/.test(t.desc)),
+  'e a correção fica registrada com o valor antigo e o novo');
+
+const validada21 = d(pend21, { type: 'VALIDAR_COLETA', id: novaColeta.id });
+const tentou = d(validada21, { type: 'CORRIGIR_COLETA', id: novaColeta.id, kg: 999 });
+ok(tentou.coletas.find(c => c.id === novaColeta.id).kg === 10,
+  'peso de coleta JÁ VALIDADA não é editável — ela já entrou em relatório');
+
+/* ==========================================================================
    20. Abrir o mês seguinte (o ciclo mensal não travava mais em um mês)
    ========================================================================== */
 secao('20. Compromissos do mês seguinte');

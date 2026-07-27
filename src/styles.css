@@ -1297,3 +1297,56 @@ body.gravando .so-sim{display:none!important}
 .chip-familia.on small{color:rgba(255,255,255,.75)}
 .chip-familia input{width:15px;height:15px;flex:0 0 15px;accent-color:var(--verde);box-shadow:none;padding:0}
 .chip-familia small{color:var(--cinza);font-family:var(--fonte-mono);font-size:10.5px}
+
+/* ---- suas entregas (app da família) ---- */
+.entregas-resumo{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:12px;
+  background:var(--borda);border:1px solid var(--borda);border-radius:12px;overflow:hidden;
+}
+.entregas-resumo>div{background:#fff;padding:10px 8px;text-align:center}
+.entregas-resumo b{display:block;font-family:var(--fonte-titulo);font-size:19px;font-weight:600;color:var(--verde-escuro)}
+.entregas-resumo span{display:block;font-size:11px;color:var(--cinza);margin-top:2px}
+.entrega{border-bottom:1px solid var(--borda);padding:11px 0}
+.entrega:last-of-type{border-bottom:none}
+.entrega-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.entrega-cab b{font-size:14px}
+.entrega-cab .mini{margin:2px 0 0}
+
+/* ---- contestação: o botão é discreto, mas nunca escondido ---- */
+.btn-contestar{
+  background:none;border:none;padding:4px 0;margin-top:6px;cursor:pointer;
+  font-family:inherit;font-size:11.5px;font-weight:600;color:var(--alerta);
+  text-decoration:underline;min-height:28px;
+}
+.btn-contestar:hover{color:#8c3f13}
+.contest-form{
+  margin-top:9px;background:#fdf6e9;border:1px solid #f0dfb8;border-radius:12px;padding:11px 13px;
+}
+.contest-opcao{
+  display:flex;align-items:center;gap:9px;margin:6px 0 0;padding:8px 10px;
+  background:#fff;border:1px solid var(--borda);border-radius:10px;cursor:pointer;
+  font-size:13px;text-transform:none;letter-spacing:0;color:var(--texto);font-weight:500;
+}
+.contest-opcao.on{border-color:var(--alerta);background:#fff6ee}
+.contest-opcao input{width:19px;height:19px;flex:0 0 19px;accent-color:var(--alerta);box-shadow:none;padding:0}
+.contest-aviso{
+  margin-top:8px;font-size:12px;line-height:1.5;border-radius:10px;padding:9px 11px;
+  background:#fdf6e9;border:1px solid #f0dfb8;color:#6b5314;
+}
+.contest-aviso.respondida,.contest-aviso.resolvida{background:var(--azul-claro);border-color:#c9e9f7;color:var(--azul-escuro)}
+.fam-tela.letra-g .contest-aviso,.fam-tela.letra-g .contest-opcao{font-size:14px}
+
+/* ---- contestações no painel da operação ---- */
+.contest-item{border-bottom:1px solid var(--borda);padding:12px 0}
+.contest-item:last-child{border-bottom:none}
+.contest-item.aberta{border-left:3px solid var(--alerta);padding-left:11px}
+.contest-item-cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.contest-detalhe{
+  margin-top:6px;font-size:12.5px;font-style:italic;color:var(--texto);
+  background:var(--areia);border-left:2px solid var(--borda-forte);padding:7px 10px;border-radius:0 8px 8px 0;
+}
+.corrigir-peso{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px;
+  background:var(--areia);border:1px solid var(--borda);border-radius:10px;padding:9px 11px;
+}
+.corrigir-peso input{width:90px}

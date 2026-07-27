@@ -7,7 +7,7 @@ import { sha256Arquivo, pegarGeo } from '../evidencia.js';
 export default function Coleta() {
   const { state, dispatch } = useStore();
   const toast = useToast();
-  const [form, setForm] = useState({ coletor: '', material: 'Plástico PET', kg: '', local: '' });
+  const [form, setForm] = useState({ coletor: '', material: 'Plástico PET', kg: '', local: '', familiaId: '' });
   const [foto, setFoto] = useState(null);         // { nome, hash, url }
   const [calculando, setCalculando] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -36,12 +36,16 @@ export default function Coleta() {
       type: 'NOVA_COLETA',
       payload: {
         ...form, kg: Number(form.kg),
+        /* SEM ESTE VINCULO a renda de 60% nao chega a conta de ninguem e a familia
+           nao pode conferir a propria entrega. Opcional de proposito: coletor
+           pode nao ser de familia participante -- e o painel mostra a diferenca. */
+        familiaId: form.familiaId ? Number(form.familiaId) : null,
         data: new Date().toISOString().slice(0, 10),
         evidHash: foto?.hash || null, fotoNome: foto?.nome || null, geo,
       },
     });
     toast(`Coleta de ${form.kg} kg enviada ✔${geo ? ' · 📍 localização registrada' : ''}`);
-    setForm({ coletor: '', material: 'Plástico PET', kg: '', local: '' });
+    setForm({ coletor: '', material: 'Plástico PET', kg: '', local: '', familiaId: '' });
     setFoto(null);
     if (arqRef.current) arqRef.current.value = '';
     setEnviando(false);
@@ -63,6 +67,16 @@ export default function Coleta() {
           <input type="number" min="1" value={form.kg} onChange={e => setForm({ ...form, kg: e.target.value })} placeholder="Ex.: 40" />
           <label>Local</label>
           <input value={form.local} onChange={e => setForm({ ...form, local: e.target.value })} placeholder="Ex.: Praia de Cueira" />
+          <label htmlFor="col-familia">Família do coletor</label>
+          <select id="col-familia" value={form.familiaId}
+            onChange={e => setForm({ ...form, familiaId: e.target.value })}>
+            <option value="">não é de família cadastrada</option>
+            {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp} ({fa.codigo})</option>)}
+          </select>
+          <p className="mini">
+            Vincular é o que faz os <b>60% de renda chegarem à conta dela</b> — e o que
+            permite à família conferir esta entrega no app.
+          </p>
           <label>Evidência fotográfica</label>
           <input ref={arqRef} type="file" accept="image/*" capture="environment" onChange={aoEscolherFoto} />
           {calculando && <p className="mini">🔐 calculando o hash da evidência…</p>}

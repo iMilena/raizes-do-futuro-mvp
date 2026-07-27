@@ -345,6 +345,165 @@ function Saque({ familia, onFechar }) {
   );
 }
 
+/* -------------------------------------------------------- contestação ------ */
+const MOTIVOS = {
+  coleta: [
+    ['peso-errado', 'O peso está errado'],
+    ['nao-fui-eu', 'Essa entrega não é minha'],
+    ['nao-aparece', 'Entreguei e não apareceu aqui'],
+    ['outro', 'Outro motivo'],
+  ],
+  compromisso: [
+    ['ja-comprovei', 'Eu já enviei o comprovante'],
+    ['nao-e-meu', 'Esse compromisso não é da minha família'],
+    ['nao-consigo', 'Não vou conseguir comprovar este mês'],
+    ['outro', 'Outro motivo'],
+  ],
+};
+
+/**
+ * "Isso está errado" — o canal para a família discordar de um registro.
+ *
+ * Num programa que condiciona dinheiro a comprovação, quem é avaliado precisa
+ * poder contestar a avaliação. Antes disto o único caminho era ligar para o
+ * agente: sem registro, sem prazo, sem ninguém responsável por responder.
+ *
+ * O texto livre é OPCIONAL e a tela diz quem vai ler — pedir "conte o que
+ * aconteceu" sem avisar que o Instituto Vivá lê é coletar dado por descuido.
+ */
+function Contestar({ familia, tipo, alvoId, alvoDesc }) {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const [aberto, setAberto] = useState(false);
+  const [motivo, setMotivo] = useState('');
+  const [detalhe, setDetalhe] = useState('');
+
+  const existente = (state.contestacoes || []).find(c => c.alvoId === alvoId);
+
+  if (existente) {
+    return (
+      <div className={'contest-aviso ' + existente.status}>
+        {existente.status === 'aberta' ? (
+          <>🕐 <b>Você avisou que isso está errado.</b> O Instituto Vivá vai olhar e responder aqui.</>
+        ) : (
+          <>
+            💬 <b>Resposta do Instituto Vivá:</b> {existente.resposta}
+            {existente.status === 'resolvida' && <div className="mini">✅ marcado como resolvido</div>}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  if (!aberto) {
+    return (
+      <button className="btn-contestar" onClick={() => setAberto(true)}>
+        Isso está errado?
+      </button>
+    );
+  }
+
+  return (
+    <div className="contest-form">
+      <b style={{ fontSize: 13 }}>O que está errado?</b>
+      {MOTIVOS[tipo].map(([id, rot]) => (
+        <label key={id} className={'contest-opcao' + (motivo === id ? ' on' : '')}>
+          <input type="radio" name={'mot-' + alvoId} checked={motivo === id}
+            onChange={() => setMotivo(id)} />
+          <span>{rot}</span>
+        </label>
+      ))}
+      <label htmlFor={'det-' + alvoId} style={{ marginTop: 10 }}>
+        Quer contar mais? <span className="mini">(não é obrigatório)</span>
+      </label>
+      <input id={'det-' + alvoId} value={detalhe} maxLength={300}
+        onChange={e => setDetalhe(e.target.value)} placeholder="com suas palavras" />
+      <p className="mini">
+        Quem lê é a equipe do <b>Instituto Vivá</b>, para poder corrigir.
+      </p>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        <button className="acao" style={{ flex: 1 }} disabled={!motivo}
+          onClick={() => {
+            dispatch({
+              type: 'ABRIR_CONTESTACAO',
+              familiaId: familia.id, tipo, alvoId, alvoDesc,
+              motivo: MOTIVOS[tipo].find(([id]) => id === motivo)[1],
+              detalhe,
+            });
+            toast('Avisamos o Instituto Vivá 📨 — eles respondem aqui mesmo', 'info', 6000);
+            setAberto(false);
+          }}>
+          Avisar o Instituto Vivá
+        </button>
+        <button className="acao sec" onClick={() => setAberto(false)}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------- suas entregas ----- */
+/**
+ * O que a família entregou, com os quilos que foram lançados.
+ *
+ * ── A INVERSÃO QUE ISTO CORRIGE ────────────────────────────────────────────
+ * O turista audita a jornada da peça na página pública. O júri audita o cofre no
+ * explorer. A operação vê tudo. A família via DINHEIRO, e não o registro que
+ * produziu aquele dinheiro — não tinha como saber se os 60 kg que entregou foram
+ * lançados como 60 ou como 6. Quem tem mais motivo para conferir o número era a
+ * única sem acesso a ele.
+ */
+function SuasEntregas({ familia }) {
+  const { state } = useStore();
+  const minhas = state.coletas
+    .filter(c => c.familiaId === familia.id)
+    .slice()
+    .reverse();
+
+  const kgTotal = minhas.reduce((a, c) => a + Number(c.kg), 0);
+  const kgValidado = minhas.filter(c => c.status === 'validada').reduce((a, c) => a + Number(c.kg), 0);
+
+  return (
+    <>
+      <h3 className="fam-h3">Suas entregas</h3>
+      <div className="card">
+        {minhas.length === 0 && (
+          <EstadoVazio icone="🧹" titulo="Nenhuma entrega registrada no seu nome"
+            dica="Quando você entregar material, ele aparece aqui com o peso que foi anotado. Se entregou e não apareceu, avise o Instituto Vivá." />
+        )}
+        {minhas.length > 0 && (
+          <>
+            <div className="entregas-resumo">
+              <div><b>{kgTotal} kg</b><span>você entregou</span></div>
+              <div><b>{kgValidado} kg</b><span>já conferidos</span></div>
+            </div>
+            {minhas.map(c => (
+              <div key={c.id} className="entrega">
+                <div className="entrega-cab">
+                  <div>
+                    <b>{c.kg} kg de {String(c.material).toLowerCase()}</b>
+                    <div className="mini">
+                      {new Date(c.data + 'T12:00:00').toLocaleDateString('pt-BR')} · {c.local}
+                    </div>
+                  </div>
+                  <Badge tom={c.status === 'validada' ? 'ok' : 'pend'}>
+                    {c.status === 'validada' ? 'conferido ✔' : 'em conferência'}
+                  </Badge>
+                </div>
+                <Contestar familia={familia} tipo="coleta" alvoId={c.id}
+                  alvoDesc={`${c.kg} kg de ${c.material} em ${c.data}`} />
+              </div>
+            ))}
+            <p className="mini" style={{ marginTop: 10 }}>
+              Confira o peso. Se algum número não bate com o que você entregou, toque
+              em <b>"Isso está errado?"</b> — alguém do Instituto Vivá responde aqui.
+            </p>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
 /* ------------------------------------------------------------------ meta ---- */
 /**
  * Meta de poupança — definida pela família, para o objetivo dela.
@@ -772,10 +931,13 @@ export default function PaginaFamilia({ standalone = false }) {
                       </p>
                     )}
                     <p className="mini">A renda do seu trabalho não depende disso — aqui é só o bônus a mais.</p>
+                    <Contestar familia={f} tipo="compromisso" alvoId={c.id} alvoDesc={`${c.tipo} (${c.mes})`} />
                   </div>
                 );
               })}
             </div>
+
+            <SuasEntregas familia={f} />
 
             <h3 className="fam-h3">Extrato</h3>
             <div className="card">

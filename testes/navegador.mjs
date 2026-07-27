@@ -1102,6 +1102,129 @@ try {
     return !s.familias.find(x => x.id === ${famMeta.id}).meta;
   `), 'e ela é apagada de verdade');
 
+  /* ---------- 14b4. a família confere e contesta ---------- */
+  secao('14b4. Suas entregas e "isso está errado"');
+  await irPara(ALVO);
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(600);
+  await ev(HELPERS + ' return 1;');
+
+  /* Registra uma entrega NOVA pelo formulário do coletor, vinculada à família.
+     A coleta da seed já está validada, e peso validado não é editável (ele já
+     entrou em relatório) — para exercitar a correção, a entrega precisa estar
+     pendente, como estaria no dia em que a família reclama. */
+  const famAlvoC = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.carteira);
+    return { id: f.id, nome: f.resp };
+  `);
+  await ev('return __t.clicar("nav.tabs button", "Coletor")');
+  await espera(600);
+  await ev(HELPERS + ' return 1;');
+  await ev('return __t.preencher(".card.destaque input", "Dona Nilza", 0)');
+  await ev('return __t.preencher(".card.destaque input[type=number]", "60")');
+  await ev('return __t.preencher(".card.destaque input", "Praia de Cueira", 2)');
+  ok(await ev('return __t.conta("#col-familia") === 1'),
+    'o formulário do coletor permite vincular a família (sem isso a renda não chega a ninguém)');
+  await ev(`return __t.preencher("#col-familia", ${famAlvoC.id})`);
+  await espera(300);
+  await ev('return __t.clicar(".card.destaque button.acao", "Enviar para validação")');
+  await espera(900);
+
+  const famC = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const c = [...s.coletas].reverse().find(c => c.familiaId === ${famAlvoC.id} && c.status === 'pendente');
+    return { id: ${famAlvoC.id}, coletaId: c ? c.id : null, kg: c ? c.kg : null };
+  `);
+  famC.nome = famAlvoC.nome;
+  ok(famC.coletaId !== null, `a entrega nova ficou vinculada à família (${famC.kg} kg, pendente)`);
+
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
+  await espera(400);
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "7412", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "7412", 1)');
+  await espera(300);
+  await ev('return __t.clicar(".fam-entrada button.acao")');
+  await espera(900);
+  await ev(HELPERS + ' return 1;');
+
+  /* item 1: ela vê o registro que produziu o dinheiro dela */
+  ok(await ev('return __t.tem("Suas entregas")'), 'a família vê as próprias entregas');
+  ok(await ev('return __t.conta(".entrega") >= 1'), `com ao menos uma entrega listada`);
+  ok(await ev(`return __t.tem("${famC.kg} kg")`), `mostra o peso que foi lançado (${famC.kg} kg)`);
+  ok(await ev('return __t.tem("você entregou") && __t.tem("já conferidos")'), 'com total entregue e total conferido');
+  ok(await ev('return __t.tem("Confira o peso")'), 'e convida explicitamente a conferir');
+
+  /* item 2: ela pode discordar */
+  ok(await ev('return __t.conta(".entrega .btn-contestar") >= 1'), 'cada entrega tem "Isso está errado?"');
+  ok(await ev('return __t.clicar(".entrega .btn-contestar") === true'), 'abre o formulário de contestação');
+  await espera(400);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("O peso está errado")'), 'oferece motivos prontos (não exige escrever)');
+  ok(await ev('return __t.tem("Quem lê é a equipe")'), 'diz QUEM vai ler antes de ela escrever');
+  ok(await ev('return __t.clicar(".contest-form button.acao", "Avisar") === "desabilitado"'),
+    'não envia sem escolher o motivo');
+
+  await ev('return document.querySelector(".contest-opcao input").click(), 1;');
+  await espera(300);
+  ok(await ev('return __t.clicar(".contest-form button.acao", "Avisar") === true'), 'com motivo escolhido, envia');
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("Você avisou que isso está errado")'), 'a família vê que o aviso foi registrado');
+
+  const ctBase = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const c = s.contestacoes[0];
+    return { total: s.contestacoes.length, status: c.status, alvo: c.alvoId, motivo: c.motivo, temResposta: !!c.resposta };
+  `);
+  ok(ctBase.total === 1 && ctBase.status === 'aberta', 'a contestação existe e está aberta');
+  ok(ctBase.alvo === famC.coletaId, 'ligada exatamente à entrega contestada');
+  ok(!ctBase.temResposta, 'e ainda sem resposta');
+
+  /* o outro lado do circuito: a operação vê e responde */
+  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await espera(800);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("Contestações das famílias")'), 'a operação vê as contestações');
+  ok(await ev('return __t.tem("1 aberta")'), 'com a contagem de abertas');
+  ok(await ev(`return __t.tem("${famC.nome}")`), 'identificando a família (no painel da operação, com nome)');
+  ok(await ev('return __t.conta(".corrigir-peso") === 1'),
+    'e oferece corrigir o peso ali mesmo, porque a coleta ainda não foi validada');
+
+  await ev('return __t.preencher(".contest-item input[type=number]", "62")');
+  await espera(250);
+  ok(await ev('return __t.clicar(".corrigir-peso button.acao", "corrigir") === true'), 'corrige o peso');
+  await espera(600);
+  const pesoNovo = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    return s.coletas.find(c => c.id === ${famC.coletaId}).kg;
+  `);
+  ok(Number(pesoNovo) === 62, `o peso foi corrigido de verdade (${famC.kg} → ${pesoNovo})`);
+
+  await ev(HELPERS + ' return 1;');
+  await ev('return __t.preencher(".contest-item input[type=text], .contest-item input:not([type])", "Conferimos e corrigimos para 62 kg.")');
+  await espera(250);
+  ok(await ev('return __t.clicar(".contest-item button.acao", "Responder e resolver") === true'), 'responde e resolve');
+  await espera(700);
+
+  /* e a família vê a resposta no app dela */
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
+  await espera(400);
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "7412", 0)');
+  await espera(300);
+  await ev('return __t.clicar(".fam-entrada button.acao")');
+  await espera(900);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("Resposta do Instituto Vivá")'), 'a família recebe a resposta no app dela');
+  ok(await ev('return __t.tem("62 kg")'), 'com o conteúdo da resposta');
+  ok(await ev('return __t.tem("marcado como resolvido")'), 'e o circuito fecha marcado como resolvido');
+
   /* ---------- 14c. voz da Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
   await irPara(ALVO);

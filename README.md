@@ -141,6 +141,23 @@ Três regras que não se negociam:
 - **Sem voz pt-BR instalada, o botão não aparece** — um botão que promete áudio e entrega voz robótica em inglês é pior que botão nenhum.
 - **Números viram palavra antes de falar**: `R$ 90,00` sai como "noventa reais", não "erre cifrão noventa vírgula zero zero", e emoji é removido (a síntese tenta descrever cada um).
 
+## A família confere e pode discordar 🗣️
+
+O projeto vende verificabilidade — e a família era a única que não podia verificar nada. O turista audita a jornada da peça na página pública, o júri audita o cofre no explorer, a operação vê tudo. A família via **dinheiro**, não o registro que produziu aquele dinheiro: não tinha como saber se os 60 kg que entregou foram lançados como 60 ou como 6.
+
+**Suas entregas** mostra data, material, peso e situação de cada coleta no nome dela, com o total entregue e o total já conferido. E cada registro — entrega ou compromisso — tem **"Isso está errado?"**.
+
+O circuito fecha: a contestação vira pendência na aba do Instituto Vivá (o mesmo lugar onde o erro foi cometido), a operação pode **corrigir o peso ali mesmo** se a coleta ainda não foi validada, responde em linguagem simples, e a resposta aparece no app da família.
+
+Regras que valem a pena saber:
+
+- **Contestação é append-only**: não existe ação para apagar. Reclamação se responde, não se apaga — apagar é o jeito mais fácil de um programa parecer que não tem nenhuma.
+- **Peso já validado não é editável**: ele entrou em relatório e pode ter virado receita. A tela diz isso em vez de deixar reescrever a história.
+- **Uma contestação aberta por registro** — reclamar duas vezes não acelera e polui a fila de quem responde.
+- Os motivos são prontos (não exige escrever), o texto livre é opcional, e a tela **diz quem vai ler** antes de ela escrever.
+
+Num programa que condiciona dinheiro a comprovação, quem é avaliado precisa poder contestar a avaliação. Sem isso, "erro do sistema" é sempre problema da família.
+
 ## Meta de poupança 🎯
 
 A família define uma meta ("consertar o telhado", R$ 1.500) e a tela mostra quanto falta. Guardar para um objetivo é algo que as pessoas querem e é difícil sem ferramenta — então a ferramenta existe.

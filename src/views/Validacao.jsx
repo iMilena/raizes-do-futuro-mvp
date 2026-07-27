@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore, fmt, trunc, disponivelCofre, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA } from '../store.jsx';
-import { useToast, EstadoVazio, Modal } from '../ui.jsx';
+import { useToast, EstadoVazio, Modal, Badge } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
 import { hashRelatorio, comandoAncoragem, assinaturaValida, urlExplorer, REDE_ANCORAGEM } from '../ancoragem.js';
 
@@ -110,6 +110,122 @@ function Ancoragem({ relatorio }) {
           </button>
         </Modal>
       )}
+    </>
+  );
+}
+
+/* ------------------------------------------------ contestações da família --- */
+/**
+ * O que as famílias contestaram, e o que a operação respondeu.
+ *
+ * Existe porque contestação sem alguém responsável por responder é caixa de
+ * reclamação fechada. Fica na aba do Instituto Vivá, que é quem valida — o mesmo
+ * lugar onde o erro foi cometido é onde ele se corrige.
+ *
+ * Quando é peso de coleta ainda não validada, a correção é ali mesmo: pedir para
+ * a agente "lembrar de arrumar depois" é como o problema morre.
+ */
+function Contestacoes() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const [resp, setResp] = useState({});
+  const [kg, setKg] = useState({});
+
+  const lista = (state.contestacoes || []).slice().reverse();
+  const abertas = lista.filter(c => c.status === 'aberta');
+
+  const familiaDe = id => state.familias.find(f => f.id === id);
+
+  return (
+    <>
+      <h3>🗣️ Contestações das famílias ({abertas.length} aberta{abertas.length === 1 ? '' : 's'})</h3>
+      <div className="card">
+        <p className="mini" style={{ marginTop: 0 }}>
+          A família pode discordar de qualquer registro no app dela. Num programa que
+          condiciona dinheiro a comprovação, quem é avaliado precisa poder contestar a
+          avaliação — e alguém tem de responder.
+        </p>
+
+        {lista.length === 0 && (
+          <EstadoVazio icone="🗣️" titulo="Nenhuma contestação"
+            dica="Quando uma família apontar um erro no app dela, ela aparece aqui." />
+        )}
+
+        {lista.map(c => {
+          const f = familiaDe(c.familiaId);
+          const coleta = c.tipo === 'coleta' ? state.coletas.find(x => x.id === c.alvoId) : null;
+          const podeCorrigirPeso = coleta && coleta.status === 'pendente';
+          return (
+            <div key={c.id} className={'contest-item ' + c.status}>
+              <div className="contest-item-cab">
+                <div>
+                  <b>{f?.resp || 'família'}</b>{' '}
+                  <span className="mini">· {new Date(c.criadoEm).toLocaleDateString('pt-BR')}</span>
+                  <div className="mini"><b>{c.motivo}</b> — {c.alvoDesc}</div>
+                  {c.detalhe && <div className="contest-detalhe">“{c.detalhe}”</div>}
+                </div>
+                <Badge tom={c.status === 'aberta' ? 'pend' : c.status === 'resolvida' ? 'ok' : 'info'}>
+                  {c.status}
+                </Badge>
+              </div>
+
+              {c.resposta && (
+                <div className="mini" style={{ marginTop: 6 }}>
+                  <b>Respondido:</b> {c.resposta}
+                </div>
+              )}
+
+              {c.status === 'aberta' && (
+                <div style={{ marginTop: 10 }}>
+                  {podeCorrigirPeso && (
+                    <div className="corrigir-peso">
+                      <span className="mini" style={{ margin: 0 }}>
+                        peso lançado: <b>{coleta.kg} kg</b> — corrigir para
+                      </span>
+                      <input type="number" min="1" value={kg[c.id] ?? ''}
+                        onChange={e => setKg({ ...kg, [c.id]: e.target.value })} placeholder="kg" />
+                      <button className="acao sec" disabled={!(Number(kg[c.id]) > 0)}
+                        onClick={() => {
+                          dispatch({ type: 'CORRIGIR_COLETA', id: coleta.id, kg: Number(kg[c.id]) });
+                          toast(`Peso corrigido para ${kg[c.id]} kg`, 'info');
+                        }}>
+                        corrigir
+                      </button>
+                    </div>
+                  )}
+                  {coleta && !podeCorrigirPeso && (
+                    <p className="mini alerta-txt">
+                      Esta coleta já foi validada e entrou em relatório — o peso não é mais
+                      editável aqui. Registre a correção na resposta e trate como ajuste do
+                      próximo ciclo.
+                    </p>
+                  )}
+                  <label htmlFor={'resp-' + c.id}>Resposta para a família</label>
+                  <input id={'resp-' + c.id} value={resp[c.id] ?? ''}
+                    onChange={e => setResp({ ...resp, [c.id]: e.target.value })}
+                    placeholder="escreva em linguagem simples — ela lê isto no app" />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                    <button className="acao" disabled={!resp[c.id]?.trim()}
+                      onClick={() => {
+                        dispatch({ type: 'RESPONDER_CONTESTACAO', id: c.id, resposta: resp[c.id], resolver: true });
+                        toast('Resposta enviada e marcada como resolvida', 'info');
+                      }}>
+                      Responder e resolver
+                    </button>
+                    <button className="acao sec" disabled={!resp[c.id]?.trim()}
+                      onClick={() => {
+                        dispatch({ type: 'RESPONDER_CONTESTACAO', id: c.id, resposta: resp[c.id], resolver: false });
+                        toast('Resposta enviada — segue em acompanhamento', 'info');
+                      }}>
+                      Responder, ainda apurando
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }
@@ -225,6 +341,7 @@ export default function Validacao() {
         <b> 2 de 3 assinaturas</b> no cofre (Instituto Vivá, DeTrash e Representante Comunitário); auditoria trimestral por
         parceiro externo; a família tem canal de recurso com resposta em até 15 dias.
       </div>
+      <Contestacoes />
     </>
   );
 }
