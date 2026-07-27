@@ -500,8 +500,25 @@ try {
   `);
   ok(jargao.length === 0, `zero jargão cripto dentro de .fam-tela${jargao.length ? ' — encontrado: ' + jargao.join(', ') : ''}`);
 
+  /* o saldo agora soma DUAS origens: bônus (condicional) e renda do trabalho
+     (incondicional, que o app escondia). Conferir um valor fixo aqui voltaria a
+     tratar as duas como a mesma coisa — a asserção passa a ser a separação. */
   const saldoTxt = await ev('return document.querySelector(".saldo-numero").innerText');
-  ok(/R\$\s?60,00/.test(saldoTxt), `saldo em reais destacado (${saldoTxt})`);
+  const origem = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.id === ${famAlvo.id});
+    const renda = f.extrato.filter(e => e.tipo === 'renda').reduce((a, e) => a + e.valor, 0);
+    const bonus = f.extrato.filter(e => e.tipo !== 'renda' && e.valor > 0).reduce((a, e) => a + e.valor, 0);
+    return { renda, bonus, saldo: f.saldo };
+  `);
+  ok(/R\$/.test(saldoTxt) && origem.saldo > 0, `saldo em reais destacado (${saldoTxt})`);
+  ok(origem.renda > 0, `a renda do próprio trabalho aparece na conta (${origem.renda})`);
+  ok(origem.bonus > 0, `e o bônus também (${origem.bonus})`);
+  ok(Math.abs(origem.renda + origem.bonus - origem.saldo) < 0.011, 'e a soma das duas origens é o saldo');
+  ok(await ev('return __t.tem("do seu trabalho") && __t.tem("sempre seu")'),
+    'a tela separa o que é do trabalho (incondicional) do que é bônus');
+  ok(await ev('return __t.tem("trabalho") && __t.conta(".tag-origem.trabalho") >= 1'),
+    'e o extrato etiqueta cada linha pela origem');
 
   // o botão abre um seletor de arquivo de verdade (evidencia.js calcula SHA-256
   // no aparelho); aqui simulamos a escolha da foto
@@ -550,7 +567,11 @@ try {
   await ev('return __t.clicar(".recibo button.acao", "Voltar")');
   await espera(500);
   const saldoDepois = await ev('const n = document.querySelector(".saldo-numero"); return n ? n.innerText : "(sem saldo em tela)";');
-  ok(/R\$\s?0,00/.test(saldoDepois), `saldo zerado após a retirada (${saldoDepois})`);
+  /* "Tudo" tem de esvaziar de verdade. O atalho usava Math.floor e deixava
+     centavos presos (R$ 0,14 no primeiro teste com renda rateada por quilo) —
+     a pessoa toca em Tudo, ve que sobrou dinheiro e conclui que o app comeu um
+     trocado. Nao ha nada mais caro que isso na confianca de quem recebe pouco. */
+  ok(/R\$\s?0,00/.test(saldoDepois), `saldo zerado após a retirada, sem centavo preso (${saldoDepois})`);
   ok(await ev('return __t.tem("Retirada pelo Pix")'), 'extrato registra a retirada em linguagem simples');
 
   /* ---------- 9. ajuda ---------- */
@@ -648,7 +669,17 @@ try {
   await ev('return __t.clicar(".fam-onb button.acao", "Abrir minha conta")');
   await espera(600);
   ok(await ev('return __t.tem("Você tem")'), 'abre a conta ao final');
-  ok(await ev('return __t.tem("Nada por aqui ainda")'), 'estado vazio orientado no extrato novo');
+  /* esta família passa a ter renda no extrato assim que uma venda usa o material
+     dela, então o extrato "vazio" só vale quando ela ainda não coletou nada */
+  const extratoNovo = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.id === ${semConta.id});
+    return { linhas: f.extrato.length, renda: f.extrato.filter(e => e.tipo === 'renda').length };
+  `);
+  ok(extratoNovo.linhas === 0
+    ? await ev('return __t.tem("Nada por aqui ainda")')
+    : extratoNovo.renda > 0,
+  `extrato novo: vazio orientado, ou já com a renda do trabalho dela (${extratoNovo.linhas} linhas)`);
 
   /* ---------- 11. rota #/familia ---------- */
   secao('11. Rota própria #/familia (mobile-first)');

@@ -100,7 +100,12 @@ s = d(s, { type: 'NOVA_VENDA', payload: { tipo: 'esg', descricao: 'Relatório Q2
 ok(perto(s.caixas.renda, antes.renda + 1500), '60% → renda direta (R$ 1.500)');
 ok(perto(s.caixas.fundo, antes.fundo + 625), '25% → cofre (R$ 625)');
 ok(perto(s.caixas.operacao, antes.operacao + 375), '15% → operação (R$ 375)');
-ok(s.transacoes[s.transacoes.length - 1].tipo === 'RECEITA', 'tx tipo RECEITA');
+/* a RECEITA vem seguida dos creditos de RENDA para quem coletou o material —
+   por isso ela nao e mais a ULTIMA transacao, e a ordem importa: primeiro entra
+   o dinheiro, depois ele e distribuido */
+const ultimas = s.transacoes.slice(-4).map(t => t.tipo);
+ok(ultimas.includes('RECEITA'), 'tx tipo RECEITA registrada');
+ok(ultimas.indexOf('RECEITA') < ultimas.lastIndexOf('RENDA'), 'e os creditos de RENDA vem depois dela');
 
 /* ---------- 4. fluxo multisig completo ---------- */
 secao('4. Fluxo multisig completo (Maria de Lourdes, condição pendente)');
@@ -164,7 +169,14 @@ ok(Boolean(ana), 'existe família sem conta na seed');
 const pAna = s.propostas.find(x => x.familiaId === ana.id && x.status === 'reservada');
 ok(Boolean(pAna), 'proposta dela está reservada, não perdida');
 ok(ana.condicoes[0].status === 'validada-aguardando', 'condição fica em "validada-aguardando"');
-ok(ana.saldo === 0, 'sem conta, nada é creditado');
+/* A distincao que o projeto defende, agora testada: sem conta o BONUS fica
+   reservado, mas a RENDA do trabalho dela continua sendo dela — ela e
+   incondicional, e tratar as duas do mesmo jeito era o erro antigo. */
+const bonusAna = ana.extrato.filter(e => e.tipo !== 'renda' && e.valor > 0).reduce((a, e) => a + e.valor, 0);
+const rendaAna = ana.extrato.filter(e => e.tipo === 'renda').reduce((a, e) => a + e.valor, 0);
+ok(bonusAna === 0, 'sem conta, o BONUS nao e creditado — fica reservado');
+ok(rendaAna > 0, 'mas a renda do trabalho dela e registrada de todo jeito (incondicional)');
+ok(perto(ana.saldo, rendaAna), 'e o saldo dela e exatamente essa renda');
 ok(s.transacoes.some(t => t.tipo === 'RESERVA'), 'existe transação tipo RESERVA');
 
 /* ---------- 7. criar conta reprocessa a reserva ---------- */
@@ -180,8 +192,8 @@ ok(ana2.condicoes[0].status === 'aguardando-assinaturas', 'condição volta a ag
 
 s = d(s, { type: 'ASSINAR_PROPOSTA', propostaId: pAna2.id, signatario: 'viva' });
 s = d(s, { type: 'ASSINAR_PROPOSTA', propostaId: pAna2.id, signatario: 'comunidade' });
-ok(s.familias.find(f => f.id === ana.id).saldo === BONUS_POR_CRIANCA * ana.criancas,
-  `Ana Cláudia recebe ${fmt(BONUS_POR_CRIANCA * ana.criancas)} após as 2 assinaturas`);
+ok(perto(s.familias.find(f => f.id === ana.id).saldo, rendaAna + BONUS_POR_CRIANCA * ana.criancas),
+  `Ana Cláudia recebe ${fmt(BONUS_POR_CRIANCA * ana.criancas)} de bônus após as 2 assinaturas, somado à renda dela`);
 
 /* ---------- 8. reserva por falta de saldo ---------- */
 secao('8. Regra de reserva — cofre sem saldo livre');
@@ -430,6 +442,62 @@ const revog = d(comCons, { type: 'REVOGAR_CONSENTIMENTO', familiaId: fam0, motiv
 const cRev = revog.familias.find(f => f.id === fam0).consentimentos[0];
 ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe ao prazo');
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
+
+/* ==========================================================================
+   17. Renda do trabalho visível para a família (o que o app escondia)
+   ========================================================================== */
+secao('17. Renda incondicional na conta da família');
+
+const semSeed = estadoInicial();
+const comFam = semSeed.coletas.filter(c => c.familiaId);
+ok(comFam.length >= 2, `a seed vincula coletas a famílias (${comFam.length})`);
+
+const rendaTotalSeed = store.rendaCreditada(semSeed);
+ok(rendaTotalSeed > 0, `renda creditada em conta de família: ${fmt(rendaTotalSeed)}`);
+ok(rendaTotalSeed <= semSeed.caixas.renda + 0.01,
+  'nunca credita mais do que os 60% destinados');
+
+/* o rateio é por quilo, e a soma tem de FECHAR — centavo sumido no extrato de
+   quem ganha pouco é exatamente o que destrói confiança em dinheiro digital */
+const umaVenda = estadoInicial();
+const antesR = store.rendaCreditada(umaVenda);
+const depoisVenda = d(umaVenda, {
+  type: 'NOVA_VENDA',
+  payload: { tipo: 'produto', descricao: 'Peça teste', comprador: 'Turista', valor: 100, materiais: ['Vidro'] },
+});
+const creditadoAgora = Number((store.rendaCreditada(depoisVenda) - antesR).toFixed(2));
+ok(perto(creditadoAgora, 60), `a renda de uma venda de R$ 100 credita exatamente R$ 60,00 (${creditadoAgora})`);
+
+/* cada linha de renda é identificável como renda — a tela usa isso para
+   separar "seu trabalho" de "bônus" */
+const linhas = depoisVenda.familias.flatMap(f => f.extrato).filter(e => e.tipo === 'renda');
+ok(linhas.length > 0 && linhas.every(e => e.valor > 0), 'linhas de renda são positivas e marcadas');
+ok(linhas.every(e => /renda da sua coleta/i.test(e.desc)), 'e descritas em linguagem de família');
+ok(depoisVenda.transacoes.some(t => t.tipo === 'RENDA' && t.valor > 0), 'com transação RENDA no registro');
+
+/* coleta sem família vinculada não credita ninguém — e o valor não desaparece:
+   continua no total do projeto, e o painel mostra a diferença nomeada */
+const semVinculo = { ...estadoInicial() };
+semVinculo.coletas = semVinculo.coletas.map(c => ({ ...c, familiaId: undefined }));
+semVinculo.familias = semVinculo.familias.map(f => ({ ...f, extrato: [], saldo: 0 }));
+const vendeuSemVinculo = d(semVinculo, {
+  type: 'NOVA_VENDA',
+  payload: { tipo: 'produto', descricao: 'Sem vínculo', comprador: 'Turista', valor: 100, materiais: ['Vidro'] },
+});
+ok(store.rendaCreditada(vendeuSemVinculo) === 0, 'coleta sem família vinculada não credita conta nenhuma');
+ok(vendeuSemVinculo.caixas.renda > semVinculo.caixas.renda, 'mas o valor entra no total do projeto');
+
+/* aviso no WhatsApp: opt-in, e fica gravado */
+const fam0b = estadoInicial().familias[0].id;
+const ligado = d(estadoInicial(), { type: 'AVISO_WHATSAPP', familiaId: fam0b, ligar: true });
+ok(ligado.familias.find(f => f.id === fam0b).avisarWhatsapp === true, 'aviso de WhatsApp pode ser ligado');
+ok(estadoInicial().familias[0].avisarWhatsapp !== true, 'e nasce DESLIGADO (mensagem sobre dinheiro não pedida assusta)');
+const desligado = d(ligado, { type: 'AVISO_WHATSAPP', familiaId: fam0b, ligar: false });
+ok(desligado.familias.find(f => f.id === fam0b).avisarWhatsapp === false, 'e pode ser desligado');
+
+/* a preferência não é assunto da nuvem */
+const opsAviso = calcularDeltas(estadoInicial(), ligado);
+ok(!JSON.stringify(opsAviso).includes('avisarWhatsapp'), 'a escolha de aviso não sobe para a base compartilhada');
 
 /* ==========================================================================
    16. Cofre real: comprovante de execução e regra 4 (residual → coletivo)

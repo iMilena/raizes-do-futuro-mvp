@@ -1,9 +1,18 @@
 {
+  "_nota": "start_url aponta para #/familia de propósito: quem instala o ícone no celular é a família, e antes ela caía no painel da operação (com Cofre Multisig e tudo). A operação usa o navegador no notebook, e tem o atalho abaixo.",
   "name": "Raízes do Futuro — Boipeba",
   "short_name": "Raízes",
   "description": "Do resíduo à proteção da infância. Plataforma de impacto de Boipeba, BA.",
-  "start_url": "./",
+  "start_url": "./#/familia",
   "scope": "./",
+  "shortcuts": [
+    {
+      "name": "Painel do projeto",
+      "short_name": "Painel",
+      "description": "Visão da operação: coleta, validação, mercado e cofre",
+      "url": "./#/"
+    }
+  ],
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f7f4ec",

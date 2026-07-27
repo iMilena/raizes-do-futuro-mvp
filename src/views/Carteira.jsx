@@ -259,11 +259,15 @@ function Onboarding({ familia, onDone }) {
 export default function Carteira() {
   const { state, dispatch } = useStore();
   const toast = useToast();
-  const [famId, setFamId] = useState(state.familias[0].id);
+  /* `?.` e a guarda abaixo não são paranoia: uma base sem família passou a ser
+     estado possível de verdade. O expurgo da retenção (migração 03) apaga
+     famílias, e uma nuvem recém-criada nasce vazia. Sem isso, `familias[0].id`
+     derruba a aba inteira com "Cannot read properties of undefined". */
+  const [famId, setFamId] = useState(() => state.familias[0]?.id ?? null);
   const [wizardDe, setWizardDe] = useState(null); // família com o wizard aberto
   const [feito, setFeito] = useState(false);
   const focoSaldo = useDestaque('saldo');
-  const f = state.familias.find(f => f.id === Number(famId));
+  const f = state.familias.find(f => f.id === Number(famId)) ?? state.familias[0] ?? null;
 
   // abre o wizard para família sem carteira e o mantém aberto até o passo final
   useEffect(() => {
@@ -286,6 +290,16 @@ export default function Carteira() {
     dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
     toast('Comprovação enviada ao Instituto Vivá 📎');
   };
+
+  if (!f) {
+    return (
+      <>
+        <h2>Carteira da Família — {PROVIDER_CARTEIRA} ({REDE})</h2>
+        <EstadoVazio icone="👨‍👩‍👧" titulo="Nenhuma família cadastrada"
+          dica="Registre o consentimento de uma família para começar o acompanhamento. Sem consentimento ativo, nada é compartilhado — é regra do banco." />
+      </>
+    );
+  }
 
   return (
     <>

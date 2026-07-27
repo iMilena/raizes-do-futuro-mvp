@@ -32,6 +32,7 @@ export const TIPOS_TX = {
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
   'ANCORAGEM': { rot: 'Relatório ancorado na Solana devnet (registro real)', cor: '#0f7a6c' },
   'CONSENTIMENTO': { rot: 'Consentimento do responsável registrado ou revogado', cor: '#6d4de8' },
+  'RENDA': { rot: 'Renda incondicional da coleta, direto para a família', cor: '#0b7ba8' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -164,6 +165,18 @@ export function situacaoConsentimento(c, agora = Date.now()) {
 export const consentimentoAtivo = f =>
   (f?.consentimentos || []).find(c => ['vigente', 'vencendo'].includes(situacaoConsentimento(c))) || null;
 
+/**
+ * Renda que de fato caiu em conta de família — não os 60% destinados.
+ *
+ * O painel dizia "direto para as famílias" mostrando `caixas.renda`, que é o
+ * valor DESTINADO. Se um coletor não está vinculado a família cadastrada, o
+ * dinheiro não chega a conta nenhuma, e o número virava afirmação generosa
+ * demais. Este é o número honesto; a diferença aparece do lado, nomeada.
+ */
+export const rendaCreditada = state =>
+  (state.familias || []).reduce((a, f) =>
+    a + (f.extrato || []).filter(e => e.tipo === 'renda').reduce((b, e) => b + e.valor, 0), 0);
+
 /** O último registro, mesmo vencido/revogado — é o que a tela precisa explicar. */
 export const consentimentoMaisRecente = f => {
   const l = f?.consentimentos || [];
@@ -240,6 +253,72 @@ function aplicarSplit(state, venda) {
   // vendaId liga esta transação à peça vendida: é o que a página de rastreio usa
   // para mostrar ao turista em qual registro a compra dele entrou
   pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
+  creditarRenda(state, venda);
+}
+
+/**
+ * Credita os 60% de renda a QUEM COLETOU o material desta venda.
+ *
+ * ── POR QUE ISTO PRECISAVA EXISTIR ────────────────────────────────────────
+ * O extrato da família recebia só bônus e retirada. Os 60% iam para
+ * `caixas.renda`, uma caixa do PROJETO, e nunca apareciam na tela dela.
+ *
+ * O efeito era o oposto do que o projeto defende. O princípio nº 1 é "a renda do
+ * trabalho é incondicional", e a família via na tela apenas a parte
+ * CONDICIONAL — o bônus que depende de saúde e escola em dia. A parte que é dela
+ * sem condição nenhuma era invisível. A tela contradizia o discurso.
+ *
+ * Divisão: proporcional aos QUILOS que cada família coletou no lote da venda.
+ * Coleta sem família vinculada (coletor que não é de família participante) não
+ * gera crédito — o valor fica no total do projeto, como antes, e isso aparece na
+ * conferência do Mercado.
+ */
+function creditarRenda(state, venda) {
+  const totalRenda = venda.valor * SPLIT.renda;
+  const daOrigem = (venda.origem || [])
+    .map(id => state.coletas.find(c => c.id === id))
+    .filter(c => c && c.familiaId);
+
+  /* Venda sem `origem` — o caso do Relatório de Circularidade vendido a empresa —
+     não sai do material de UMA peça: ela vende o dado construído a partir de
+     todos os quilos validados. Então a renda dela se divide entre quem coletou
+     esses quilos. Sem este ramo, "direto para as famílias" no painel contaria um
+     dinheiro que nenhuma família recebeu — foi o que aconteceu: o painel dizia
+     R$ 1.548 e só R$ 48 tinham chegado a uma conta. */
+  const coletas = daOrigem.length
+    ? daOrigem
+    : state.coletas.filter(c => c.familiaId && c.status === 'validada');
+
+  const kgTotal = coletas.reduce((a, c) => a + Number(c.kg), 0);
+  if (!coletas.length || kgTotal <= 0) return;
+
+  /* rateio por quilo, com o resto do arredondamento indo para a última família —
+     senão a soma dos créditos não fecha com o valor da renda e aparece centavo
+     sumido no extrato, que é exatamente o tipo de coisa que destrói confiança */
+  let distribuido = 0;
+  coletas.forEach((c, i) => {
+    const f = state.familias.find(x => x.id === c.familiaId);
+    if (!f) return;
+    const ultima = i === coletas.length - 1;
+    const parte = ultima
+      ? Number((totalRenda - distribuido).toFixed(2))
+      : Number((totalRenda * (Number(c.kg) / kgTotal)).toFixed(2));
+    distribuido = Number((distribuido + parte).toFixed(2));
+    if (parte <= 0) return;
+
+    f.saldo = Number((f.saldo + parte).toFixed(2));
+    f.extrato.push({
+      ts: Date.now(),
+      tipo: 'renda',
+      desc: daOrigem.length
+        ? `Renda da sua coleta — ${c.kg} kg de ${String(c.material).toLowerCase()}`
+        : `Renda da sua coleta — sua parte em "${venda.descricao}"`,
+      valor: parte,
+    });
+    pushTx(state, 'RENDA',
+      `Renda incondicional de ${fmt(parte)} para ${f.resp} — ${c.kg} kg na venda "${venda.descricao}"`,
+      parte, { familiaId: f.id, vendaId: venda.id, coletaId: c.id });
+  });
 }
 
 /**
@@ -340,8 +419,8 @@ function seed() {
     slot: 4021,
     transacoes: [],
     coletas: [
-      { id: 1, coletor: 'Seu Antônio', material: 'Plástico PET', kg: 45, local: 'Praia de Cueira', data: '2026-07-10', status: 'validada', signature: solSig('coleta-1') },
-      { id: 2, coletor: 'Dona Nilza', material: 'Vidro', kg: 60, local: 'Velha Boipeba', data: '2026-07-14', status: 'validada', signature: solSig('coleta-2') },
+      { id: 1, coletor: 'Seu Antônio', material: 'Plástico PET', kg: 45, local: 'Praia de Cueira', data: '2026-07-10', status: 'validada', signature: solSig('coleta-1'), familiaId: 3 },
+      { id: 2, coletor: 'Dona Nilza', material: 'Vidro', kg: 60, local: 'Velha Boipeba', data: '2026-07-14', status: 'validada', signature: solSig('coleta-2'), familiaId: 1 },
       { id: 3, coletor: 'Grupo Jovem Moreré', material: 'Plástico misto', kg: 38, local: 'Praia de Moreré', data: '2026-07-22', status: 'pendente', signature: null },
     ],
     relatorios: [
@@ -419,6 +498,8 @@ function reducer(state, action) {
       return seed();
 
     case 'NOVA_COLETA': {
+      /* familiaId e OPCIONAL: coletor pode nao ser de familia participante. Sem
+         ele a renda fica so no total do projeto, e o Mercado mostra isso. */
       s.coletas.push({ id: novoId(), ...action.payload, status: 'pendente', signature: null });
       return s;
     }
@@ -534,6 +615,15 @@ function reducer(state, action) {
           `Decisão coletiva do ciclo ${c.ciclo} ancorada na Solana devnet — prova pública de "${c.acao}"`,
           0, { cicloId: c.id, real: true });
       }
+      return s;
+    }
+
+    /* Aviso no WhatsApp quando o bônus cai. Opt-in, e o registro fica no
+       aparelho: antes a família só descobria que o dinheiro chegou abrindo o app
+       por acaso — e ninguém abre um app todo dia para conferir. */
+    case 'AVISO_WHATSAPP': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f) f.avisarWhatsapp = Boolean(action.ligar);
       return s;
     }
 

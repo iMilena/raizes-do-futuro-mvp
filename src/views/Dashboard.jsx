@@ -1,5 +1,8 @@
 import React from 'react';
-import { useStore, fmt, trunc, tipoTx, disponivelCofre, REDE, PROVIDER_CARTEIRA, BONUS_POR_CRIANCA } from '../store.jsx';
+import {
+  useStore, fmt, trunc, tipoTx, disponivelCofre, REDE, PROVIDER_CARTEIRA,
+  BONUS_POR_CRIANCA, rendaCreditada,
+} from '../store.jsx';
 import { ValorAnimado, EstadoVazio, useContagem } from '../ui.jsx';
 import { BarrasKgSemana, DonutReceita } from '../graficos.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
@@ -88,7 +91,13 @@ export default function Dashboard() {
   const pendentesColeta = state.coletas.filter(c => c.status === 'pendente').length;
   const propostasAbertas = state.propostas.filter(p => p.status === 'aguardando').length;
   const reservado = state.propostas.filter(p => p.status === 'reservada').reduce((a, p) => a + p.valor, 0);
-  const paraFamilias = state.caixas.renda + state.caixas.fundoLiberado;
+  /* O que REALMENTE chegou a conta de família: renda creditada + bônus liberado.
+     Antes era caixas.renda, que é o valor DESTINADO aos 60% — e se um coletor
+     não está vinculado a família cadastrada, esse dinheiro não chega a conta
+     nenhuma. O número dizia R$ 1.548 quando R$ 48 tinham chegado. */
+  const creditado = rendaCreditada(state);
+  const paraFamilias = creditado + state.caixas.fundoLiberado;
+  const semVinculo = Number((state.caixas.renda - creditado).toFixed(2));
 
   const pctGeral = (
     Math.min(1, kg / METAS.kg) +
@@ -114,6 +123,11 @@ export default function Dashboard() {
             <div>
               <b><ValorAnimado valor={paraFamilias} /></b>
               <span>{t('direto para as famílias')}</span>
+              {semVinculo > 0.01 && (
+                <span className="hero-ressalva" title="Renda de coletas cujo coletor ainda não está vinculado a uma família cadastrada">
+                  + {fmt(semVinculo)} {t('de coleta sem família cadastrada')}
+                </span>
+              )}
             </div>
             <div>
               <b>{criancas}</b>

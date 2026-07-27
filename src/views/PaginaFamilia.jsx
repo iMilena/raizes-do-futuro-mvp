@@ -6,6 +6,7 @@ import {
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
 import { sha256Arquivo } from '../evidencia.js';
+import { letraGrande, salvarLetra } from '../preferencias.js';
 import {
   vozDisponivel, vozLigada, ligarVoz, falar, parar as pararVoz, aoMudarVozes,
 } from '../voz.js';
@@ -261,6 +262,35 @@ function Saque({ familia, onFechar }) {
     setFeito(v);
   };
 
+  /**
+   * Guarda o comprovante como TEXTO, não imagem.
+   *
+   * Imagem exigiria canvas + fonte + layout, e sairia diferente em cada
+   * aparelho. Texto abre no WhatsApp, cabe num print, dá para ler em voz alta e
+   * funciona offline. `navigator.share` é o caminho nativo; sem ele, cai para a
+   * área de transferência, que existe em todo navegador.
+   */
+  const guardarComprovante = async () => {
+    const texto = [
+      'COMPROVANTE — Raízes do Futuro',
+      `Valor: ${fmt(feito)}`,
+      `Para: ${familia.resp}`,
+      `Quando: ${new Date().toLocaleString('pt-BR')}`,
+      'Taxa: R$ 0,00 (sem custo para a família)',
+      'Piloto de Boipeba, BA · Instituto Vivá',
+    ].join('\n');
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Comprovante Raízes do Futuro', text: texto });
+        return;
+      }
+      await navigator.clipboard.writeText(texto);
+      toast('Comprovante copiado — cole onde quiser guardar 📋', 'info', 5000);
+    } catch {
+      /* a pessoa cancelou o compartilhamento: não é erro, e avisar seria ruído */
+    }
+  };
+
   if (feito > 0) return (
     <div className="card recibo">
       <div className="recibo-check" aria-hidden="true">✅</div>
@@ -274,7 +304,15 @@ function Saque({ familia, onFechar }) {
           <tr><td>Taxa</td><td>R$ 0,00 — sem custo para a família</td></tr>
         </tbody>
       </table>
-      <button className="acao bloco" onClick={onFechar}>Voltar</button>
+      {/* O comprovante tem de ser DELA: aparecia na tela e desaparecia. Quem
+          recebe dinheiro digital precisa poder guardar e mostrar a prova —
+          é o que troca desconfiança por tranquilidade. */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+        <button className="acao" style={{ flex: 1 }} onClick={guardarComprovante}>
+          📤 Guardar comprovante
+        </button>
+        <button className="acao sec" style={{ flex: 1 }} onClick={onFechar}>Voltar</button>
+      </div>
     </div>
   );
 
@@ -285,8 +323,15 @@ function Saque({ familia, onFechar }) {
       <input className="input-valor" type="number" min="1" max={familia.saldo} value={valor}
         onChange={e => setValor(e.target.value)} placeholder="R$ 0,00" />
       <div className="atalhos-valor">
+        {/* "Tudo" tem de ser o saldo EXATO, não arredondado para baixo.
+            Com centavos no saldo (a renda é rateada por quilo), o Math.floor
+            deixava R$ 0,14 presos na conta — a pessoa toca em "Tudo", vê que
+            sobrou dinheiro e conclui, com razão, que o app comeu um trocado.
+            Nos atalhos de 25% e 50% o arredondamento continua, porque ali valor
+            redondo é mais fácil de conferir de cabeça. */}
         {[0.25, 0.5, 1].map(p => (
-          <button key={p} className="acao sec" onClick={() => setValor(String(Math.floor(familia.saldo * p)))}>
+          <button key={p} className="acao sec"
+            onClick={() => setValor(p === 1 ? String(familia.saldo) : String(Math.floor(familia.saldo * p)))}>
             {p === 1 ? 'Tudo' : fmt(Math.floor(familia.saldo * p))}
           </button>
         ))}
@@ -301,12 +346,26 @@ function Saque({ familia, onFechar }) {
 }
 
 /* ------------------------------------------------------------- ajuda (zap) ---- */
-function AjudaZap({ onFechar }) {
+const TEL_AGENTE = '+5575988870000'; // agente de campo do piloto (número de demonstração)
+
+function AjudaZap({ familia, onFechar }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
   const [digitou, setDigitou] = useState(false);
+  const avisar = Boolean(familia?.avisarWhatsapp);
+
   useEffect(() => {
     const t = setTimeout(() => setDigitou(true), 1400);
     return () => clearTimeout(t);
   }, []);
+
+  const alternarAviso = () => {
+    dispatch({ type: 'AVISO_WHATSAPP', familiaId: familia.id, ligar: !avisar });
+    toast(avisar
+      ? 'Aviso desligado — você continua vendo tudo aqui no app'
+      : 'Pronto! Você recebe uma mensagem quando o bônus cair 💬', 'info', 5000);
+  };
+
   return (
     <div className="card" style={{ marginTop: 10 }}>
       <b>💬 Instituto Vivá — atendimento pelo WhatsApp</b>
@@ -316,6 +375,29 @@ function AjudaZap({ onFechar }) {
           ? <div className="zap-msg agente digitando"><span /><span /><span /></div>
           : <div className="zap-msg agente">Oi! É só tocar em "📎 Enviar foto do comprovante" no compromisso da matrícula e fotografar a declaração. Qualquer coisa eu passo aí na comunidade para ajudar 🌱</div>}
       </div>
+
+      {/* Aviso quando o dinheiro chega. Antes, a família só descobria abrindo o
+          app "por acaso" — e ninguém abre um app todo dia para ver se caiu algo.
+          O canal é WhatsApp porque é o que ela já usa; opt-in porque mensagem
+          não pedida sobre dinheiro assusta. */}
+      <label className="opcao-aviso">
+        <input type="checkbox" checked={avisar} onChange={alternarAviso} />
+        <span>
+          <b>Me avisar no WhatsApp quando o bônus cair</b>
+          <small>Só sobre o seu dinheiro. Nada de propaganda, e você desliga quando quiser.</small>
+        </span>
+      </label>
+      {avisar && (
+        <p className="mini so-sim" style={{ marginTop: 6 }}>
+          (na demonstração a mensagem não é enviada de verdade — o registro da
+          escolha fica gravado)
+        </p>
+      )}
+
+      {/* Ligar, não só escrever: quem tem dificuldade com texto liga. */}
+      <a className="acao bloco centro" href={`tel:${TEL_AGENTE}`} style={{ textDecoration: 'none' }}>
+        📞 Ligar para o agente
+      </a>
       <button className="acao sec bloco" onClick={onFechar}>Fechar conversa</button>
     </div>
   );
@@ -355,6 +437,24 @@ export default function PaginaFamilia({ standalone = false }) {
     if (logado && f && !f.carteira) setOnbFam(f.id);
   }, [logado, f]);
   const noOnboarding = logado && f && onbFam === f.id && !onboardOk;
+
+  /* --------------------------------------------- acessibilidade e rede --- */
+  const [letraG, setLetraG] = useState(() => letraGrande());
+  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
+
+  useEffect(() => {
+    const sobe = () => setOnline(true);
+    const cai = () => setOnline(false);
+    window.addEventListener('online', sobe);
+    window.addEventListener('offline', cai);
+    return () => { window.removeEventListener('online', sobe); window.removeEventListener('offline', cai); };
+  }, []);
+
+  /* de onde vem o saldo: renda do trabalho (incondicional) x bônus (condicional) */
+  const rendaTotal = (f?.extrato || [])
+    .filter(e => e.tipo === 'renda').reduce((a, e) => a + e.valor, 0);
+  const bonusTotal = (f?.extrato || [])
+    .filter(e => e.tipo !== 'renda' && e.valor > 0).reduce((a, e) => a + e.valor, 0);
 
   /* ------------------------------------------------------------ PIN ------ */
   /* A família escolhida na lista, antes de entrar — a tela precisa saber se ela
@@ -419,7 +519,7 @@ export default function PaginaFamilia({ standalone = false }) {
   };
 
   const conteudo = (
-    <div className="fam-tela">
+    <div className={'fam-tela' + (letraG ? ' letra-g' : '')}>
       <div className="fam-topo">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <img className="fam-logo" src="./emblema.png" alt="" aria-hidden="true" />
@@ -428,10 +528,28 @@ export default function PaginaFamilia({ standalone = false }) {
             <div className="fam-sub">conta da família{logado && f ? ` · ${f.resp.split(' ')[0]}` : ''}</div>
           </div>
         </div>
-        {logado && !rodando && (
-          <button className="fam-sair" onClick={() => { setEntrou(false); setPin(''); setOnboardOk(false); setOnbFam(null); setSacando(false); }}>sair</button>
-        )}
+        <div className="fam-topo-acoes">
+          {/* letra maior: a voz serve quem lê com dificuldade; isto serve quem
+              lê, mas vê pouco — e em muitas famílias quem cuida é a avó */}
+          <button className="fam-letra" onClick={() => setLetraG(v => { salvarLetra(!v); return !v; })}
+            aria-pressed={letraG} title={letraG ? 'Voltar ao tamanho normal' : 'Aumentar a letra'}>
+            {letraG ? 'A−' : 'A+'}
+          </button>
+          {logado && !rodando && (
+            <button className="fam-sair" onClick={() => { setEntrou(false); setPin(''); setOnboardOk(false); setOnbFam(null); setSacando(false); }}>sair</button>
+          )}
+        </div>
       </div>
+
+      {/* Estado da rede, dito em voz de gente. O app é local-first: o saldo
+          continua correto sem internet, mas a família não tinha como saber
+          disso — e não saber, com dinheiro, é insegurança. */}
+      {!online && (
+        <div className="fam-offline">
+          📴 <b>Sem internet agora.</b> Seu saldo está guardado neste celular e continua certo.
+          O que você fizer agora é enviado sozinho quando o sinal voltar.
+        </div>
+      )}
 
       <div className="fam-corpo">
         {/* entrada */}
@@ -507,6 +625,21 @@ export default function PaginaFamilia({ standalone = false }) {
               <span className="saldo-rot">Você tem</span>
               <ValorAnimado valor={f.saldo} className="saldo-numero" />
               <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Picnic' ? 'Picnic 🧺' : 'do seu aplicativo 📲'}</span>
+
+              {/* De onde vem o dinheiro — a parte que o app escondia.
+                  A renda do trabalho é INCONDICIONAL e é o princípio nº 1 do
+                  projeto; mostrar só o bônus fazia a tela dizer que todo o
+                  dinheiro depende de condição. */}
+              <div className="saldo-origem">
+                <div>
+                  <b>{fmt(rendaTotal)}</b>
+                  <span>do seu trabalho<br /><i>sempre seu</i></span>
+                </div>
+                <div>
+                  <b>{fmt(bonusTotal)}</b>
+                  <span>de bônus<br /><i>saúde e escola</i></span>
+                </div>
+              </div>
               <div className={focoSaque}>
                 <button className="acao grande" disabled={f.saldo <= 0} onClick={() => setSacando(true)}>
                   💸 Retirar dinheiro
@@ -551,11 +684,17 @@ export default function PaginaFamilia({ standalone = false }) {
 
             <h3 className="fam-h3">Extrato</h3>
             <div className="card">
-              {f.extrato.length === 0 && <EstadoVazio icone="🧾" titulo="Nada por aqui ainda" dica="Seus bônus e retiradas vão aparecer nesta lista." />}
+              {f.extrato.length === 0 && <EstadoVazio icone="🧾" titulo="Nada por aqui ainda" dica="Sua renda, seus bônus e suas retiradas vão aparecer nesta lista." />}
               {[...f.extrato].reverse().map((e, i) => (
                 <div key={i} className="extrato-linha">
                   <div>
-                    <span className="extrato-desc">{e.desc}</span>
+                    {/* a origem de cada linha, em uma palavra: sem isso a família
+                        não distingue o que é dela por direito do que é bônus */}
+                    <span className="extrato-desc">
+                      {e.tipo === 'renda' && <span className="tag-origem trabalho">trabalho</span>}
+                      {e.tipo !== 'renda' && e.valor > 0 && <span className="tag-origem bonus">bônus</span>}
+                      {e.desc}
+                    </span>
                     <div className="mini">{new Date(e.ts).toLocaleDateString('pt-BR')}</div>
                   </div>
                   <b className={e.valor >= 0 ? 'entrou' : 'saiu'}>{e.valor >= 0 ? '+' : '−'}{fmt(Math.abs(e.valor))}</b>
@@ -563,7 +702,7 @@ export default function PaginaFamilia({ standalone = false }) {
               ))}
             </div>
 
-            {ajuda && <AjudaZap onFechar={() => setAjuda(false)} />}
+            {ajuda && <AjudaZap familia={f} onFechar={() => setAjuda(false)} />}
           </>
         )}
       </div>
