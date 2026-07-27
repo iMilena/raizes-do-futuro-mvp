@@ -27,7 +27,10 @@ import * as nuvem from './nuvem.js';
 /* Reexportados para quem usa a sincronização não precisar importar os dois
    módulos — e, no teste, para garantir que é a MESMA instância de nuvem.js
    (bundles separados teriam cópias distintas, cada uma com sua configuração). */
-export { configurar, carregar, ativo, configuradoSemSessao, contarTransacoes, auth } from './nuvem.js';
+export {
+  configurar, carregar, ativo, configuradoSemSessao, contarTransacoes, auth,
+  enviarContestacao, lerContestacao, novaChaveLeitura,
+} from './nuvem.js';
 
 const CHAVE_FILA = 'raizes-fila-sync';
 
@@ -106,6 +109,20 @@ export function calcularDeltas(antes, depois) {
   for (const t of novasTx) ops.push({ tipo: 'transacao', tx: { ...t, desc: semNome(t.desc) } });
   // âncora é a signature (chave natural), não o seq — ver migracao-01
   const ancora = novasTx.length ? novasTx[novasTx.length - 1].signature : null;
+
+  /* contestações: novas e respostas. A da família sobe mesmo sem sessão — ver
+     enviarContestacao() em nuvem.js e a migração 04. */
+  const ctAntes = porId(a.contestacoes || []);
+  for (const c of depois.contestacoes || []) {
+    const ant = ctAntes.get(c.id);
+    if (!ant) ops.push({ tipo: 'contestacao', contestacao: c });
+    else if (!ant.resposta && c.resposta) {
+      ops.push({
+        tipo: 'contestacao-resposta', id: c.id, resposta: c.resposta,
+        resolver: c.status === 'resolvida', uid: c.respondidoPor ?? null,
+      });
+    }
+  }
 
   /* consentimentos novos e revogações — SEMPRE antes das famílias */
   const consAntes = porId((a.familias || []).flatMap(f => f.consentimentos || []));
@@ -217,6 +234,8 @@ async function executar(op) {
        recusa família sem consentimento ativo. A ordem FIFO da fila garante. */
     case 'consentimento': return nuvem.registrarConsentimento(op.consentimento);
     case 'consentimento-revoga': return nuvem.revogarConsentimento(op.id, op.motivo);
+    case 'contestacao': return nuvem.enviarContestacao(op.contestacao);
+    case 'contestacao-resposta': return nuvem.responderContestacao(op.id, op.resposta, op.resolver, op.uid);
     case 'familia': return nuvem.registrarFamilia(op.familia);
     case 'condicao': return nuvem.registrarCondicao(op.familiaId, op.condicao);
     case 'coleta': return nuvem.registrarColeta(op.coleta);

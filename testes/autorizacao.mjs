@@ -114,6 +114,76 @@ const rIns = await fetch(`${BASE}coletas`, {
 });
 ok(!rIns.ok, `anônimo não insere coleta (HTTP ${rIns.status})`);
 
+let CT = null, segredo = null, temContestacoes = false;
+
+/* -------------------------------- canal de contestação sem conta (migr. 04) -- */
+secao('7. Contestação: caixa de entrada, não acesso');
+
+const rTab = await fetch(`${BASE}contestacoes?select=id&limit=1`, { headers: cabAnon() });
+if (rTab.status === 404) {
+  console.log('     ⏭️  migração 04 não aplicada — rode supabase/migracao-04-contestacoes.sql');
+} else {
+  temContestacoes = true;
+  /* 1. o anônimo NÃO lê nada */
+  const corpoAnon = await rTab.json().catch(() => null);
+  ok(!(Array.isArray(corpoAnon) && corpoAnon.length > 0),
+    `anônimo não lê contestação nenhuma (HTTP ${rTab.status})`);
+
+  /* 2. mas DEPOSITA — é o que faz o canal existir para quem não tem conta */
+  CT = ID + 10;
+  segredo = 'seg' + 'a'.repeat(20) + (ID % 1000);
+  const rDep = await fetch(`${BASE}contestacoes`, {
+    method: 'POST',
+    headers: { ...cabAnon(), Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      id: CT, familia_id: ID + 1, tipo: 'coleta', alvo_id: 1,
+      alvo_desc: '[teste] 60 kg', motivo: 'O peso está errado',
+      detalhe: '[teste] verificação de policy', chave_leitura: segredo,
+    }]),
+  });
+  ok(rDep.ok, `o aparelho da família deposita sem sessão (HTTP ${rDep.status})`);
+
+  /* 3. e NÃO consegue fabricar uma reclamação já resolvida */
+  const rForja = await fetch(`${BASE}contestacoes`, {
+    method: 'POST',
+    headers: { ...cabAnon(), Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      id: CT + 1, familia_id: ID + 1, tipo: 'coleta', motivo: 'forjada',
+      chave_leitura: segredo + 'x', status: 'resolvida', resposta: 'já pagamos',
+    }]),
+  });
+  ok(!rForja.ok, `não consegue inserir contestação já "resolvida" (HTTP ${rForja.status})`);
+
+  /* 4. nem responder à própria reclamação */
+  const rResp = await fetch(`${BASE}contestacoes?id=eq.${CT}`, {
+    method: 'PATCH',
+    headers: { ...cabAnon(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ resposta: 'me respondi', status: 'resolvida' }),
+  });
+  const conf = await (await fetch(`${BASE}rpc/contestacao_por_chave`, {
+    method: 'POST', headers: cabAnon(), body: JSON.stringify({ chave: segredo }),
+  })).json().catch(() => []);
+  ok(Array.isArray(conf) && conf.length === 1, 'a leitura pelo segredo devolve a própria contestação');
+  ok(conf[0]?.resposta == null, `e o anônimo não conseguiu responder a si mesmo (PATCH ${rResp.status})`);
+
+  /* 5. segredo errado não devolve nada — é capacidade, não filtro de tela */
+  const errado = await (await fetch(`${BASE}rpc/contestacao_por_chave`, {
+    method: 'POST', headers: cabAnon(), body: JSON.stringify({ chave: 'x'.repeat(32) }),
+  })).json().catch(() => []);
+  ok(Array.isArray(errado) && errado.length === 0, 'segredo errado não devolve linha nenhuma');
+  const curto = await (await fetch(`${BASE}rpc/contestacao_por_chave`, {
+    method: 'POST', headers: cabAnon(), body: JSON.stringify({ chave: 'abc' }),
+  })).json().catch(() => []);
+  ok(Array.isArray(curto) && curto.length === 0, 'e segredo curto também não');
+
+  /* 6. ninguém apaga reclamação */
+  const rDel = await fetch(`${BASE}contestacoes?id=eq.${CT}`, { method: 'DELETE', headers: cabAnon() });
+  const aindaLa = await (await fetch(`${BASE}rpc/contestacao_por_chave`, {
+    method: 'POST', headers: cabAnon(), body: JSON.stringify({ chave: segredo }),
+  })).json().catch(() => []);
+  ok(aindaLa.length === 1, `reclamação não é apagável (DELETE ${rDel.status})`);
+}
+
 /* --------------------------------------------------------- com sessão ----- */
 const email = process.env.SUPABASE_TEST_EMAIL;
 const senha = process.env.SUPABASE_TEST_SENHA;
@@ -203,6 +273,27 @@ if (podeConsentir && rConsent.ok) {
   const rDel = await fetch(`${BASE}consentimentos?id=eq.${CONS}`, { method: 'DELETE', headers: cabToken(TOKEN) });
   const sobrou = await (await fetch(`${BASE}consentimentos?id=eq.${CONS}&select=id`, { headers: cabToken(TOKEN) })).json().catch(() => []);
   ok(sobrou.length === 1, `o registro do consentimento não pode ser apagado (DELETE ${rDel.status})`);
+}
+
+if (temContestacoes) {
+  /* 7. com sessão, a operação lê e responde */
+  if (TOKEN && ['validador', 'gestor'].includes(papel.papel)) {
+    const rLer = await fetch(`${BASE}contestacoes?id=eq.${CT}&select=motivo,status`, { headers: cabToken(TOKEN) });
+    const vista = await rLer.json().catch(() => []);
+    ok(rLer.ok, `a operação com papel ${papel.papel} lê a contestação (HTTP ${rLer.status})`);
+    const rOk = await fetch(`${BASE}contestacoes?id=eq.${CT}`, {
+      method: 'PATCH',
+      headers: { ...cabToken(TOKEN), Prefer: 'return=minimal' },
+      body: JSON.stringify({ resposta: '[teste] conferimos', status: 'resolvida', respondido_em: new Date().toISOString() }),
+    });
+    ok(rOk.ok, `e responde (HTTP ${rOk.status})`);
+    const depois = await (await fetch(`${BASE}rpc/contestacao_por_chave`, {
+      method: 'POST', headers: cabAnon(), body: JSON.stringify({ chave: segredo }),
+    })).json().catch(() => []);
+    ok(depois[0]?.resposta === '[teste] conferimos',
+      'e a família recebe a resposta pelo segredo, sem ter conta — o circuito fecha');
+    void vista;
+  }
 }
 
 /* ------------------------------------------------ 2-de-3 de verdade ------- */

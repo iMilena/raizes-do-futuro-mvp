@@ -93,6 +93,27 @@ A suíte roda contra o banco de verdade e é escalonada: sem a migração, avisa
 
 Um detalhe que engana: RLS sem policy devolve **200 com lista vazia**, não 403. O teste afirma "não veio linha", não "veio erro" — confundir os dois é o jeito mais fácil de achar que se está protegido sem estar.
 
+## O canal da família, sem conta
+
+Migração: [`supabase/migracao-04-contestacoes.sql`](supabase/migracao-04-contestacoes.sql).
+
+A família **não tem conta** — decisão de desenho. Mas desde a migração 02 a base só responde a quem tem sessão, e isso criou um problema que só aparece em campo: **tudo o que ela faz no celular dela ficava preso no aparelho**, inclusive reclamar de um peso errado. Na demonstração o app da família e o painel rodam no mesmo navegador e parece funcionar. Não funciona.
+
+O aparelho da família ganha exatamente dois direitos:
+
+1. **Depositar** uma contestação (INSERT), sem poder ler nada.
+2. **Ler a resposta da própria** contestação, por uma função que exige o **segredo gerado no celular** no momento em que ela reclamou.
+
+Não é `anon` com SELECT liberado — isso seria a base pública de volta. É **capacidade**: quem tem o segredo lê aquela linha, quem não tem não lê nenhuma. O segredo nasce no aparelho, nunca é exibido e só sai nessa chamada.
+
+Um `CHECK` na policy de INSERT impede fabricar reclamação já "resolvida" ou com resposta — o anônimo só consegue criar reclamação **aberta e sem resposta**. Responder exige `validador`/`gestor`. Não há policy de DELETE para ninguém.
+
+### O risco que isto aceita, dito em voz alta
+
+Com INSERT liberado ao anônimo, alguém com a URL pode inserir contestação **falsa**, inclusive no código de outra família, ou encher a tabela. Não há como evitar sem dar credencial à família — e credencial é justamente o que estamos evitando. O que reduz o dano: o CHECK impede forjar uma resolução; contestação **não move dinheiro** (o que ela dispara é conferência humana, e correção de peso só vale antes da validação); e a operação confirma com a família antes de agir.
+
+Contestação falsa gera trabalho. Contestação impossível gera injustiça silenciosa. Escolhemos o trabalho — e `npm test -- autorizacao` verifica cada uma dessas travas contra o banco real.
+
 ## Estado da integração
 
 O store usa o esquema por entidade desde o commit da sincronização por entidade: carrega no boot, envia deltas a cada ação e reenvia o que ficou preso na fila. Verificado com dois navegadores simultâneos, um offline durante uma coleta (`npm test -- aparelhos`).

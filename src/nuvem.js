@@ -274,6 +274,73 @@ export const revogarConsentimento = (id, motivo) =>
     revogado_motivo: motivo || null,
   });
 
+/* ------------------------------------------------- contestação da família ---
+   A ÚNICA operação que funciona SEM SESSÃO, e por um motivo específico.
+
+   A família não tem conta (decisão de desenho: credencial para a mãe em Boipeba
+   é custo nosso transferido a ela). Como a base só responde a quem tem sessão,
+   tudo o que ela faz no celular dela ficava preso no aparelho — inclusive
+   reclamar de um peso errado. Um canal de reclamação que não sai do aparelho de
+   quem reclama não é canal.
+
+   Então este par de funções usa a chave anônima de propósito, e o que impede
+   isso de reabrir a base é a migração 04: o anônimo tem INSERT restrito por
+   CHECK (só reclamação aberta, sem resposta) e ZERO policy de SELECT. A leitura
+   da resposta passa por uma função que exige o segredo gerado no celular.
+--------------------------------------------------------------------------- */
+
+/** Segredo de leitura da contestação. Nasce no aparelho e não é exibido. */
+export function novaChaveLeitura() {
+  const c = globalThis.crypto;
+  const b = c?.getRandomValues ? c.getRandomValues(new Uint8Array(16)) : null;
+  return b
+    ? [...b].map(x => x.toString(16).padStart(2, '0')).join('')
+    : Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+}
+
+/** Deposita a contestação. Funciona com sessão ou sem. */
+export async function enviarContestacao(c) {
+  if (!(await configurar())) return null;
+  const r = await fetch(`${cfg.url}/rest/v1/contestacoes`, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.anonKey,
+      Authorization: 'Bearer ' + ((await auth.token(cfg)) || cfg.anonKey),
+      'content-type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify([{
+      id: c.id, familia_id: c.familiaId, tipo: c.tipo, alvo_id: c.alvoId ?? null,
+      alvo_desc: c.alvoDesc || null, motivo: c.motivo, detalhe: c.detalhe || null,
+      chave_leitura: c.chaveLeitura, status: 'aberta',
+    }]),
+  });
+  if (!r.ok && !/23505/.test(await r.text())) return false; // duplicado = já está lá
+  return true;
+}
+
+/** Lê a resposta da própria contestação, pelo segredo. Sem segredo, nada. */
+export async function lerContestacao(chave) {
+  if (!(await configurar()) || !chave) return null;
+  const r = await fetch(`${cfg.url}/rest/v1/rpc/contestacao_por_chave`, {
+    method: 'POST',
+    headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'content-type': 'application/json' },
+    body: JSON.stringify({ chave }),
+  });
+  if (!r.ok) return null;
+  const linhas = await r.json().catch(() => null);
+  return Array.isArray(linhas) && linhas.length ? linhas[0] : null;
+}
+
+/** A operação responde. Exige sessão com papel de validador/gestor. */
+export const responderContestacao = (id, resposta, resolver, uid) =>
+  atualizar('contestacoes', `id=eq.${id}`, {
+    resposta,
+    status: resolver ? 'resolvida' : 'respondida',
+    respondido_em: new Date().toISOString(),
+    respondido_por: uid ?? null,
+  });
+
 /** Quem sou eu para a nuvem: papel, organização e se assino pelo cofre. */
 export async function meuPapel() {
   if (!(await configurar()) || !auth.logado()) return null;

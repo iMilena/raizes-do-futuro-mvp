@@ -722,6 +722,10 @@ function reducer(state, action) {
 
       s.contestacoes = [...(s.contestacoes || []), {
         id: novoId(),
+        /* segredo que permite a ela LER a resposta sem ter conta no sistema.
+           Nasce aqui, no celular, e não é exibido em nenhuma tela — ver
+           migracao-04 e contestacao_por_chave(). */
+        chaveLeitura: nuvem.novaChaveLeitura(),
         familiaId: f.id,
         tipo: action.tipo || 'coleta',
         alvoId: action.alvoId ?? null,
@@ -737,6 +741,18 @@ function reducer(state, action) {
       pushTx(s, 'CONTESTACAO',
         `Família ${f.codigo || f.id} contestou um registro (${action.motivo})`,
         0, { familiaId: f.id, contestacaoId: s.contestacoes[s.contestacoes.length - 1].id });
+      return s;
+    }
+
+    /* Resposta que chegou da nuvem, buscada pelo segredo. É como o celular da
+       família — que não tem sessão — recebe o retorno da operação. */
+    case 'CONTESTACAO_RESPONDIDA_REMOTO': {
+      const c = (s.contestacoes || []).find(c => c.id === action.id);
+      if (c && action.resposta && !c.resposta) {
+        c.resposta = action.resposta;
+        c.status = action.status === 'resolvida' ? 'resolvida' : 'respondida';
+        c.respondidoEm = action.respondidoEm || new Date().toISOString();
+      }
       return s;
     }
 
@@ -1120,6 +1136,37 @@ export function StoreProvider({ children }) {
     })();
     return () => { vivo = false; };
   }, []);
+
+  /* 1b. Contestação da família: sobe e busca resposta SEM SESSÃO.
+        É a única coisa que atravessa a rede no aparelho da família — que não tem
+        conta, por desenho. Sem isto, reclamar de um peso errado ficava preso no
+        celular de quem reclamou, e canal que não sai do aparelho não é canal.
+        Ver migracao-04 e enviarContestacao()/lerContestacao() em nuvem.js. */
+  useEffect(() => {
+    let vivo = true;
+    const bater = async () => {
+      if (!(await nuvem.configurar())) return;
+      const cts = stateRef.current.contestacoes || [];
+      for (const c of cts) {
+        if (!c.chaveLeitura) continue;
+        if (!c.resposta) {
+          /* deposita (idempotente pelo id) e depois pergunta pela resposta */
+          try { await nuvem.enviarContestacao(c); } catch { /* tenta no próximo tique */ }
+          const r = await nuvem.lerContestacao(c.chaveLeitura);
+          if (vivo && r?.resposta) {
+            dispatch({
+              type: 'CONTESTACAO_RESPONDIDA_REMOTO',
+              id: c.id, resposta: r.resposta, status: r.status, respondidoEm: r.respondido_em,
+            });
+          }
+        }
+      }
+    };
+    bater();
+    const id = setInterval(bater, 15000);
+    return () => { vivo = false; clearInterval(id); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.contestacoes?.length]);
 
   /* 2. cada mudança local vira delta na fila e tenta subir (otimista) */
   useEffect(() => {
