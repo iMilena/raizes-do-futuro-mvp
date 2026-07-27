@@ -258,7 +258,13 @@ export const registrarConsentimento = c => inserir('consentimentos', {
   finalidades: c.finalidades,
   forma: c.forma,
   termo_hash: c.termoHash,
-  coletado_por: c.coletadoPor,
+  /* Consentimento registrado no modo local (sem sessão) fica com `coletadoPor`
+     nulo — e a coluna é NOT NULL. Sem este fallback, a operação nunca é aceita e
+     a fila FIFO trava para sempre no primeiro item. Quem está com a sessão
+     aberta é a pessoa que responde por este aparelho, então é ela que assume o
+     registro. Quando o campo já veio preenchido, ele é preservado: o registro
+     diz quem COLHEU, não quem sincronizou. */
+  coletado_por: c.coletadoPor || auth.atual()?.usuario?.id || null,
 });
 
 /** Revogação: direito do titular. Único UPDATE que a policy permite na tabela. */

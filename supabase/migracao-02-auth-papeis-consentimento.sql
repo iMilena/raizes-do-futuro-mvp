@@ -110,10 +110,16 @@ drop policy if exists consent_ler on consentimentos;
 create policy consent_ler on consentimentos for select to authenticated
   using (meu_papel() is not null);
 
--- registrar consentimento é ato de campo: coletor não faz, gestor e validador sim
+-- Registrar consentimento é ato de campo: coletor não faz, gestor e validador sim.
+--
+-- `coletado_por` guarda QUEM COLHEU, e por isso NÃO é comparado com auth.uid():
+-- quem envia pode ser outro aparelho da operação sincronizando depois. Exigir
+-- que coincidissem travaria a fila para sempre — ela é FIFO e para no primeiro
+-- erro, então um consentimento colhido pela Ana e sincronizado pelo aparelho do
+-- João bloquearia todo o trabalho atrás dele.
 drop policy if exists consent_inserir on consentimentos;
 create policy consent_inserir on consentimentos for insert to authenticated
-  with check (meu_papel() in ('validador','gestor') and coletado_por = auth.uid());
+  with check (meu_papel() in ('validador','gestor') and coletado_por is not null);
 
 -- revogação: só marca revogado_em/motivo. Não há policy de DELETE — o registro
 -- da revogação é parte da prova e não pode desaparecer.
