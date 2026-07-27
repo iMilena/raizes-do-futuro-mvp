@@ -81,15 +81,34 @@ Isso é mais trabalho de campo que um "recuperar por SMS", e é de propósito: r
 
 ## 4. Antes de abrir para família real — lista de verificação
 
-- [ ] Migração 02 aplicada (`npm test -- autorizacao` verifica)
-- [ ] Migração 03 aplicada (prazos e expurgo)
-- [ ] Três usuários criados, com `Auto Confirm User`
-- [ ] Papéis atribuídos com `signatario` distinto (consulta acima devolve zero linhas)
-- [ ] Cada pessoa trocou a senha provisória
-- [ ] Nenhuma credencial na mesma caixa de e-mail (consulta de normalização acima)
-- [ ] Dados de demonstração limpos (`supabase/limpar-demonstracao.sql`)
-- [ ] Termo de consentimento revisado por alguém de direito — o texto está em `src/store.jsx` (`TEXTO_TERMO`), não em documento solto
+Rode primeiro **`npm test -- migracoes`**: ele sonda o banco e diz quais migrações estão aplicadas. Não confie em memória — foram seis, aplicadas à mão em momentos diferentes, e **uma passou batido sem ninguém notar**.
+
+### No banco — verificável por `npm test`
+
+- [x] **02** papéis e consentimento — `npm test -- autorizacao`, 44 verificações
+- [ ] **03** prazos e expurgo — **FALTA.** Sem ela a tela diz "consentimento vale até tal data" e o banco **não tem prazo nenhum**: consentimento vencido continua autorizando, e não existe `expurgar_vencidos()` para a rotina mensal rodar. `npm test -- migracoes` falha por isso, de propósito.
+- [x] **04** canal de contestação — `npm test -- canal`, 17 verificações
+- [x] **05** contestação sem gate de consentimento
+- [ ] **06** vínculo coleta↔família e ciclos — o app tolera a ausência (grava sem eles), mas sem ela o vínculo e os fechamentos de ciclo não atravessam aparelhos
+- [ ] Dados de demonstração limpos (`supabase/limpar-demonstracao.sql`) — a base tem bastante lixo de teste, inclusive famílias `TESTE-*` e contestações `[teste]`
+- [ ] Usuário `raizes.testes@gmail.com` removido, quando não for mais rodar a suíte
+
+### Com pessoas — não verificável por código
+
+- [ ] Três usuários criados com `Auto Confirm User`
+- [ ] Papéis atribuídos com `signatario` distinto
+- [ ] Cada pessoa escolheu a própria senha, e você não a conhece
+- [ ] Nenhuma credencial na mesma caixa de e-mail
+- [ ] Termo de consentimento revisado por alguém de direito — o texto está em `src/store.jsx` (`TEXTO_TERMO`), versionado com o app, não em documento solto
 - [ ] Rotina mensal de retenção com responsável e data definidos
 - [ ] Agente de campo treinado no destravamento de PIN
 
-Os itens em código estão feitos e testados. Os de cima desta lista que dependem de pessoas são os que faltam — e são reais.
+### Por que a auditoria dos papéis só roda no SQL Editor
+
+A policy `ver_meu_papel` limita a leitura de `papeis` à **própria linha**. Com uma sessão de operação, a suíte vê uma linha: a dela. Isso é bom — um token comprometido não enumera a equipe inteira — e tem o custo de que a conferência das três credenciais precisa ser feita como dono do banco.
+
+As duas consultas estão nas seções 1 e 2. A de normalização de e-mail é a que importa: pega o caso em que duas credenciais moram na mesma caixa, que é como a separação entre organizações fica só aparente.
+
+### O que essa lista aprendeu
+
+Ela começou dizendo "os itens em código estão feitos e testados; o que falta depende de pessoas". Estava errada nos dois lados: faltavam duas migrações no banco, e o que depende de pessoas não tem como ser conferido por quem escreve o código. Marcar caixinha de memória é o que fez a 03 sumir — por isso agora há um teste que sonda o banco em vez de perguntar a alguém.

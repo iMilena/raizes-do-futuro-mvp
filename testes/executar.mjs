@@ -146,6 +146,11 @@ try {
     }
   }
 
+  if (querem('migracoes')) {
+    console.log('\n── migrações aplicadas no banco ' + '─'.repeat(26));
+    registrar('migracoes', rodar('migracoes.mjs'));
+  }
+
   if (querem('nuvem')) {
     console.log('\n── esquema compartilhado (Supabase real) ' + '─'.repeat(17));
     registrar('nuvem', rodar('nuvem.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }));

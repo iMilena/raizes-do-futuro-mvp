@@ -294,6 +294,7 @@ testes/
   navegador.mjs          app inteiro no Edge, via DevTools Protocol
   qr.mjs                 QR gerado é decodificado por leitor independente
   nuvem.mjs              garantias do esquema, contra o Supabase real
+  migracoes.mjs          inventário: o que o banco tem vs. o que o código supõe
   autorizacao.mjs        anônimo barrado, papel, consentimento (Supabase real)
   canal-familia.mjs      celular sem sessão contesta e a reclamação sai do aparelho
   dois-aparelhos.mjs     dois navegadores, um offline durante uma coleta
@@ -306,6 +307,7 @@ testes/
 npm test                  # tudo o que o ambiente permitir
 npm test -- fluxo         # só o reducer, em segundos
 npm test -- navegador     # só o app no navegador
+npm test -- migracoes     # quais migracoes estao aplicadas no banco
 npm test -- autorizacao   # RLS por papel e consentimento, no banco real
 npm test -- canal         # canal da família sem sessão, no banco real
 npm test -- telas         # grava capturas/ para conferir o visual
