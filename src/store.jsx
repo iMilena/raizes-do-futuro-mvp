@@ -177,6 +177,25 @@ export const rendaCreditada = state =>
   (state.familias || []).reduce((a, f) =>
     a + (f.extrato || []).filter(e => e.tipo === 'renda').reduce((b, e) => b + e.valor, 0), 0);
 
+/**
+ * Progresso da meta, em fato: quanto já tem, quanto falta, quantos por cento.
+ * Devolve null sem meta — a tela não deve inventar meta para quem não pediu.
+ */
+export function progressoMeta(f) {
+  const m = f?.meta;
+  if (!m || !(m.valor > 0)) return null;
+  const tem = Math.max(0, Number(f.saldo) || 0);
+  const pct = Math.min(100, (tem / m.valor) * 100);
+  return {
+    nome: m.nome,
+    alvo: m.valor,
+    tem,
+    falta: Math.max(0, Number((m.valor - tem).toFixed(2))),
+    pct,
+    alcancada: tem >= m.valor,
+  };
+}
+
 /** O último registro, mesmo vencido/revogado — é o que a tela precisa explicar. */
 export const consentimentoMaisRecente = f => {
   const l = f?.consentimentos || [];
@@ -666,6 +685,44 @@ function reducer(state, action) {
           `PIN da família de ${f.resp} destravado pelo agente de campo — a família define um novo no próximo acesso`,
           0, { familiaId: f.id });
       }
+      return s;
+    }
+
+    /* ------------------------------------------------------ meta ---------- */
+    /**
+     * Meta de poupança da família.
+     *
+     * ── COMO ISTO FOI CONSTRUÍDO, E POR QUÊ ──────────────────────────────
+     * Eu tinha recomendado não fazer, por risco de o projeto dizer a uma família
+     * de baixa renda como gastar. A decisão foi fazer, e ela é legítima: guardar
+     * para um objetivo é algo que as pessoas querem e é difícil sem ferramenta.
+     * Então a ferramenta existe, e as travas contra o paternalismo estão no
+     * desenho, não no discurso:
+     *
+     *  · QUEM DEFINE É A FAMÍLIA, no app dela. A operação não cria meta para
+     *    ninguém, e não há meta sugerida pelo projeto como "a correta".
+     *  · NÃO BLOQUEIA O SAQUE, e não há aviso de "tem certeza? sua meta…". O
+     *    dinheiro é dela; meta que dificulta o acesso é tutela.
+     *  · SEM PONTO, SEM SEQUÊNCIA, SEM ESTRELA por guardar. O progresso é fato
+     *    (quanto falta), não recompensa — recompensar poupança é o mesmo que
+     *    repreender quem gastou.
+     *  · NÃO SOBE PARA A NUVEM. "Guardar para o remédio da minha filha" é dado
+     *    de saúde; a meta fica no aparelho, como o PIN.
+     *  · dá para apagar a qualquer momento, sem pergunta de confirmação moral.
+     */
+    case 'DEFINIR_META': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      const valor = Number(action.valor || 0);
+      const nome = String(action.nome || '').trim();
+      if (f && nome && valor > 0) {
+        f.meta = { nome, valor: Number(valor.toFixed(2)), criadoEm: new Date().toISOString() };
+      }
+      return s;
+    }
+
+    case 'REMOVER_META': {
+      const f = s.familias.find(f => f.id === action.familiaId);
+      if (f) f.meta = null;
       return s;
     }
 

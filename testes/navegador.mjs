@@ -984,6 +984,84 @@ try {
   `);
   ok(opsNome === false, 'o nome não entra na fila de sincronização (só o código)');
 
+  /* ---------- 14b3. meta de poupança ---------- */
+  secao('14b3. Meta de poupança (definida pela família, sem tutela)');
+  await irPara(ALVO);
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(600);
+  await ev(HELPERS + ' return 1;');
+
+  const famMeta = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.carteira && x.saldo > 0);
+    return { id: f.id, saldo: f.saldo };
+  `);
+  await ev(`return __t.preencher(".fam-entrada select", ${famMeta.id})`);
+  await espera(400);
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "5501", 0)');
+  await ev('return __t.preencher(".fam-entrada input[type=password]", "5501", 1)');
+  await espera(300);
+  await ev('return __t.clicar(".fam-entrada button.acao")');
+  await espera(900);
+  await ev(HELPERS + ' return 1;');
+
+  ok(await ev('return __t.conta(".meta-convite") === 1'), 'oferece criar meta, sem meta pré-definida pelo projeto');
+  ok(await ev('return __t.tem("Quer guardar para alguma coisa")'), 'e pergunta em vez de propor um objetivo');
+  ok(await ev('return __t.clicar(".meta-convite") === true'), 'abre o formulário da meta');
+  await espera(400);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("não bloqueia")'), 'diz explicitamente que a meta NÃO bloqueia o dinheiro');
+
+  await ev('return __t.preencher("#meta-nome", "consertar o telhado")');
+  await ev('return __t.preencher("#meta-valor", "1500")');
+  await espera(300);
+  ok(await ev('return __t.clicar(".meta-card button.acao", "Guardar meta") === true'), 'salva a meta');
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+
+  ok(await ev('return __t.tem("consertar o telhado")'), 'a meta aparece com as palavras da família');
+  ok(await ev('return __t.tem("faltam")'), 'mostra quanto falta (fato, não cobrança)');
+  ok(await ev('return __t.conta(".meta-card .progresso-fill") === 1'), 'com barra de progresso');
+
+  /* nada de pontuação, medalha ou sequência por guardar */
+  const premio = await ev(`
+    const c = document.querySelector('.meta-card');
+    const t = c.innerText;
+    return { estrela: /⭐|🌟|🏆|🥇/.test(t), pontos: /ponto|n[íi]vel|sequ[êe]ncia|streak/i.test(t) };
+  `);
+  ok(!premio.estrela && !premio.pontos, 'nenhum troféu, ponto ou sequência por poupar');
+
+  /* A TRAVA: o saque não é bloqueado nem questionado por causa da meta */
+  ok(await ev('return __t.clicar(".saldo-card button.acao", "Retirar dinheiro") === true'),
+    'com meta ativa, o botão de retirar continua liberado');
+  await espera(500);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.clicar(".atalhos-valor button", "Tudo") === true'), 'e o atalho "Tudo" continua disponível');
+  await espera(300);
+  const avisoMeta = await ev('return /sua meta|tem certeza|voc[êe] est[áa] guardando/i.test(document.body.innerText)');
+  ok(avisoMeta === false, 'e NÃO existe aviso do tipo "tem certeza? sua meta…"');
+  ok(await ev('return __t.clicar("button.acao", "Confirmar Pix") === true'), 'o Pix sai normalmente');
+  await espera(800);
+  await ev(HELPERS + ' return 1;');
+  const depoisMeta = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    const f = s.familias.find(x => x.id === ${famMeta.id});
+    return { saldo: f.saldo, temMeta: !!f.meta };
+  `);
+  ok(depoisMeta.saldo === 0, 'o saque saiu inteiro, sem a meta reter nada');
+  ok(depoisMeta.temMeta === true, 'e a meta continua lá — lembrete, não castigo');
+
+  /* a meta é dela: apagar é um toque, sem confirmação moral */
+  await ev('return __t.clicar(".recibo button.acao", "Voltar")');
+  await espera(500);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.clicar(".meta-apagar") === true'), 'apagar a meta é um toque');
+  await espera(400);
+  ok(await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    return !s.familias.find(x => x.id === ${famMeta.id}).meta;
+  `), 'e ela é apagada de verdade');
+
   /* ---------- 14c. voz da Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
   await irPara(ALVO);

@@ -444,6 +444,72 @@ ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe a
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
 /* ==========================================================================
+   19. Meta de poupança — sem virar tutela
+   ========================================================================== */
+secao('19. Meta de poupança da família');
+
+const semMeta = estadoInicial();
+const fam1 = semMeta.familias[0];
+ok(store.progressoMeta(fam1) === null, 'família nasce SEM meta (o projeto não define meta para ninguém)');
+
+const comMeta = d(semMeta, {
+  type: 'DEFINIR_META', familiaId: fam1.id, nome: 'consertar o telhado', valor: 1200,
+});
+const pm = store.progressoMeta(comMeta.familias.find(f => f.id === fam1.id));
+ok(pm !== null && pm.nome === 'consertar o telhado', 'a família define a meta com as palavras dela');
+ok(pm.alvo === 1200, 'com o valor que ela escolheu');
+ok(perto(pm.tem, fam1.saldo), 'o progresso usa o saldo real dela');
+ok(pm.falta > 0 && perto(pm.falta, 1200 - fam1.saldo), `mostra quanto falta (${fmt(pm.falta)})`);
+ok(pm.pct > 0 && pm.pct < 100, `e a porcentagem (${Math.floor(pm.pct)}%)`);
+ok(pm.alcancada === false, 'e que ainda não foi alcançada');
+
+/* A TRAVA PRINCIPAL: meta não pode impedir nem reduzir o saque. O dinheiro é
+   dela; meta que dificulta o acesso deixa de ser ferramenta e vira tutela. */
+const saldoAntesMeta = comMeta.familias.find(f => f.id === fam1.id).saldo;
+const sacouComMeta = d(comMeta, { type: 'SACAR_PIX', id: fam1.id, valor: saldoAntesMeta });
+const depoisSaque = sacouComMeta.familias.find(f => f.id === fam1.id);
+ok(perto(depoisSaque.saldo, 0), 'com meta ativa, o saque total continua saindo INTEIRO');
+ok(depoisSaque.meta !== null && depoisSaque.meta !== undefined,
+  'a meta continua lá depois do saque (não é castigo, é lembrete)');
+ok(store.progressoMeta(depoisSaque).falta === 1200, 'e o "quanto falta" simplesmente volta ao início');
+
+/* meta alcançada não bloqueia nada nem exige nada */
+const rica = { ...comMeta, familias: comMeta.familias.map(f => f.id === fam1.id ? { ...f, saldo: 1500 } : f) };
+const pmOk = store.progressoMeta(rica.familias.find(f => f.id === fam1.id));
+ok(pmOk.alcancada === true && pmOk.pct === 100, 'meta alcançada é marcada como alcançada');
+ok(pmOk.falta === 0, 'e o que falta é zero, não negativo');
+
+/* apagar é imediato, sem pergunta e sem consequência */
+const apagada = d(comMeta, { type: 'REMOVER_META', familiaId: fam1.id });
+ok(store.progressoMeta(apagada.familias.find(f => f.id === fam1.id)) === null, 'a família apaga a meta quando quiser');
+
+/* entrada inválida não cria meta fantasma */
+ok(store.progressoMeta(d(semMeta, { type: 'DEFINIR_META', familiaId: fam1.id, nome: '', valor: 100 })
+  .familias.find(f => f.id === fam1.id)) === null, 'meta sem nome não é criada');
+ok(store.progressoMeta(d(semMeta, { type: 'DEFINIR_META', familiaId: fam1.id, nome: 'x', valor: 0 })
+  .familias.find(f => f.id === fam1.id)) === null, 'meta sem valor não é criada');
+
+/* LGPD: "guardar para o remédio da minha filha" é dado de saúde. A meta é
+   escrita livre e por isso NÃO pode subir para a base compartilhada. */
+const opsMeta = calcularDeltas(semMeta, d(semMeta, {
+  type: 'DEFINIR_META', familiaId: fam1.id, nome: 'remédio da minha filha', valor: 200,
+}));
+const serialMeta = JSON.stringify(opsMeta);
+ok(!serialMeta.includes('remédio') && !serialMeta.includes('meta'),
+  'a meta NÃO sobe para a nuvem (texto livre pode conter dado de saúde)');
+
+/* e o pull da nuvem não pode apagar a meta guardada no aparelho */
+const remotoSemMeta = {
+  ...comMeta,
+  familias: comMeta.familias.map(f => ({
+    id: f.id, codigo: 'BOI-' + f.id, criancas: f.criancas, carteira: f.carteira,
+    saldo: f.saldo, condicoes: f.condicoes, extrato: f.extrato,
+  })),
+};
+ok(store.progressoMeta(mesclar(comMeta, remotoSemMeta).familias.find(f => f.id === fam1.id)) !== null,
+  'e o merge da nuvem não apaga a meta do aparelho');
+
+/* ==========================================================================
    18. A nuvem vazia NÃO apaga o trabalho local
    ========================================================================== */
 secao('18. Estado remoto vazio nunca substitui dado local');

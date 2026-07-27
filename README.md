@@ -141,6 +141,18 @@ Três regras que não se negociam:
 - **Sem voz pt-BR instalada, o botão não aparece** — um botão que promete áudio e entrega voz robótica em inglês é pior que botão nenhum.
 - **Números viram palavra antes de falar**: `R$ 90,00` sai como "noventa reais", não "erre cifrão noventa vírgula zero zero", e emoji é removido (a síntese tenta descrever cada um).
 
+## Meta de poupança 🎯
+
+A família define uma meta ("consertar o telhado", R$ 1.500) e a tela mostra quanto falta. Guardar para um objetivo é algo que as pessoas querem e é difícil sem ferramenta — então a ferramenta existe.
+
+As travas contra virar tutela estão no **desenho**, não no discurso, e cada uma tem teste:
+
+- **Quem define é a família**, no app dela, com as palavras dela. O projeto não cria meta para ninguém e não sugere objetivos "corretos".
+- **Não bloqueia nem questiona o saque.** Nenhum "tem certeza? sua meta…". O dinheiro é dela; meta que dificulta o acesso deixa de ser ferramenta.
+- **Sem ponto, medalha ou sequência por guardar.** Premiar quem poupa é repreender quem precisou gastar. O progresso é fato: quanto falta.
+- **Não sobe para a nuvem.** "Guardar para o remédio da minha filha" é dado de saúde — a meta fica no aparelho, como o PIN.
+- **Apagar é um toque**, sem confirmação moral.
+
 ## Português e inglês 🌐
 
 Seletor PT/EN no cabeçalho. **Português é sempre o padrão** — é um projeto brasileiro, e o inglês é camada de leitura para fora. Nada de adivinhar pelo idioma do navegador: um avaliador brasileiro com Windows em inglês cairia numa tradução parcial sem pedir.

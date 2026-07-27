@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA,
-  temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN,
+  temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN, progressoMeta,
 } from '../store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
@@ -345,6 +345,97 @@ function Saque({ familia, onFechar }) {
   );
 }
 
+/* ------------------------------------------------------------------ meta ---- */
+/**
+ * Meta de poupança — definida pela família, para o objetivo dela.
+ *
+ * O que este componente deliberadamente NÃO faz:
+ *  · não sugere metas "certas" (educação, saúde) como se o projeto soubesse
+ *    melhor do que a mãe o que a casa precisa;
+ *  · não impede nem questiona o saque — não há "tem certeza? sua meta…";
+ *  · não dá ponto, medalha ou sequência por guardar. Premiar quem guarda é
+ *    repreender quem precisou gastar.
+ * O que ele faz é o que falta na vida real: mostrar quanto falta.
+ */
+function Meta({ familia }) {
+  const { dispatch } = useStore();
+  const toast = useToast();
+  const [abrindo, setAbrindo] = useState(false);
+  const [form, setForm] = useState({ nome: '', valor: '' });
+  const p = progressoMeta(familia);
+  const [festejou, setFestejou] = useState(false);
+
+  /* comemora UMA vez ao alcançar, e só isso: a festa é do objetivo dela, não
+     recompensa nossa por comportamento */
+  useEffect(() => {
+    if (p?.alcancada && !festejou) { setFestejou(true); }
+  }, [p?.alcancada, festejou]);
+
+  const salvar = () => {
+    const valor = Number(form.valor);
+    if (!form.nome.trim() || !(valor > 0)) { toast('Escreva para o que é e quanto', 'alerta'); return; }
+    dispatch({ type: 'DEFINIR_META', familiaId: familia.id, nome: form.nome.trim(), valor });
+    toast('Meta guardada 🎯', 'info');
+    setAbrindo(false);
+    setForm({ nome: '', valor: '' });
+  };
+
+  const remover = () => {
+    dispatch({ type: 'REMOVER_META', familiaId: familia.id });
+    toast('Meta apagada');
+  };
+
+  if (!p && !abrindo) {
+    return (
+      <button className="meta-convite" onClick={() => setAbrindo(true)}>
+        🎯 <span>Quer guardar para alguma coisa? <b>Criar uma meta</b></span>
+      </button>
+    );
+  }
+
+  if (abrindo) {
+    return (
+      <div className="card meta-card" style={{ marginTop: 11 }}>
+        <b style={{ fontSize: 15 }}>🎯 Sua meta</b>
+        <p className="mini" style={{ marginTop: 2 }}>
+          Você escolhe para o que é e quanto. Isso <b>não bloqueia</b> seu dinheiro —
+          você retira quando quiser, com meta ou sem meta.
+        </p>
+        <label htmlFor="meta-nome">Guardar para</label>
+        <input id="meta-nome" value={form.nome} maxLength={60}
+          onChange={e => setForm({ ...form, nome: e.target.value })}
+          placeholder="escreva com suas palavras" />
+        <label htmlFor="meta-valor">Quanto você quer juntar</label>
+        <input id="meta-valor" type="number" min="1" inputMode="numeric" value={form.valor}
+          onChange={e => setForm({ ...form, valor: e.target.value })} placeholder="R$ 0,00" />
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <button className="acao" style={{ flex: 1 }} onClick={salvar}>Guardar meta</button>
+          <button className="acao sec" onClick={() => setAbrindo(false)}>Cancelar</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={'card meta-card' + (p.alcancada ? ' feita' : '')} style={{ marginTop: 11 }}>
+      {p.alcancada && festejou && <Confete />}
+      <div className="meta-topo">
+        <div>
+          <b>🎯 {p.nome}</b>
+          <div className="mini">meta de {fmt(p.alvo)}</div>
+        </div>
+        <button className="meta-apagar" onClick={remover} title="Apagar a meta">apagar</button>
+      </div>
+      <BarraProgresso pct={p.pct} rot={`${Math.floor(p.pct)}%`} />
+      <p className="mini meta-falta">
+        {p.alcancada
+          ? <><b>Você já juntou o que queria!</b> O dinheiro está disponível, é seu.</>
+          : <>Você tem <b>{fmt(p.tem)}</b> · faltam <b>{fmt(p.falta)}</b></>}
+      </p>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------- ajuda (zap) ---- */
 const TEL_AGENTE = '+5575988870000'; // agente de campo do piloto (número de demonstração)
 
@@ -652,6 +743,10 @@ export default function PaginaFamilia({ standalone = false }) {
                 </div>
               )}
             </div>
+
+            {/* a meta vem DEPOIS do saldo e do botao de retirar, de proposito:
+                primeiro o dinheiro e o acesso a ele, depois o plano dela */}
+            <Meta familia={f} />
 
             {sacando && <div style={{ marginTop: 10 }}><Saque familia={f} onFechar={() => setSacando(false)} /></div>}
 

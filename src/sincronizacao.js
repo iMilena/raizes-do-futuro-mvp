@@ -301,7 +301,10 @@ export function mesclar(local, remoto) {
      · consentimentos — a nuvem os guarda, mas `carregar()` não os traz de volta;
                perdê-los aqui faria o app concluir "sem consentimento" e parar de
                sincronizar os dados daquela família, em silêncio.
-     Sem este resgate, o primeiro pull destruiria os três. */
+     · meta   — texto livre da família ("guardar para o remédio da minha filha"),
+               que pode conter dado de saúde e por isso não sobe.
+     · avisarWhatsapp — preferência do aparelho, não assunto da operação.
+     Sem este resgate, o primeiro pull destruiria todos eles. */
   const locais = new Map((local?.familias || []).map(f => [f.id, f]));
   const nomes = new Map((local?.familias || []).map(f => [f.id, f.resp]));
 
@@ -319,6 +322,8 @@ export function mesclar(local, remoto) {
       resp: nomes.get(f.id) || f.codigo || `Família ${f.id}`,
       pin: locais.get(f.id)?.pin ?? null,
       consentimentos: locais.get(f.id)?.consentimentos ?? [],
+      meta: locais.get(f.id)?.meta ?? null,
+      avisarWhatsapp: locais.get(f.id)?.avisarWhatsapp ?? false,
     })),
   };
 }
