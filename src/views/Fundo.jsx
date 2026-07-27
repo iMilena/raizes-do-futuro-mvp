@@ -6,6 +6,9 @@ import {
 import { useToast, Modal, Badge, EstadoVazio, ValorAnimado } from '../ui.jsx';
 import { useDestaque } from '../demo.jsx';
 import OnchainDevnet from '../OnchainDevnet.jsx';
+import {
+  assinaturaValida, comandoLiberacao, comandoDecisao, hashDecisaoColetiva,
+} from '../ancoragem.js';
 
 const STATUS = {
   pendente: ['pend', 'aguardando comprovação'],
@@ -190,6 +193,209 @@ function ExploradorTx({ transacoes }) {
 
 /* ---------- página ---------- */
 /** Mantém a proposta recém-executada em tela por alguns segundos, para a animação ser vista. */
+/* ---------- comprovante on-chain das liberações executadas ----------
+   O app NÃO assina: assinar exige chave privada, e chave de signatário do cofre
+   em bundle de navegador é chave pública. Então a etapa é humana — a operação
+   roda o comando com a chave dela e cola a assinatura de volta. Menos cômodo, e
+   é o que permite dizer "executado na rede" sem mentir. */
+function ExecutadasOnchain() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const [aberta, setAberta] = useState(null);
+  const [sig, setSig] = useState('');
+
+  const executadas = state.propostas.filter(p => p.status === 'executada');
+  if (executadas.length === 0) return null;
+
+  const naRede = executadas.filter(p => p.execucaoOnchain);
+
+  const confirmar = p => {
+    const s = sig.trim();
+    if (!assinaturaValida(s)) {
+      toast('Assinatura inválida — são ~88 caracteres em base58', 'alerta');
+      return;
+    }
+    dispatch({ type: 'REGISTRAR_EXECUCAO_ONCHAIN', propostaId: p.id, txId: s });
+    toast('Liberação comprovada na Solana devnet ⛓️', 'info', 5000);
+    setAberta(null);
+    setSig('');
+  };
+
+  return (
+    <>
+      <h3>⛓️ Liberações no cofre real ({naRede.length} de {executadas.length} com comprovante)</h3>
+      <div className="card">
+        <p className="mini" style={{ marginTop: 0 }}>
+          A jornada do app é simulada; o cofre <b>existe na Solana devnet</b>. Cada liberação
+          pode ser executada de verdade lá, e o comprovante fica aqui. Quem assina são as
+          organizações, nas máquinas delas — o site não tem chave privada, e não deveria ter.
+        </p>
+        {executadas.map(p => {
+          const f = state.familias.find(x => x.id === p.familiaId);
+          return (
+            <div key={p.id} className="reservada" style={{ alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <b>proposta #{p.id}</b> <span className="mini">· {fmt(p.valor)}{f ? ` · ${f.resp}` : ''}</span>
+                {p.execucaoOnchain ? (
+                  <div className="mini">
+                    <Badge tom="ok">executado na devnet</Badge>{' '}
+                    <a href={p.execucaoOnchain.url} target="_blank" rel="noreferrer">
+                      ver no explorer ↗
+                    </a>
+                    <div className="hash">{trunc(p.execucaoOnchain.txId, 10, 10)}</div>
+                  </div>
+                ) : aberta === p.id ? (
+                  <div style={{ marginTop: 8 }}>
+                    <p className="mini" style={{ margin: '0 0 4px' }}>
+                      1. Uma organização prepara e assina, em <span className="mono">onchain/</span>:
+                    </p>
+                    <p className="bloco-det-cmd hash sel">{comandoLiberacao(p.valor, p.id, 'viva')}</p>
+                    <p className="mini" style={{ margin: '6px 0 4px' }}>
+                      2. A saída é uma transação parcialmente assinada. A <b>segunda</b> organização
+                      confere o valor e o destino, assina e envia — o multisig do SPL Token exige
+                      as duas assinaturas na mesma transação.
+                    </p>
+                    <label htmlFor={'sig-' + p.id}>3. Cole a assinatura devolvida</label>
+                    <input id={'sig-' + p.id} className="hash" value={sig}
+                      onChange={e => setSig(e.target.value)} placeholder="assinatura base58 (~88 caracteres)" />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                      <button className="acao" onClick={() => confirmar(p)}>Confirmar comprovante</button>
+                      <button className="acao sec" onClick={() => { setAberta(null); setSig(''); }}>Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mini">
+                    <Badge tom="info">só no app (simulado)</Badge>
+                  </div>
+                )}
+              </div>
+              {!p.execucaoOnchain && aberta !== p.id && (
+                <button className="acao sec" onClick={() => { setAberta(p.id); setSig(''); }}>
+                  Executar na devnet
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* ---------- regra 4: saldo residual → ações coletivas ----------
+   A decisão é da assembleia. Um contrato que distribuísse o residual sozinho
+   tomaria a decisão no lugar das pessoas — o que precisa ser imutável é o
+   REGISTRO de qual decisão foi tomada, não a decisão. */
+function FechamentoCiclo() {
+  const { state, dispatch } = useStore();
+  const toast = useToast();
+  const [aberto, setAberto] = useState(false);
+  const [form, setForm] = useState({ acao: '', comoFoiDecidido: 'assembleia comunitária', participantes: '', valor: '' });
+  const [sigCiclo, setSigCiclo] = useState({});
+
+  const residual = disponivelCofre(state);
+  const ciclos = state.ciclos || [];
+
+  const registrar = async () => {
+    const valor = Number(form.valor);
+    if (!form.acao.trim() || !(valor > 0) || valor > residual) {
+      toast('Informe a ação e um valor até o saldo residual', 'alerta');
+      return;
+    }
+    const ciclo = new Date().toISOString().slice(0, 7);
+    const hash = await hashDecisaoColetiva({
+      ciclo, acao: form.acao.trim(), valor,
+      comoFoiDecidido: form.comoFoiDecidido, participantes: form.participantes,
+      data: new Date().toISOString().slice(0, 10),
+    });
+    dispatch({ type: 'FECHAR_CICLO', ...form, valor, ciclo, hash });
+    toast(`Fechamento registrado: ${fmt(valor)} para ações coletivas 🤝`, 'info', 5000);
+    setAberto(false);
+    setForm({ acao: '', comoFoiDecidido: 'assembleia comunitária', participantes: '', valor: '' });
+  };
+
+  const ancorar = c => {
+    const s = (sigCiclo[c.id] || '').trim();
+    if (!assinaturaValida(s)) { toast('Assinatura inválida', 'alerta'); return; }
+    dispatch({ type: 'ANCORAR_DECISAO', cicloId: c.id, txId: s });
+    toast('Decisão ancorada na Solana devnet ⚓', 'info', 5000);
+  };
+
+  return (
+    <>
+      <h3>🤝 Fechamento de ciclo — regra 4 ({ciclos.length})</h3>
+      <div className="card">
+        <p className="mini" style={{ marginTop: 0 }}>
+          Saldo residual disponível: <b>{fmt(residual)}</b>. Pela regra 4, ele vai para ações
+          coletivas de saúde e educação <b>definidas com a comunidade</b> — a decisão é da
+          assembleia, e o que a rede registra é a prova pública de qual decisão foi tomada.
+        </p>
+
+        {ciclos.length === 0 && !aberto && (
+          <EstadoVazio icone="🤝" titulo="Nenhum ciclo fechado ainda"
+            dica="No fim do ciclo, registre aqui a destinação decidida em assembleia." />
+        )}
+
+        {ciclos.map(c => (
+          <div key={c.id} className="reservada" style={{ alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <b>{c.acao}</b> <span className="mini">· ciclo {c.ciclo} · {c.comoFoiDecidido}</span>
+              {c.participantes && <div className="mini">quem participou: {c.participantes}</div>}
+              <div className="hash">SHA-256 {trunc(c.hash, 12, 12)}</div>
+              {c.ancoragem ? (
+                <div className="mini">
+                  <Badge tom="ok">ancorado na devnet</Badge>{' '}
+                  <a href={c.ancoragem.url} target="_blank" rel="noreferrer">ver no explorer ↗</a>
+                </div>
+              ) : (
+                <div style={{ marginTop: 6 }}>
+                  <p className="bloco-det-cmd hash sel">{comandoDecisao(c.hash, c.ciclo)}</p>
+                  <input className="hash" value={sigCiclo[c.id] || ''}
+                    onChange={e => setSigCiclo({ ...sigCiclo, [c.id]: e.target.value })}
+                    placeholder="cole a assinatura devolvida" />
+                  <button className="acao sec bloco" onClick={() => ancorar(c)}>Ancorar decisão</button>
+                </div>
+              )}
+            </div>
+            <b>{fmt(c.valor)}</b>
+          </div>
+        ))}
+
+        {!aberto ? (
+          <button className="acao" style={{ marginTop: 12 }} disabled={residual <= 0}
+            onClick={() => setAberto(true)}>
+            Registrar destinação do residual
+          </button>
+        ) : (
+          <div style={{ marginTop: 12 }}>
+            <label htmlFor="fc-acao">Ação coletiva decidida</label>
+            <input id="fc-acao" value={form.acao} onChange={e => setForm({ ...form, acao: e.target.value })}
+              placeholder="ex.: kit de higiene bucal para a escola municipal" />
+            <label htmlFor="fc-valor">Valor destinado (até {fmt(residual)})</label>
+            <input id="fc-valor" type="number" min="1" max={residual} value={form.valor}
+              onChange={e => setForm({ ...form, valor: e.target.value })} />
+            <label htmlFor="fc-como">Como foi decidido</label>
+            <select id="fc-como" value={form.comoFoiDecidido}
+              onChange={e => setForm({ ...form, comoFoiDecidido: e.target.value })}>
+              <option value="assembleia comunitária">Assembleia comunitária</option>
+              <option value="reunião do conselho local">Reunião do conselho local</option>
+              <option value="consulta às famílias participantes">Consulta às famílias participantes</option>
+            </select>
+            <label htmlFor="fc-quem">Quem participou (sem nomes de crianças)</label>
+            <input id="fc-quem" value={form.participantes}
+              onChange={e => setForm({ ...form, participantes: e.target.value })}
+              placeholder="ex.: 14 famílias, Instituto Vivá, escola municipal" />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              <button className="acao" onClick={registrar}>Registrar e gerar prova</button>
+              <button className="acao sec" onClick={() => setAberto(false)}>Cancelar</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function useRecemExecutadas(propostas) {
   const [ids, setIds] = useState([]);
   const antesRef = useRef(propostas);
@@ -267,6 +473,10 @@ export default function Fundo() {
         )}
         {pendentes.map(p => <CardProposta key={p.id} proposta={p} familia={familiaDe(p.familiaId)} />)}
       </div>
+
+      <ExecutadasOnchain />
+
+      <FechamentoCiclo />
 
       {reservadas.length > 0 && (
         <>

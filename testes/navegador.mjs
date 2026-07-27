@@ -101,7 +101,7 @@ window.__t = {
  * escondendo que nada renderizou. Um caso desses só apareceu quando a asserção
  * seguinte procurou texto e falhou.
  */
-async function esperarApp(seletor = 'nav.tabs button', tentativas = 40) {
+async function esperarApp(seletor = '.app-shell, .fam-tela, .rastreio-tela', tentativas = 40) {
   for (let i = 0; i < tentativas; i++) {
     const n = await ev(`return document.querySelectorAll(${JSON.stringify(seletor)}).length`);
     if (n > 0) return true;
@@ -116,9 +116,10 @@ async function irPara(url, limparStorage = true) {
   if (limparStorage) {
     await ev("localStorage.clear(); localStorage.setItem('raizes-tour-v1','visto'); return 1;");
     await cdp('Page.reload', {});
-    await espera(1000);
+    await espera(600);
   }
   await ev(HELPERS + ' return 1;');
+  await esperarApp();
   await espera(250);
 }
 
@@ -128,8 +129,9 @@ async function irParaPrimeiraVisita(url) {
   await espera(500);
   await ev('localStorage.clear(); return 1;');
   await cdp('Page.reload', {});
-  await espera(1200);
+  await espera(600);
   await ev(HELPERS + ' return 1;');
+  await esperarApp();
   await espera(250);
 }
 

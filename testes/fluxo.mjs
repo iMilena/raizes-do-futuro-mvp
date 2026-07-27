@@ -431,6 +431,54 @@ const cRev = revog.familias.find(f => f.id === fam0).consentimentos[0];
 ok(store.situacaoConsentimento(cRev) === 'revogado', 'revogação se sobrepõe ao prazo');
 ok(store.consentimentoAtivo(revog.familias.find(f => f.id === fam0)) === null, 'e revogado não autoriza');
 
+/* ==========================================================================
+   16. Cofre real: comprovante de execução e regra 4 (residual → coletivo)
+   ========================================================================== */
+secao('16. Execução na devnet e fechamento de ciclo');
+
+const SIG = 'z'.repeat(88);
+const propExec = s1.propostas.find(p => p.status === 'executada');
+ok(Boolean(propExec), 'há proposta executada no app (simulada)');
+ok(!propExec.execucaoOnchain, 'que começa SEM comprovante on-chain — o app não assina sozinho');
+
+const comComprovante = d(s1, { type: 'REGISTRAR_EXECUCAO_ONCHAIN', propostaId: propExec.id, txId: SIG });
+const pOn = comComprovante.propostas.find(p => p.id === propExec.id);
+ok(pOn.execucaoOnchain?.txId === SIG, 'o comprovante colado pela operação é guardado');
+ok(pOn.execucaoOnchain.rede === 'Solana devnet', 'marcado como devnet');
+ok(pOn.execucaoOnchain.url.includes(SIG) && pOn.execucaoOnchain.url.includes('cluster=devnet'),
+  'com link verificável no explorer');
+const txReal = comComprovante.transacoes.filter(t => t.real === true && t.tipo === 'LIBERAÇÃO');
+ok(txReal.length === 1, 'gera transação marcada como REAL, distinta das simuladas');
+
+/* regra 4: residual sai do fundo e vira decisão registrada */
+const fundoAntes = s1.caixas.fundo;
+ok(fundoAntes > 0, `há saldo residual no fundo (${fundoAntes})`);
+const fechado = d(s1, {
+  type: 'FECHAR_CICLO', acao: 'kit de higiene bucal para a escola',
+  valor: 10, comoFoiDecidido: 'assembleia comunitária',
+  participantes: '14 famílias', ciclo: '2026-07', hash: 'c'.repeat(64),
+});
+ok(fechado.ciclos.length === 1, 'fechamento de ciclo registra a destinação');
+ok(Math.abs(fechado.caixas.fundo - (fundoAntes - 10)) < 0.01, 'e o valor sai do saldo do fundo');
+ok(fechado.ciclos[0].ancoragem === null, 'nasce sem ancoragem (a prova é passo separado)');
+ok(!/criança|CPF/i.test(JSON.stringify(fechado.ciclos[0])), 'o registro não carrega dado de criança');
+
+const ancorado = d(fechado, { type: 'ANCORAR_DECISAO', cicloId: fechado.ciclos[0].id, txId: SIG });
+ok(ancorado.ciclos[0].ancoragem?.txId === SIG, 'ancoragem da decisão é guardada');
+ok(ancorado.transacoes.some(t => t.tipo === 'ANCORAGEM' && t.real === true),
+  'e gera transação ANCORAGEM marcada como real');
+
+/* o hash da decisão tem de depender de TODOS os campos, senão não prova nada */
+const { hashDecisaoColetiva } = await import(
+  pathToFileURL(process.env.ANCORAGEM_BUNDLE ?? new URL('./.tmp/ancoragem.mjs', import.meta.url).pathname).href);
+const baseDec = { ciclo: '2026-07', acao: 'kit', valor: 10, comoFoiDecidido: 'assembleia', participantes: '14', data: '2026-07-26' };
+const h0 = await hashDecisaoColetiva(baseDec);
+ok(/^[0-9a-f]{64}$/.test(h0), 'hash da decisão é SHA-256 em hex');
+for (const campo of ['ciclo', 'acao', 'valor', 'comoFoiDecidido', 'participantes', 'data']) {
+  const alterado = { ...baseDec, [campo]: campo === 'valor' ? 11 : baseDec[campo] + 'X' };
+  ok(await hashDecisaoColetiva(alterado) !== h0, `mudar "${campo}" muda o hash`);
+}
+
 console.log(`\n${'='.repeat(52)}`);
 console.log(falhas === 0 ? `✅ ${total} verificações, todas passaram` : `❌ ${falhas} de ${total} falharam`);
 process.exit(falhas === 0 ? 0 : 1);

@@ -147,7 +147,30 @@ Os dados de demonstração na base foram criados pelos testes, **sem termo de co
 
 A jornada do app é simulada de propósito — roda offline, é repetível e resetável. **Um único ponto sai da simulação:** o hash do Relatório de Circularidade é gravado numa transação real na Solana devnet, pelo programa Memo.
 
-Por que só o relatório: é o artefato que tem valor externo (é o que a empresa ESG compra), é **apenas um SHA-256** — nenhum dado de família ou criança sai daqui — e uma transação real basta para sustentar a afirmação de verificabilidade. Os bônus das famílias continuam no cofre simulado: envolvem dinheiro de família e não devem depender de testnet.
+Por que o relatório: é o artefato que tem valor externo (é o que a empresa ESG compra) e é **apenas um SHA-256** — nenhum dado de família ou criança sai daqui.
+
+### As liberações do cofre também são reais
+
+O cofre é um **multisig nativo do SPL Token, 2-de-3**, e cada liberação pode ser executada de fato na devnet — o app guarda o comprovante e o link para o explorer (aba *Cofre Multisig* → "Liberações no cofre real").
+
+**O app não assina, e isso é proposital.** Assinar exige chave privada: em bundle de navegador ela é pública, e numa função de servidor o *servidor* passa a ser o signatário — o 2-de-3 morre. Então quem assina é a pessoa da organização, na máquina dela:
+
+```bash
+cd onchain
+node liberar-bonus.mjs preparar --valor 60 --org viva --proposta 42
+# a saída é uma transação parcialmente assinada; mande para a outra organização
+node liberar-bonus.mjs assinar --org detrash --tx <base64>
+```
+
+São duas etapas porque o multisig do SPL Token exige as duas assinaturas **na mesma transação** — não existe "a Vivá assina hoje e a DeTrash amanhã" com estado num servidor nosso. O que viaja entre as organizações é a própria transação. O passo 2 **imprime o que está sendo assinado** antes de enviar: assinar às cegas um blob que chegou por mensagem transforma multisig em teatro.
+
+Verificado na devnet: R$ 30 saíram do cofre (585 → 555) para a conta da família (60 → 90), com `viva` e `detrash` assinando e `comunidade` não — [slot 479156986](https://explorer.solana.com/tx/4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX?cluster=devnet).
+
+### Regra 4: saldo residual → ações coletivas
+
+O residual do ciclo vai para ações de saúde e educação **decididas com a comunidade**. A decisão é da assembleia; o que a rede registra é a **prova pública** de qual decisão foi tomada, com qual valor (aba *Cofre Multisig* → "Fechamento de ciclo" → `onchain/ancorar-decisao.mjs`).
+
+Não virou função de contrato de propósito: um contrato que distribuísse o residual sozinho tomaria a decisão no lugar das pessoas. O que precisa ser imutável é o registro da decisão, não a decisão. Por isso [`contracts/FundoInfancia.sol`](contracts/FundoInfancia.sol) está marcado como **não implantado** — ele é EVM, e o piloto ficou só na Solana.
 
 ### Por que tem uma etapa humana
 

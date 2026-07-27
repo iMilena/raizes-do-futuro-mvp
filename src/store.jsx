@@ -352,6 +352,7 @@ function seed() {
       { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
+    ciclos: [],   // fechamentos de ciclo (regra 4: residual → ações coletivas)
     familias: [
       {
         id: 1, resp: 'Maria de Lourdes', criancas: 2, saldo: 0,
@@ -468,6 +469,71 @@ function reducer(state, action) {
       }
       s.vendas.push(venda);
       aplicarSplit(s, venda);
+      return s;
+    }
+
+    /* -------------------------------------------- execução no cofre real -- */
+    /* Comprovante de que a liberação desta proposta aconteceu de fato na
+       devnet, com 2 de 3 organizações assinando. A assinatura vem colada pela
+       operação depois de rodar onchain/liberar-bonus.mjs — o app não tem (nem
+       pode ter) chave privada para assinar sozinho. */
+    case 'REGISTRAR_EXECUCAO_ONCHAIN': {
+      const p = s.propostas.find(p => p.id === action.propostaId);
+      if (p && action.txId) {
+        p.execucaoOnchain = {
+          rede: 'Solana devnet',
+          txId: action.txId,
+          url: `https://explorer.solana.com/tx/${action.txId}?cluster=devnet`,
+          em: new Date().toISOString(),
+        };
+        const f = s.familias.find(f => f.id === p.familiaId);
+        pushTx(s, 'LIBERAÇÃO',
+          `Liberação de ${fmt(p.valor)}${f ? ` para ${f.resp}` : ''} executada NA REDE pelo cofre 2-de-3 — registro real`,
+          0, { propostaId: p.id, familiaId: p.familiaId, real: true });
+      }
+      return s;
+    }
+
+    /* ------------------------------- regra 4: fechamento de ciclo --------- */
+    /* Saldo residual → ações coletivas definidas com a comunidade.
+       A decisão é da assembleia; o que fica registrado aqui (e ancorado) é a
+       PROVA de qual decisão foi tomada, com qual valor. Um contrato que
+       distribuísse o residual sozinho tomaria a decisão no lugar das pessoas. */
+    case 'FECHAR_CICLO': {
+      const valor = Number(action.valor || 0);
+      if (valor > 0 && action.acao) {
+        s.ciclos = [...(s.ciclos || []), {
+          id: novoId(),
+          ciclo: action.ciclo || new Date().toISOString().slice(0, 7),
+          acao: action.acao,
+          valor,
+          comoFoiDecidido: action.comoFoiDecidido || 'assembleia comunitária',
+          participantes: action.participantes || '',
+          data: new Date().toISOString().slice(0, 10),
+          hash: action.hash || '',
+          ancoragem: null,
+        }];
+        s.caixas.fundo = Number((s.caixas.fundo - valor).toFixed(2));
+        pushTx(s, 'RESERVA',
+          `Fechamento de ciclo: ${fmt(valor)} do saldo residual destinado a "${action.acao}" — decidido em ${action.comoFoiDecidido || 'assembleia comunitária'}`,
+          valor, { cicloId: s.ciclos[s.ciclos.length - 1].id });
+      }
+      return s;
+    }
+
+    case 'ANCORAR_DECISAO': {
+      const c = (s.ciclos || []).find(c => c.id === action.cicloId);
+      if (c && action.txId) {
+        c.ancoragem = {
+          rede: 'Solana devnet',
+          hash: c.hash,
+          txId: action.txId,
+          url: `https://explorer.solana.com/tx/${action.txId}?cluster=devnet`,
+        };
+        pushTx(s, 'ANCORAGEM',
+          `Decisão coletiva do ciclo ${c.ciclo} ancorada na Solana devnet — prova pública de "${c.acao}"`,
+          0, { cicloId: c.id, real: true });
+      }
       return s;
     }
 

@@ -34,6 +34,35 @@ export async function hashRelatorio(rel) {
 export const comandoAncoragem = (hash, periodo) =>
   `node ancorar-relatorio.mjs ${hash} "${periodo}"`;
 
+/* ------------------------------------------------ liberação no cofre real ---
+   Mesma divisão de trabalho da ancoragem, e pelo mesmo motivo: o multisig do
+   SPL Token exige as duas assinaturas na MESMA transação, então o que viaja
+   entre as organizações é a transação parcialmente assinada — não um estado
+   guardado num servidor nosso. Aqui só montamos o comando e conferimos a
+   assinatura que volta.                                                     */
+
+/** Primeira organização prepara e assina parcialmente. */
+export const comandoLiberacao = (valor, propostaId, org = 'viva') =>
+  `node liberar-bonus.mjs preparar --valor ${Number(valor).toFixed(2)} --org ${org} --proposta ${propostaId}`;
+
+/** Saldo residual do ciclo → ações coletivas (regra 4 do cofre). */
+export async function hashDecisaoColetiva(d) {
+  const canonico = [
+    'raizes-do-futuro/decisao-coletiva/v1',
+    d.ciclo,
+    d.acao,
+    Number(d.valor).toFixed(2),
+    d.comoFoiDecidido,
+    d.participantes,
+    d.data,
+  ].join('|');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonico));
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+export const comandoDecisao = (hash, ciclo) =>
+  `node ancorar-decisao.mjs ${hash} "${ciclo}"`;
+
 /* Assinatura de transação Solana: 64 bytes em base58, o que dá 87–88 chars. */
 const BASE58 = /^[1-9A-HJ-NP-Za-km-z]{86,90}$/;
 export const assinaturaValida = s => BASE58.test(String(s || '').trim());

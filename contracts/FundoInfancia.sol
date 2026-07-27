@@ -2,6 +2,23 @@
 pragma solidity ^0.8.24;
 
 /**
+ * ⚠️ NÃO IMPLANTADO — E NÃO SERÁ, NESTE PILOTO.
+ *
+ * Este contrato foi escrito para a Rede Recy (EVM). O projeto decidiu depois
+ * ficar SÓ na Solana devnet, onde o cofre 2-de-3 existe de fato (multisig nativo
+ * do SPL Token) e as liberações são executadas de verdade — ver
+ * `onchain/liberar-bonus.mjs` e o painel "Liberações no cofre real".
+ *
+ * Ele fica no repositório como registro de desenho revisado e auditado (três
+ * achados corrigidos: FundingReservado que nunca ocorria, gás cobrado da
+ * família, initialize sem controle), não como código em produção. A REGRA 4
+ * (saldo residual → ações coletivas) foi implementada no fluxo Solana e não
+ * aqui, de propósito: um contrato que distribuísse o residual sozinho tomaria a
+ * decisão no lugar da assembleia comunitária. O que precisa ser imutável é o
+ * REGISTRO da decisão, e é isso que `onchain/ancorar-decisao.mjs` faz.
+ *
+ * Se algum dia este contrato for para uma rede, releia esta nota primeiro.
+ *
  * @title  FundoInfancia — Raízes do Futuro (Boipeba, BA)
  * @notice Fundo comunitário de saúde e educação infantil, no padrão da Rede Recy.
  *

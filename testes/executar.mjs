@@ -123,10 +123,13 @@ let servidor = null;
 try {
   const store = empacotar('store.jsx', 'store.mjs');
   const sinc = empacotar('sincronizacao.js', 'sinc.mjs');
+  const ancoragem = empacotar('ancoragem.js', 'ancoragem.mjs');
 
   if (querem('fluxo')) {
     console.log('── fluxo (reducer, sem navegador) ' + '─'.repeat(24));
-    registrar('fluxo', rodar('fluxo.mjs', { STORE_BUNDLE: store, SYNC_BUNDLE: sinc }));
+    registrar('fluxo', rodar('fluxo.mjs', {
+      STORE_BUNDLE: store, SYNC_BUNDLE: sinc, ANCORAGEM_BUNDLE: ancoragem,
+    }));
   }
 
   if (querem('qr')) {
