@@ -317,7 +317,12 @@ O runner sobe o servidor de desenvolvimento sozinho e o derruba no fim, e **pula
 
 As suítes `nuvem`, `aparelhos` e a metade da operação do `canal` precisam de sessão da operação, porque a nuvem não responde mais a anônimo — por desenho.
 
-Duas formas de dar a senha, e a segunda é melhor:
+O `.env` já vem apontando para um **usuário de testes** criado pela suíte, com senha gerada na hora — não é a senha de ninguém. Para ele funcionar, dois passos no painel do Supabase, uma vez só:
+
+1. **Authentication → Users** → encontre `raizes.testes@gruporedemais.com` → confirme o usuário.
+2. **SQL Editor** → cole e rode [`supabase/papel-usuario-de-teste.sql`](supabase/papel-usuario-de-teste.sql).
+
+Depois disso, `npm.cmd test` roda tudo. Se preferir usar uma conta de pessoa real em vez do usuário de testes, há duas formas de dar a senha, e a segunda é melhor:
 
 ```powershell
 # 1) gravada no .env (copie .env.exemplo). Simples, mas fica em disco.
