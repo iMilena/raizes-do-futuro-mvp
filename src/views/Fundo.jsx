@@ -475,7 +475,7 @@ export default function Fundo() {
           <div className="hash sel">{state.cofre.endereco}</div>
         </div>
         <div>
-          <span className="mini">programa multisig (padrão Squads)</span>
+          <span className="mini">programa multisig (SPL Token, nativo)</span>
           <div className="hash sel">{state.cofre.programa}</div>
         </div>
       </div>

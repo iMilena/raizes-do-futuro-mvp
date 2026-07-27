@@ -67,6 +67,13 @@ export function useContagem(valor, duracao = 900) {
     const para = Number(valor) || 0;
     if (de === para) { setMostrado(para); return; }
 
+    /* Quem pediu menos movimento recebe o número direto, sem contagem. */
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+      atualRef.current = para;
+      setMostrado(para);
+      return;
+    }
+
     let inicio = null;
     const passo = agora => {
       if (inicio === null) inicio = agora;
@@ -78,7 +85,25 @@ export function useContagem(valor, duracao = 900) {
       else atualRef.current = para;
     };
     rafRef.current = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(rafRef.current);
+
+    /* rAF NÃO É GARANTIA de que o quadro chega.
+       Aba em segundo plano, janela encoberta e economia de bateria suspendem os
+       quadros — e aí o contador ficava parado no valor ANTIGO para sempre. Numa
+       tela de saldo isso não é animação truncada, é número errado: a família
+       abre a conta depois de sacar e ainda vê o dinheiro lá.
+       Este prazo fecha a contagem de qualquer jeito. O valor é o que importa; o
+       movimento é enfeite.
+
+       O prazo é a própria `duracao`, não `duracao` + folga: é o tempo que a
+       animação já promete. Com folga de 250 ms o número certo chegava depois da
+       leitura da tela em quem só espera o fim da animação — e o teste do saque
+       pegou exatamente essa janela, mostrando saldo antigo. */
+    const fecho = setTimeout(() => {
+      atualRef.current = para;
+      setMostrado(para);
+    }, duracao + 40);
+
+    return () => { cancelAnimationFrame(rafRef.current); clearTimeout(fecho); };
   }, [valor, duracao]);
 
   return mostrado;
