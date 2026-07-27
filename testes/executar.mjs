@@ -13,7 +13,7 @@
        o que a suíte exige (Edge para o navegador, internet para o QR)
 --------------------------------------------------------------------------- */
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +25,26 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
 
 const pedidas = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const querem = nome => pedidas.length === 0 || pedidas.includes(nome);
+
+/* ------------------------------------------------------------------- .env ---
+   Lê .env (gitignorado) para as credenciais do usuário de operação não terem de
+   ser digitadas em cada sessão do terminal. Sem isto, esquecer de exportar as
+   variáveis faz duas suítes pularem — e pular é fácil de não notar.
+
+   Sem dependência: o formato que interessa aqui é CHAVE=valor por linha.
+   Variável já presente no ambiente ganha, para dar para sobrescrever num
+   comando pontual.                                                          */
+function carregarEnv() {
+  const arq = join(RAIZ, '.env');
+  if (!existsSync(arq)) return;
+  for (const linha of readFileSync(arq, 'utf8').split(/\r?\n/)) {
+    const m = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(linha);
+    if (!m || linha.trimStart().startsWith('#')) continue;
+    const valor = m[2].trim().replace(/^(['"])(.*)\1$/, '$2');
+    if (!(m[1] in process.env)) process.env[m[1]] = valor;
+  }
+}
+carregarEnv();
 
 const bin = nome => join(RAIZ, 'node_modules', '.bin', process.platform === 'win32' ? nome + '.cmd' : nome);
 
