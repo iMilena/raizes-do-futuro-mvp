@@ -19,7 +19,7 @@ Duas telas independentes:
 
 | Endereço | Para quem |
 |---|---|
-| http://localhost:5173 | painel da operação e dos parceiros (7 abas) |
+| http://localhost:5173 | painel da operação e dos parceiros (8 abas) |
 | http://localhost:5173/#/familia | **app da família**, mobile-first — a tela que a família usa no celular |
 
 ## Arquitetura simulada
@@ -47,7 +47,7 @@ comprovação enviada pela família (foto, off-chain)
 
 Sem conta Picnic ou sem saldo livre no cofre, a proposta nasce **reservada** (tx `RESERVA`): o valor **nunca é perdido** e a proposta é reaberta sozinha quando a família cria a conta.
 
-Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSINATURA`, `LIBERAÇÃO`, `RESERVA`, `CARTEIRA`, `SAQUE` (mais `GÊNESE` e `CIRCULARIDADE`).
+Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSINATURA`, `LIBERAÇÃO`, `RESERVA`, `CARTEIRA`, `SAQUE`, `RENDA` (renda incondicional da coleta), `CONSENTIMENTO`, `CONTESTACAO` e `ANCORAGEM` (registro real na devnet) — mais `GÊNESE` e `CIRCULARIDADE`.
 
 ## O que cada aba demonstra
 
@@ -58,6 +58,7 @@ Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSIN
 | **✅ Instituto Vivá** | Valida coletas (metodologia DeTrash), emite Relatórios de Circularidade e valida comprovações — que passam a **criar propostas no cofre** |
 | **🛒 Mercado** | Turista compra produto reciclado; empresa compra crédito/relatório ESG. Cada venda dispara a **animação do split 60/25/15** com contadores animados |
 | **🔗 Cofre Multisig** | Saldo e endereço do cofre, **painel de propostas** com os 3 signatários e botão "Assinar como […]", animação de execução ao atingir 2/3, e **explorador de transações** (tipo, descrição, signature truncada, slot) com modal de detalhes |
+| **📝 Cadastro** | Inclui família no piloto (nome, crianças, código pseudônimo) com o **consentimento no mesmo formulário**, e abre os **compromissos de cada mês** em lote |
 | **👨‍👩‍👧 Família (operação)** | Visão do agente: conectar carteira Picnic, metadados (`rede: Solana · provider: Picnic`), extrato e saque Pix |
 | **📱 App da Família** | A tela do celular, dentro de uma moldura — igual à rota `#/familia` |
 
@@ -65,17 +66,22 @@ Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSIN
 
 Mobile-first e com **zero jargão cripto** — nunca aparece "wallet", "token", "blockchain", "multisig" ou "hash". A linguagem é "conta da família", "dinheiro", "bônus" e "cofre digital".
 
-- **Entrada** por seleção da família + PIN de 4 dígitos (qualquer PIN entra, é demonstração)
+- **Entrada** com PIN de 4 dígitos **conferido de verdade** — a família cria o dela no primeiro acesso; 5 erros travam o aparelho e só o agente destrava, presencialmente (ver `PIN da família` abaixo)
 - **Saldo em destaque** em reais, com contagem crescente quando o bônus chega
 - **Retirar dinheiro** em 2 toques: digitar o valor → confirmação com QR code e comprovante simulado
 - **Extrato em linguagem simples**: "Bônus de julho — vacinação em dia · +R$ 60,00"
 - **Compromissos do mês** como cards, com "📎 Enviar foto do comprovante"
-- **Onboarding gamificado** para família sem conta: a mascote **Tuca, tartaruga de Boipeba 🐢**, com balões de fala, guia 4 missões sequenciais — *Criar minha conta → Guardar meu PIN → Conhecer meus compromissos → Ver como retirar dinheiro* — com barra de progresso, estrela a cada missão, confete em CSS puro e o badge **Família Raízes do Futuro 🏅** no fim. Cada missão explica um conceito em uma frase
-- Botão flutuante **💬 Falar com agente do Instituto Vivá** (modal simulando WhatsApp)
+- **Onboarding gamificado** para família sem conta: a mascote **Tuca, tartaruga de Boipeba 🐢**, com balões de fala, guia 4 missões sequenciais — *Escolher onde guardar → Meu PIN → Meus compromissos → Como retirar* — com barra de progresso, estrela a cada missão, confete em CSS puro e o badge **Família Raízes do Futuro 🏅** no fim. Cada missão explica um conceito em uma frase
+- **Suas entregas**: cada coleta no nome dela, com peso, data e situação — e o convite a conferir
+- **"Isso está errado?"** em cada registro, com resposta do Instituto Vivá no próprio app
+- **Meta de poupança** definida por ela, que nunca bloqueia o saque
+- **Voz da Tuca** (opcional) e **letra maior**, para quem lê ou vê com dificuldade
+- Aviso honesto de **sem internet**: o saldo continua certo, e o que ela fizer sobe quando o sinal voltar
+- Botão flutuante **💬 Falar com o Instituto Vivá**, com opção de **ligar** e de ser avisada no WhatsApp quando o bônus cair
 
 ## Tour de primeira visita (painel)
 
-Na primeira vez que alguém abre o painel, um **tour de 9 passos** aparece sozinho e apresenta o ciclo do projeto e o que cada uma das 7 abas faz. Ele troca de aba conforme avança e destaca a aba descrita com um anel pulsante.
+Na primeira vez que alguém abre o painel, um **tour de 9 passos** aparece sozinho e apresenta o ciclo do projeto e o que as abas da jornada fazem. Ele troca de aba conforme avança e destaca a aba descrita com um anel pulsante.
 
 - Avança no ritmo de quem lê: **Avançar / Voltar**, setas ← →, `Esc` para fechar, ou clique direto num dos pontos de progresso
 - **Pular por agora** fecha só nesta visita; **Não mostrar de novo** (e concluir o tour) grava a preferência em `localStorage` (`raizes-tour-v1`)
@@ -90,7 +96,7 @@ No Dashboard, **▶ Ver o ciclo completo** executa a jornada inteira em 13 passo
 
 O primeiro passo já dá `RESET`, então a gravação pode ser repetida quantas vezes for preciso e sempre parte do mesmo estado.
 
-Há também um **🎥 Modo gravação** no rodapé: esconde os elementos que denunciam a simulação (marcações "(simulação)", "qualquer um na demo" etc.), deixando a tela limpa para o vídeo. Sai pelo botão flutuante no canto.
+Há também um **🎥 Modo gravação** no rodapé: esconde os elementos que denunciam a simulação (marcações "(simulação)" etc.), deixando a tela limpa para o vídeo. Sai pelo botão flutuante no canto.
 
 ## Princípios implementados
 
@@ -195,7 +201,7 @@ Os dados de demonstração na base foram criados pelos testes, **sem termo de co
 
 ## Ancoragem real na Solana devnet
 
-A jornada do app é simulada de propósito — roda offline, é repetível e resetável. **Um único ponto sai da simulação:** o hash do Relatório de Circularidade é gravado numa transação real na Solana devnet, pelo programa Memo.
+A jornada do app é simulada de propósito — roda offline, é repetível e resetável. **Três coisas saem da simulação**, e são reais na devnet: o hash do Relatório de Circularidade (programa Memo), as **liberações do cofre 2-de-3** (multisig nativo do SPL Token, assinadas por duas organizações distintas) e o registro da **decisão coletiva de fechamento de ciclo**.
 
 Por que o relatório: é o artefato que tem valor externo (é o que a empresa ESG compra) e é **apenas um SHA-256** — nenhum dado de família ou criança sai daqui.
 
@@ -254,7 +260,7 @@ Conferível em `explorer.solana.com/tx/<tx>?cluster=devnet` — o log do program
 
 ## Nota técnica
 
-Blockchain é **simulada**: as transações ficam num `localStorage` (chave `raizes-mvp-v2`) com signatures base58 encadeadas e slot incremental, reproduzindo o formato da Solana sem nenhuma dependência web3 — o app roda **100% offline**. Em produção: programa na **Solana** com cofre **Squads** e carteiras **Picnic**, mantendo a mesma lógica de regras demonstrada aqui.
+A **jornada** é simulada: as transações ficam num `localStorage` (chave `raizes-mvp-v2`) com signatures base58 encadeadas e slot incremental, reproduzindo o formato da Solana sem nenhuma dependência web3 — o app roda **100% offline**. O **cofre não é simulado**: existe na Solana devnet como multisig nativo do SPL Token 2-de-3, e as liberações são executadas de verdade por duas organizações (ver `onchain/`). Em produção: mesma lógica, cofre **Squads** e carteiras **Picnic**.
 
 Estado salvo de versões anteriores é descartado automaticamente se não tiver o formato atual, então o app nunca abre quebrado depois de uma atualização.
 
