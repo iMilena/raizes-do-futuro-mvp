@@ -131,6 +131,27 @@ Não é "apaguei tudo" nem "guardei tudo". Detalhes e comandos: [`supabase/migra
 
 **O expurgo não roda sozinho.** Agendador que ninguém monitora apaga dado em silêncio; a rotina mensal está em [`IMPLANTACAO.md`](IMPLANTACAO.md).
 
+## Voz da Tuca 🔊
+
+A tartaruga lê os balões em voz alta (Web Speech, nativo, zero dependência). Não é enfeite: em Boipeba há adultos com pouca leitura fluente, e a tela fala de dinheiro e de saúde de criança — quem não lê bem depende de outra pessoa para entender o próprio saldo, que é a dependência que o projeto quer remover.
+
+Três regras que não se negociam:
+
+- **Nunca fala sozinha.** Som que começa sem pedir assusta, atrapalha quem está no ônibus e gasta bateria. A pessoa liga no botão do balão, e a escolha fica lembrada.
+- **Sem voz pt-BR instalada, o botão não aparece** — um botão que promete áudio e entrega voz robótica em inglês é pior que botão nenhum.
+- **Números viram palavra antes de falar**: `R$ 90,00` sai como "noventa reais", não "erre cifrão noventa vírgula zero zero", e emoji é removido (a síntese tenta descrever cada um).
+
+## Português e inglês 🌐
+
+Seletor PT/EN no cabeçalho. **Português é sempre o padrão** — é um projeto brasileiro, e o inglês é camada de leitura para fora. Nada de adivinhar pelo idioma do navegador: um avaliador brasileiro com Windows em inglês cairia numa tradução parcial sem pedir.
+
+Traduzido por inteiro:
+
+- **A página pública de rastreio** (`#/rastreio/CÓDIGO`) — quem escaneia o QR da peça em Boipeba é turista, e boa parte é estrangeira. É a única tela com leitor em inglês *real*, e o seletor fica nela mesma, porque quem chega pelo QR não passa pelo painel.
+- **O casco do painel e o Dashboard** — é o que um avaliador internacional abre primeiro.
+
+**Não traduzido, de propósito:** o app da família (quem usa é a mãe em Boipeba) e as telas de operação (quem opera é a equipe local). Meia tradução silenciosa é pior que tradução nenhuma — o avaliador clica, cai em português no meio do fluxo e conclui que o resto foi feito com o mesmo descuido. Por isso o seletor **avisa na tela** quando a aba aberta só existe em português, em vez de deixar a pessoa descobrir sozinha.
+
 ### PIN da família
 
 O PIN é **verificado de verdade** e nunca sai do celular: guarda-se SHA-256 de `sal + pin`, com sal por família. Cinco tentativas erradas travam o aparelho, e só o agente destrava — presencialmente, apagando o PIN para a família escolher outro. Ninguém do projeto consegue ver o PIN de ninguém, nem para ajudar.

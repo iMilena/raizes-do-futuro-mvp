@@ -169,6 +169,18 @@ try {
   await cdp('Network.enable');
   await cdp('Network.setBlockedURLs', { urls: ['*supabase.json*', '*supabase.co*'] });
 
+  /* Largura EXPLÍCITA, e não a que o navegador resolver dar.
+     Descoberta ao investigar uma falha: o Edge headless ignora `--window-size`
+     aqui e a janela ficava com 500px, ou seja, esta suíte sempre rodou em layout
+     de CELULAR — e o layout de desktop nunca foi exercitado, apesar de as
+     asserções assumirem desktop (o botão de ajuda no cabeçalho, por exemplo).
+     Isso passou despercebido até uma regra de media query esconder um elemento
+     que o teste procurava. As larguras de celular ficam com `npm test -- telas`,
+     que emula 412px e confere vazamento horizontal. */
+  await cdp('Emulation.setDeviceMetricsOverride', {
+    width: 1280, height: 1400, deviceScaleFactor: 1, mobile: false,
+  });
+
   /* ---------- 0. tour de primeira visita ---------- */
   secao('0. Tour de primeira visita do painel');
   await irParaPrimeiraVisita(ALVO);
@@ -870,6 +882,102 @@ try {
   ok(await ev('return __t.tem("não encontrado")'), 'código inválido mostra estado vazio orientado');
   await ev(`window.location.hash = '#/'; return 1;`);
   await espera(600);
+
+  /* ---------- 14c. voz da Tuca ---------- */
+  secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
+  await irPara(ALVO);
+  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await espera(600);
+  await ev(HELPERS + ' return 1;');
+
+  const vozes = await ev('return (window.speechSynthesis?.getVoices() || []).filter(v => /^pt/i.test(v.lang)).length');
+  console.log(`    vozes pt disponíveis neste ambiente: ${vozes}`);
+
+  /* NUNCA fala sozinha: som que começa sem pedir assusta e gasta bateria.
+     Esta é a asserção que importa, e vale mesmo sem voz instalada. */
+  const falouSozinha = await ev(`
+    window.__falas = [];
+    if (window.speechSynthesis) {
+      const orig = window.speechSynthesis.speak.bind(window.speechSynthesis);
+      window.speechSynthesis.speak = u => { window.__falas.push(u.text); return orig(u); };
+    }
+    return 1;
+  `);
+  void falouSozinha;
+  await ev(`window.location.hash = '#/familia'; return 1;`);
+  await espera(1200);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return (window.__falas || []).length === 0'), 'a Tuca NÃO fala sozinha na primeira visita');
+  ok(await ev(`return localStorage.getItem('raizes-voz-v1') === null`), 'e não deixa preferência de som gravada');
+
+  if (vozes > 0) {
+    ok(await ev('return __t.conta(".balao-voz") >= 1'), 'botão de ouvir aparece quando há voz pt-BR');
+    ok(await ev('return __t.clicar(".balao-voz") === true'), 'ligar a voz funciona');
+    await espera(700);
+    ok(await ev(`return localStorage.getItem('raizes-voz-v1') === 'sim'`), 'a escolha fica lembrada no aparelho');
+    ok(await ev('return (window.__falas || []).length >= 1'), 'e a Tuca lê o balão ao ser ligada');
+    const dito = await ev('return (window.__falas || [])[0] || ""');
+    ok(!/[\u{1F300}-\u{1FAFF}]/u.test(dito), `o texto falado não tem emoji ("${dito.slice(0, 40)}…")`);
+    ok(!/R\$/.test(dito), 'e não fala "R$" cru (viraria "erre cifrão")');
+    ok(await ev('return __t.clicar(".balao-voz") === true'), 'desligar também funciona');
+    await espera(300);
+    ok(await ev(`return localStorage.getItem('raizes-voz-v1') === null`), 'desligar apaga a preferência');
+  } else {
+    ok(await ev('return __t.conta(".balao-voz") === 0'),
+      'sem voz pt-BR instalada, o botão nem aparece (não promete áudio que não existe)');
+  }
+
+  /* ---------- 14d. idioma ---------- */
+  secao('14d. Português e inglês');
+  await irPara(ALVO);
+  ok(await ev('return __t.conta(".idioma button") === 2'), 'seletor PT/EN no cabeçalho');
+  ok(await ev('return document.documentElement.lang === "pt-BR"'), 'português é o padrão');
+  ok(await ev('return __t.tem("Impacto em tempo real")'), 'Dashboard em português');
+
+  ok(await ev('return __t.clicar(".idioma button", "EN") === true'), 'troca para inglês');
+  await espera(400);
+  ok(await ev('return document.documentElement.lang === "en"'), 'atributo lang do documento acompanha');
+  ok(await ev('return __t.tem("Impact in real time")'), 'Dashboard traduzido');
+  /* os grupos do menu usam text-transform:uppercase, e innerText devolve o texto
+     TRANSFORMADO — comparar com a caixa original falha sem nada estar errado */
+  ok(await ev('const s = __t.txt().toLowerCase(); return s.includes("overview") && s.includes("governance")'), 'menu traduzido');
+  ok(await ev('return __t.tem("Multisig Vault") && __t.tem("Family App")'), 'abas traduzidas');
+  ok(await ev('return !__t.tem("Impacto em tempo real")'), 'e o português sai da tela');
+
+  /* honestidade: telas sem tradução avisam em vez de fingir */
+  await ev('return __t.clicar("nav.tabs button", "Multisig Vault")');
+  await espera(500);
+  await ev(HELPERS + ' return 1;');
+  console.log('    largura da janela: ' + await ev('return window.innerWidth'));
+  ok(await ev('return __t.tem("available in Portuguese only")'),
+    'tela sem versão em inglês avisa, em vez de deixar o avaliador descobrir sozinho');
+
+  ok(await ev(`return localStorage.getItem('raizes-idioma-v1') === 'en'`), 'idioma escolhido é lembrado');
+  await cdp('Page.reload', {});
+  await espera(700);
+  await ev(HELPERS + ' return 1;');
+  await esperarApp();
+  ok(await ev('return document.documentElement.lang === "en"'), 'e sobrevive ao recarregar');
+
+  /* a página do turista é a que mais importa em inglês */
+  const rastreioCod = await ev(`
+    const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
+    return (s.vendas.find(v => v.rastreio) || {}).rastreio || null;
+  `);
+  await ev(`window.location.hash = '#/rastreio/${rastreioCod}'; return 1;`);
+  await espera(900);
+  await ev(HELPERS + ' return 1;');
+  ok(await ev('return __t.tem("The story of this piece")'), 'página do turista em inglês');
+  ok(await ev('return __t.tem("Where your money went")'), 'a divisão do dinheiro traduzida');
+  ok(await ev('return __t.tem("Children’s Fund")'), 'o Fundo Infância traduzido');
+  ok(await ev('return __t.conta(".rastreio-topo .idioma button") === 2'),
+    'e o seletor está NA PÁGINA (quem vem do QR não passa pelo painel)');
+  ok(await ev('return __t.clicar(".rastreio-topo .idioma button", "PT") === true'), 'turista brasileiro volta ao português');
+  await espera(400);
+  ok(await ev('return __t.tem("A história desta peça")'), 'e a página volta em português');
+
+  await ev(`localStorage.removeItem('raizes-idioma-v1'); window.location.hash = '#/'; return 1;`);
+  await espera(500);
 
   /* ---------- 15. console ---------- */
   secao('15. Erros e avisos do console (app, sem extensões)');

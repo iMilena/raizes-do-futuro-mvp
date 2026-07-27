@@ -6,6 +6,9 @@ import {
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../ui.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
 import { sha256Arquivo } from '../evidencia.js';
+import {
+  vozDisponivel, vozLigada, ligarVoz, falar, parar as pararVoz, aoMudarVozes,
+} from '../voz.js';
 
 /* ---------------------------------------------------------------------------
    App da Família — a tela que a família usa no celular.
@@ -21,11 +24,52 @@ const STATUS = {
   'validada-aguardando': ['info', 'guardado para você 🔒'],
 };
 
+/**
+ * A Tuca, com voz opcional.
+ *
+ * O botão de som só aparece se o aparelho tiver voz pt-BR instalada, e ele
+ * NUNCA fala sozinho antes de a pessoa ligar. Depois de ligado, cada balão novo
+ * é lido — que é o ponto: quem lê com dificuldade acompanha a tela sem depender
+ * de outra pessoa para saber o próprio saldo.
+ */
 function Mascote({ fala }) {
+  const [temVoz, setTemVoz] = useState(() => vozDisponivel());
+  const [ligada, setLigada] = useState(() => vozLigada());
+  const ultima = useRef(null);
+
+  // a lista de vozes chega assíncrona: consultar só no boot conclui "não tem"
+  useEffect(() => aoMudarVozes(vs => setTemVoz(vs.length > 0)), []);
+
+  // lê cada balão NOVO, e só quando a pessoa ligou
+  useEffect(() => {
+    if (!ligada || fala === ultima.current) return;
+    ultima.current = fala;
+    falar(fala);
+  }, [fala, ligada]);
+
+  // sair da tela cala a Tuca; voz continuando depois de fechar é assustador
+  useEffect(() => () => pararVoz(), []);
+
+  const alternar = () => {
+    const nova = !ligada;
+    setLigada(nova);
+    ligarVoz(nova);
+    if (nova) { ultima.current = fala; falar(fala, { forcar: true }); }
+  };
+
   return (
     <div className="mascote">
       <span className="mascote-bicho" style={{ fontSize: 38 }} aria-hidden="true">🐢</span>
-      <div className="balao">{fala}</div>
+      <div className="balao">
+        {fala}
+        {temVoz && (
+          <button className={'balao-voz' + (ligada ? ' on' : '')} onClick={alternar}
+            aria-pressed={ligada}
+            title={ligada ? 'Desligar a voz da Tuca' : 'Ouvir a Tuca ler em voz alta'}>
+            {ligada ? '🔊' : '🔈'} <span>{ligada ? 'ouvindo' : 'ouvir'}</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

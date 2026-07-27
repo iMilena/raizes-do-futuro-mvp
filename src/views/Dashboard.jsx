@@ -3,11 +3,12 @@ import { useStore, fmt, trunc, tipoTx, disponivelCofre, REDE, PROVIDER_CARTEIRA,
 import { ValorAnimado, EstadoVazio, useContagem } from '../ui.jsx';
 import { BarrasKgSemana, DonutReceita } from '../graficos.jsx';
 import { useDemo, useDestaque } from '../demo.jsx';
+import { useIdioma } from '../i18n.jsx';
 
 const METAS = { kg: 12000, familias: 30, criancas: 60, receita: 42000 };
 
 /* ---------- anel de progresso geral do piloto ---------- */
-function AnelProgresso({ pct }) {
+function AnelProgresso({ pct, rot = 'do piloto' }) {
   const mostrado = useContagem(pct, 1100);
   const R = 42, C = 2 * Math.PI * R;
   return (
@@ -20,7 +21,7 @@ function AnelProgresso({ pct }) {
         <text x="50" y="47" textAnchor="middle" fontSize="20" fontWeight="900" fill="#fff">
           {Math.round(mostrado)}%
         </text>
-        <text x="50" y="62" textAnchor="middle" fontSize="8.5" fill="rgba(255,255,255,.85)">do piloto</text>
+        <text x="50" y="62" textAnchor="middle" fontSize="8.5" fill="rgba(255,255,255,.85)">{rot}</text>
       </svg>
     </div>
   );
@@ -71,6 +72,7 @@ const ETAPAS = [
 ];
 
 export default function Dashboard() {
+  const { t } = useIdioma();
   const { state } = useStore();
   const { rodando, iniciar, parar } = useDemo();
   const focoFluxo = useDestaque('fluxo');
@@ -103,26 +105,26 @@ export default function Dashboard() {
       <div className="hero-dash">
         <div className="hero-info">
           <span className="hero-chip">📍 Piloto Boipeba, BA · cofre 2-de-3 real na {REDE} devnet</span>
-          <h2 className="hero-titulo">Impacto em tempo real</h2>
+          <h2 className="hero-titulo">{t('Impacto em tempo real')}</h2>
           <div className="hero-nums">
             <div>
               <b>{(kg / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} t</b>
-              <span>resíduos validados</span>
+              <span>{t('resíduos validados')}</span>
             </div>
             <div>
               <b><ValorAnimado valor={paraFamilias} /></b>
-              <span>direto para as famílias</span>
+              <span>{t('direto para as famílias')}</span>
             </div>
             <div>
               <b>{criancas}</b>
-              <span>crianças acompanhadas</span>
+              <span>{t('crianças acompanhadas')}</span>
             </div>
           </div>
           {rodando
             ? <button className="acao sec hero-btn" onClick={parar}>■ Parar demonstração</button>
-            : <button className="acao btn-demo hero-btn" onClick={iniciar}>▶ Ver o ciclo completo</button>}
+            : <button className="acao btn-demo hero-btn" onClick={iniciar}>{t('▶ Ver o ciclo completo')}</button>}
         </div>
-        <AnelProgresso pct={pctGeral} />
+        <AnelProgresso rot={t('do piloto')} pct={pctGeral} />
       </div>
       <p className="mini so-sim centro">
         O modo guiado executa a jornada inteira — coleta, validação, venda, split, multisig 2-de-3 e saque — trocando de aba sozinho. Ideal para gravar a apresentação.
@@ -146,18 +148,18 @@ export default function Dashboard() {
       {/* ---------------- gráficos + feed ---------------- */}
       <div className={'grid g2 graficos-area' + focoGraf} style={{ marginTop: 14 }}>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>♻️ Quilos validados por semana</h3>
+          <h3 style={{ marginTop: 0 }}>♻️ {t('Quilos validados por semana')}</h3>
           <BarrasKgSemana coletas={state.coletas} />
         </div>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>💰 Receita por fonte</h3>
+          <h3 style={{ marginTop: 0 }}>💰 {t('Receita por fonte')}</h3>
           <DonutReceita vendas={state.vendas} />
         </div>
       </div>
 
       <div className="card" style={{ marginTop: 14 }}>
         <div className="feed-topo">
-          <h3 style={{ margin: 0 }}>⚡ Últimas atividades na rede</h3>
+          <h3 style={{ margin: 0 }}>⚡ {t('Últimas atividades na rede')}</h3>
           <span className="mini">slot atual: {state.slot} · {state.transacoes.length} transações</span>
         </div>
         {feed.length === 0 && <EstadoVazio icone="🌱" titulo="Nenhuma atividade ainda" />}
@@ -179,7 +181,7 @@ export default function Dashboard() {
       </div>
 
       {/* ---------------- metas por dimensão ---------------- */}
-      <Dimensao classe="dim-ambiental" icone="🌊" titulo="Ambiental"
+      <Dimensao classe="dim-ambiental" icone="🌊" titulo={t("Ambiental")}
         resumo={`${(kg / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} t de resíduos fora da praia e da natureza`}>
         <Kpi icone="⚖️" num={(kg / 1000).toLocaleString('pt-BR')} rot="toneladas validadas" meta="12 t" pct={kg / METAS.kg * 100} />
         <Kpi icone="🧹" num={validadas.length} rot="ações de coleta validadas" meta="24 ações" pct={validadas.length / 24 * 100} />
@@ -187,7 +189,7 @@ export default function Dashboard() {
         <Kpi icone="⏳" num={pendentesColeta} rot="coletas aguardando validação" />
       </Dimensao>
 
-      <Dimensao classe="dim-economico" icone="💰" titulo="Econômico"
+      <Dimensao classe="dim-economico" icone="💰" titulo={t("Econômico")}
         resumo={`${fmt(receita)} movimentados por turismo responsável e ESG`}>
         <Kpi icone="📈" valor={receita} rot="receita total gerada" meta="R$ 42 mil" pct={receita / METAS.receita * 100} />
         <Kpi icone="🤲" valor={state.caixas.renda} rot="renda direta (60%, incondicional)" />
@@ -195,10 +197,10 @@ export default function Dashboard() {
         <Kpi icone="🛒" num={state.vendas.length} rot="vendas realizadas" />
       </Dimensao>
 
-      <Dimensao classe="dim-social" icone="🧒" titulo="Social"
+      <Dimensao classe="dim-social" icone="🧒" titulo={t("Social")}
         resumo={`${criancas} crianças com saúde e escola acompanhadas`}>
         <Kpi icone="👨‍👩‍👧" num={state.familias.length} rot="famílias participantes" meta="30 famílias" pct={state.familias.length / METAS.familias * 100} />
-        <Kpi icone="🎒" num={criancas} rot="crianças acompanhadas" meta="60 crianças" pct={criancas / METAS.criancas * 100} />
+        <Kpi icone="🎒" num={criancas} rot={t("crianças acompanhadas")} meta="60 crianças" pct={criancas / METAS.criancas * 100} />
         <Kpi icone="🎁" valor={state.caixas.fundoLiberado} rot="bônus liberados às famílias" />
         <Kpi icone="✅" num={`${condOk}/${condicoes.length}`} rot="condições cumpridas e liberadas" />
       </Dimensao>

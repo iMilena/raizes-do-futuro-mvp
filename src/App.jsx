@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, fmt, trunc } from './store.jsx';
 import * as auth from './auth.js';
 import * as nuvem from './nuvem.js';
+import { IdiomaProvider, useIdioma, TRADUZIDAS } from './i18n.jsx';
 import { ToastProvider, useToast } from './ui.jsx';
 import { DemoProvider, DemoNarrador } from './demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from './tour.jsx';
@@ -272,6 +273,36 @@ function Perfil() {
   );
 }
 
+/* --------------------------------------------------------- idioma ------- */
+/**
+ * Seletor PT/EN que AVISA quando a tela aberta não tem versão em inglês.
+ *
+ * Sem esse aviso, o avaliador clica em EN, cai em português no meio de um fluxo
+ * e conclui que a tradução foi feita com descuido. Dizer o que está e o que não
+ * está traduzido custa uma linha e evita essa leitura.
+ */
+function SeletorIdioma({ tab }) {
+  const { idioma, trocar, t } = useIdioma();
+  const parcial = idioma === 'en' && !TRADUZIDAS.includes(tab);
+  return (
+    <div className="idioma-wrap">
+      <div className="idioma" role="group" aria-label="Idioma / Language">
+        {['pt', 'en'].map(l => (
+          <button key={l} className={idioma === l ? 'on' : ''} onClick={() => trocar(l)}
+            aria-pressed={idioma === l} lang={l}>
+            {l === 'pt' ? 'PT' : 'EN'}
+          </button>
+        ))}
+      </div>
+      {parcial && (
+        <span className="idioma-aviso" title={t('As telas de operação são usadas pela equipe local. O Dashboard e a página pública de rastreio têm versão completa em inglês.')}>
+          {t('Esta tela existe apenas em português')}
+        </span>
+      )}
+    </div>
+  );
+}
+
 /* navegação sequencial da jornada, no rodapé de cada tela */
 function NavJornada({ tab, setTab }) {
   const i = TABS.findIndex(t => t[0] === tab);
@@ -298,6 +329,7 @@ function NavJornada({ tab, setTab }) {
 /* ------------------------------------------------------------ painel ---- */
 function Painel({ tab, setTab }) {
   const { state, dispatch } = useStore();
+  const { t } = useIdioma();
   const toast = useToast();
   const [tourAberto, setTourAberto] = useState(() => !tourVisto());
   const [tourIdx, setTourIdx] = useState(0);
@@ -360,22 +392,22 @@ function Painel({ tab, setTab }) {
           <img className="logo-emblema" src="./emblema.png" alt="Raízes do Futuro" />
           <div>
             <h1>Raízes do Futuro</h1>
-            <p>Boipeba · Cairu/BA</p>
+            <p>{t('Boipeba · Cairu/BA')}</p>
           </div>
         </div>
 
         <nav className="tabs">
           {grupos.map(g => (
             <React.Fragment key={g.nome}>
-              <span className="lat-grupo">{g.nome}</span>
+              <span className="lat-grupo">{t(g.nome)}</span>
               {g.itens.map(([id, ico, rot, sub]) => (
                 <button key={id}
                   className={(tab === id ? 'on' : '') + (alvo === id ? ' tour-alvo' : '')}
                   onClick={() => setTab(id)}>
                   <span className="tab-ico">{ico}</span>
                   <span className="tab-txt">
-                    <span className="tab-rot">{rot}</span>
-                    <span className="tab-sub">{TABS.findIndex(t => t[0] === id) + 1} · {sub}</span>
+                    <span className="tab-rot">{t(rot)}</span>
+                    <span className="tab-sub">{TABS.findIndex(x => x[0] === id) + 1} · {t(sub)}</span>
                   </span>
                 </button>
               ))}
@@ -386,9 +418,9 @@ function Painel({ tab, setTab }) {
         <div className="lat-rodape">
           <div className="lat-rede">
             <i className="luz ok" />
-            <span>Cofre na Solana devnet</span>
+            <span>{t('Cofre na Solana devnet')}</span>
           </div>
-          <p className="so-sim">Jornada do app simulada · cofre 2-de-3 real</p>
+          <p className="so-sim">{t('Jornada do app simulada · cofre 2-de-3 real')}</p>
         </div>
       </aside>
 
@@ -396,12 +428,13 @@ function Painel({ tab, setTab }) {
         <header className="top">
           <button className="menu-hamb" aria-label="Abrir menu" onClick={() => setMenuAberto(a => !a)}>☰</button>
           <div className="top-titulo">
-            <span className="top-trilha">{atual?.[4]}</span>
-            <h2 className="top-h">{atual?.[1]} {atual?.[2]}</h2>
+            <span className="top-trilha">{t(atual?.[4] || '')}</span>
+            <h2 className="top-h">{atual?.[1]} {t(atual?.[2] || '')}</h2>
           </div>
           <BuscaGlobal setTab={setTab} />
           <div className="top-acoes">
-            <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>❔ Como funciona</button>
+            <SeletorIdioma tab={tab} />
+            <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>{t('❔ Como funciona')}</button>
             <Notificacoes setTab={setTab} />
             <Perfil />
           </div>
@@ -426,9 +459,9 @@ function Painel({ tab, setTab }) {
               <small>Cofre multisig real na Solana devnet · jornada do app simulada</small>
             </span>
             <div className="rodape-acoes">
-              <button className="acao sec" onClick={exportar}>⭳ Exportar dados</button>
+              <button className="acao sec" onClick={exportar}>⭳ {t('Exportar dados')}</button>
               <details className="painel-config">
-                <summary>⚙︎ Configurações</summary>
+                <summary>⚙︎ {t('Configurações')}</summary>
                 <div className="painel-config-corpo">
                   <p className="mini">Controles de apresentação e de simulação.</p>
                   <button className="acao sec bloco" onClick={ligarGravacao}>🎥 Modo gravação</button>
@@ -469,11 +502,13 @@ export default function App() {
   if (rota.startsWith('#/rastreio/')) {
     const codigo = decodeURIComponent(rota.slice('#/rastreio/'.length)).trim();
     return (
-      <ToastProvider>
-        <DemoProvider setTab={() => {}}>
-          <PaginaRastreio codigo={codigo} />
-        </DemoProvider>
-      </ToastProvider>
+      <IdiomaProvider>
+        <ToastProvider>
+          <DemoProvider setTab={() => {}}>
+            <PaginaRastreio codigo={codigo} />
+          </DemoProvider>
+        </ToastProvider>
+      </IdiomaProvider>
     );
   }
 
@@ -493,11 +528,13 @@ export default function App() {
   }
 
   return (
-    <ToastProvider>
-      <DemoProvider setTab={setTab}>
-        <AvisosDeRede />
-        <Painel tab={tab} setTab={setTab} />
-      </DemoProvider>
-    </ToastProvider>
+    <IdiomaProvider>
+      <ToastProvider>
+        <DemoProvider setTab={setTab}>
+          <AvisosDeRede />
+          <Painel tab={tab} setTab={setTab} />
+        </DemoProvider>
+      </ToastProvider>
+    </IdiomaProvider>
   );
 }

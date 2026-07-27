@@ -56,9 +56,12 @@
 
 /* ---------- página pública de rastreio (o que o turista vê) ---------- */
 .rastreio-tela { max-width: 520px; margin: 0 auto; min-height: 100vh; }
+/* o seletor de idioma mora aqui, à direita — quem chega pelo QR não passa pelo
+   painel, então precisa poder trocar de idioma na própria página */
 .rastreio-topo {
   background: var(--grad-hero, linear-gradient(135deg, #0d4f30, #15693e 45%, #0e7c9e));
   color: #fff; padding: 20px 16px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
 }
 .rastreio-corpo { padding: 16px 14px 44px; }
 .rastreio-cabeca { border-top: 4px solid var(--verde, #1b7a43); text-align: center; }
