@@ -99,7 +99,7 @@ Rode primeiro **`npm test -- migracoes`**: ele sonda o banco e diz quais migraç
 - [ ] Papéis atribuídos com `signatario` distinto
 - [ ] Cada pessoa escolheu a própria senha, e você não a conhece
 - [ ] Nenhuma credencial na mesma caixa de e-mail
-- [ ] Termo de consentimento revisado por alguém de direito — o texto está em `src/store.jsx` (`TEXTO_TERMO`), versionado com o app, não em documento solto
+- [ ] Termo de consentimento revisado por alguém de direito — o texto está em `src/estado/store.jsx` (`TEXTO_TERMO`), versionado com o app, não em documento solto
 - [ ] Rotina mensal de retenção com responsável e data definidos
 - [ ] Agente de campo treinado no destravamento de PIN
 

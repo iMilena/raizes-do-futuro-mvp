@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   Prova que o encoder de QR de src/qr.js gera códigos que um leitor real
+   Prova que o encoder de QR de src/lib/qr.js gera códigos que um leitor real
    decodifica.
 
    Por que assim: um QR errado é pior que nenhum QR — num pitch alguém aponta
@@ -24,11 +24,11 @@ const ok = (c, m) => { console.log((c ? '  ✓ ' : '  ✗ FALHOU: ') + m); if (!
 mkdirSync(TMP, { recursive: true });
 const bin = n => join(RAIZ, 'node_modules', '.bin', process.platform === 'win32' ? n + '.cmd' : n);
 const emp = spawnSync(bin('esbuild'), [
-  join(RAIZ, 'src', 'qr.js'), '--bundle', '--format=iife',
+  join(RAIZ, 'src', 'lib', 'qr.js'), '--bundle', '--format=iife',
   '--global-name=QRLIB', '--log-level=warning', '--outfile=' + join(TMP, 'qr-bundle.js'),
 ], { encoding: 'utf8', shell: process.platform === 'win32' });
 if (emp.status !== 0) {
-  console.error('não foi possível empacotar src/qr.js:\n' + (emp.stderr || emp.stdout));
+  console.error('não foi possível empacotar src/lib/qr.js:\n' + (emp.stderr || emp.stdout));
   process.exit(1);
 }
 spawnSync(process.execPath, ['-e',

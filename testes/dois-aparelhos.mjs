@@ -74,7 +74,7 @@ try {
   const preparar = async (nav, rotulo) => {
     await nav.cdp('Page.navigate', { url: ALVO });
     await espera(900);
-    /* injeta a sessão como se a pessoa tivesse entrado na tela: src/auth.js
+    /* injeta a sessão como se a pessoa tivesse entrado na tela: src/lib/auth.js
        restaura desta chave no boot. Assim os dois aparelhos sincronizam. */
     await nav.ev(`
       localStorage.clear();

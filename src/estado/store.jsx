@@ -956,7 +956,7 @@ function reducer(state, action) {
     /* ------------------------------------------------- consentimento ----- */
     /* Registro do consentimento do responsável (LGPD art. 8º: específico,
        informado e DEMONSTRÁVEL). Nada de família vai para a nuvem sem isto —
-       ver policies em supabase/migracao-02. Aqui não guardo assinatura
+       ver policies em supabase/migracoes/02. Aqui não guardo assinatura
        digitalizada nem documento: guardo a forma e o hash do termo exato. */
     case 'REGISTRAR_CONSENTIMENTO': {
       const f = s.familias.find(f => f.id === action.familiaId);
@@ -1112,7 +1112,7 @@ export function StoreProvider({ children }) {
 
      Local-first de propósito: o app já renderizou com o estado local antes de
      qualquer rede acontecer. Sem public/supabase.json, nada disto roda e o app
-     é 100% offline. Ver SUPABASE.md e src/sincronizacao.js.
+     é 100% offline. Ver SUPABASE.md e src/lib/sincronizacao.js.
   ------------------------------------------------------------------------ */
   const [nuvemAtiva, setNuvemAtiva] = useState(false);
   const [fila, setFila] = useState(0);

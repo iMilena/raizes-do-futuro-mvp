@@ -196,7 +196,7 @@ function Notificacoes({ setTab }) {
  *  · com sessão → sincroniza sob o papel da pessoa (coletor, validador, gestor).
  *
  * Não existe login de família aqui: a família usa o app dela com PIN e não tem
- * conta. Ver src/auth.js.
+ * conta. Ver src/lib/auth.js.
  */
 function Perfil() {
   const [aberto, setAberto] = useState(false);

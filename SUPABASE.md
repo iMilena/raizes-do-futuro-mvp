@@ -63,7 +63,7 @@ Antes, quem tivesse a chave anônima produzia as três assinaturas: o multisig e
 
 ### Consentimento: o que é guardado
 
-O registro guarda **a forma** (presencial assinado, presencial verbal, WhatsApp, formulário) e o **SHA-256 do texto exato** apresentado — nunca foto de documento nem assinatura digitalizada. O texto do termo mora em `src/store.jsx` (`TEXTO_TERMO`), versionado junto com o app: um termo que existisse só no banco poderia ser trocado depois sem ninguém notar, e aí o hash não provaria nada.
+O registro guarda **a forma** (presencial assinado, presencial verbal, WhatsApp, formulário) e o **SHA-256 do texto exato** apresentado — nunca foto de documento nem assinatura digitalizada. O texto do termo mora em `src/estado/store.jsx` (`TEXTO_TERMO`), versionado junto com o app: um termo que existisse só no banco poderia ser trocado depois sem ninguém notar, e aí o hash não provaria nada.
 
 `consentimentos` é append-only exceto a revogação — o único `UPDATE` permitido, porque é direito do titular. Não há policy de `DELETE`: o registro da revogação é parte da prova.
 

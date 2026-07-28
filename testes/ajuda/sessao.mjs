@@ -12,7 +12,7 @@
 export const CHAVE_SESSAO = 'raizes-sessao-v1';
 
 /**
- * Abre sessão e devolve o objeto no MESMO formato que src/auth.js guarda —
+ * Abre sessão e devolve o objeto no MESMO formato que src/lib/auth.js guarda —
  * assim o teste pode injetar direto no localStorage do navegador e o app
  * restaura como se a pessoa tivesse entrado na tela.
  *
