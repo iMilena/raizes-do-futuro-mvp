@@ -360,7 +360,7 @@ As suítes `nuvem`, `aparelhos` e a metade da operação do `canal` precisam de 
 
 O `.env` já vem apontando para um **usuário de testes** criado pela suíte, com senha gerada na hora — não é a senha de ninguém. Para ele funcionar, dois passos no painel do Supabase, uma vez só:
 
-1. **Authentication → Users** → encontre `raizes.testes@gruporedemais.com` → confirme o usuário.
+1. **Authentication → Users** → encontre o e-mail que está no seu `.env` (`SUPABASE_TEST_EMAIL`) → confirme o usuário. Se ainda não existe, crie com **Add user → Auto Confirm User**: o `signup` pela API não serve, porque o projeto tem `mailer_autoconfirm` desligado e o remetente padrão do Supabase só entrega para membros do projeto.
 2. **SQL Editor** → cole e rode [`supabase/scripts/papel-usuario-de-teste.sql`](supabase/scripts/papel-usuario-de-teste.sql).
 
 Depois disso, `npm.cmd test` roda tudo. Se preferir usar uma conta de pessoa real em vez do usuário de testes, há duas formas de dar a senha, e a segunda é melhor:
