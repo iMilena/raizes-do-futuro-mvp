@@ -825,8 +825,16 @@ nav.tabs button.tour-alvo{animation:tour-anel 1.5s ease-in-out infinite}
 .lista-compromissos li{padding:8px 0;border-bottom:1px solid var(--borda)}
 .lista-compromissos li.destaque-item{border-bottom:none;background:var(--verde-claro);border-radius:10px;padding:11px;margin-top:8px}
 .passo-a-passo{display:grid;gap:9px;margin-top:10px;font-size:13.5px}
-.passo-a-passo>div{display:flex;align-items:center;gap:10px}
-.passo-a-passo span{flex:0 0 26px;height:26px;border-radius:50%;background:var(--grad-acao);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(27,122,67,.3)}
+.passo-a-passo>div{display:flex;align-items:flex-start;gap:10px}
+/* SÓ a primeira span é a bolinha.
+   `.passo-a-passo span` pegava as duas: na missão do PIN, onde a linha é
+   <span>emoji</span><span>texto</span>, a frase inteira também virava um círculo
+   verde de 26px — três pastilhas com o texto amassado por cima de si mesmo,
+   ilegível. Funcionava na missão do saque só porque lá a linha tem uma span e o
+   resto é texto solto. Seletor de descendente em componente com estrutura
+   variável é assim: parece certo até alguém escrever a segunda variação. */
+.passo-a-passo>div>span:first-child{flex:0 0 26px;height:26px;border-radius:50%;background:var(--grad-acao);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(27,122,67,.3)}
+.passo-a-passo>div>span:first-child+span{flex:1;min-width:0;padding-top:4px}
 
 .medalha-voa{position:absolute;left:50%;top:40%;z-index:20;font-size:56px;animation:medalha 1.1s ease forwards;pointer-events:none}
 @keyframes medalha{
