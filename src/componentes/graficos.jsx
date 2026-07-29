@@ -32,7 +32,7 @@ export function BarrasKgSemana({ coletas }) {
   const [ativo, setAtivo] = useState(null);
 
   if (dados.length === 0) {
-    return <EstadoVazio icone="⚖️" titulo="Nenhuma coleta validada ainda" dica="Valide uma coleta na aba Instituto Vivá para ver o gráfico." />;
+    return <EstadoVazio icone="" titulo="Nenhuma coleta validada ainda" dica="Valide uma coleta na aba Instituto Vivá para ver o gráfico." />;
   }
 
   const L = 40, T = 12, A = 150, larg = 100 / dados.length;
@@ -41,19 +41,11 @@ export function BarrasKgSemana({ coletas }) {
   const linhas = [0, 0.5, 1];
 
   return (
-    <div className="grafico">
-      <svg viewBox="0 0 320 200" role="img" aria-label="Quilos coletados por semana">
+    <div className="grafico" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <svg viewBox="0 0 320 180" role="img" aria-label="Quilos coletados por semana">
         {/* gradiente tem de morar no próprio SVG: CSS não cria paint server.
             Vertical, mais saturado embaixo, para a barra ter peso na base. */}
         <defs>
-          <linearGradient id="g-barra" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#0b7ba8" />
-            <stop offset="100%" stopColor="#5cc9ee" />
-          </linearGradient>
-          <linearGradient id="g-barra-on" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#0d5530" />
-            <stop offset="100%" stopColor="#35a869" />
-          </linearGradient>
         </defs>
         {linhas.map(f => {
           const y = T + A * (1 - f);
@@ -72,7 +64,7 @@ export function BarrasKgSemana({ coletas }) {
           return (
             <g key={d.chave} onMouseEnter={() => setAtivo(i)} onMouseLeave={() => setAtivo(null)}>
               <rect x={cx - bw / 2} y={T + A - h} width={bw} height={h} rx="4"
-                fill={on ? 'url(#g-barra-on)' : 'url(#g-barra)'} className="barra-anim" style={{ '--h': h + 'px' }} />
+                fill={on ? '#0d5530' : '#0b7ba8'} className="barra-anim" style={{ '--h': h + 'px' }} />
               <text className="rot-eixo" x={cx} y={T + A + 13} textAnchor="middle">{d.rot}</text>
               <text x={cx} y={T + A - h - 5} textAnchor="middle" fontSize="9.5" fontWeight="700"
                 fill={on ? 'var(--verde-escuro)' : 'var(--azul-escuro)'}>{d.kg}</text>
@@ -113,7 +105,7 @@ export function DonutReceita({ vendas }) {
   const total = dados.reduce((a, d) => a + d.valor, 0);
 
   if (total === 0) {
-    return <EstadoVazio icone="🛒" titulo="Nenhuma receita registrada" dica="Faça uma venda na aba Mercado para ver a divisão por fonte." />;
+    return <EstadoVazio icone="" titulo="Nenhuma receita registrada" dica="Faça uma venda na aba Mercado para ver a divisão por fonte." />;
   }
 
   const R = 52, r = 32, cx = 62, cy = 62;

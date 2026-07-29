@@ -17,10 +17,20 @@ function AnelProgresso({ pct, rot = 'do piloto' }) {
   return (
     <div className="anel-wrap" title="Média de avanço das 4 metas do piloto">
       <svg viewBox="0 0 100 100" className="anel">
-        <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="9" />
-        <circle cx="50" cy="50" r={R} fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round"
+        <defs>
+          <linearGradient id="gradRing" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#38bdf8" />
+          </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="9" />
+        <circle cx="50" cy="50" r={R} fill="none" stroke="url(#gradRing)" strokeWidth="9" strokeLinecap="round"
           strokeDasharray={C} strokeDashoffset={C * (1 - Math.min(100, mostrado) / 100)}
-          transform="rotate(-90 50 50)" />
+          transform="rotate(-90 50 50)" filter="url(#glow)" />
         <text x="50" y="47" textAnchor="middle" fontSize="20" fontWeight="900" fill="#fff">
           {Math.round(mostrado)}%
         </text>
@@ -65,13 +75,13 @@ function Dimensao({ classe, icone, titulo, resumo, children }) {
 
 /* ---------- etapas da jornada ---------- */
 const ETAPAS = [
-  ['🌊', 'Resíduo', 'chega à praia'],
-  ['🧹', 'Coleta', 'comunidade age'],
-  ['✅', 'Validação', 'DeTrash confere'],
-  ['📄', 'Circularidade', 'vira evidência'],
-  ['💰', 'Receita', 'turista + empresa'],
-  ['🔗', 'Cofre 2-de-3', 'split 60/25/15'],
-  ['🧒', 'Infância', 'saúde + educação'],
+  ['1', 'Resíduo', 'chega à praia'],
+  ['2', 'Coleta', 'comunidade age'],
+  ['3', 'Validação', 'DeTrash confere'],
+  ['4', 'Circularidade', 'vira evidência'],
+  ['5', 'Receita', 'turista + empresa'],
+  ['6', 'Cofre 2-de-3', 'split 60/25/15'],
+  ['7', 'Infância', 'saúde + educação'],
 ];
 
 export default function Dashboard() {
@@ -113,7 +123,6 @@ export default function Dashboard() {
       {/* ---------------- hero de impacto ---------------- */}
       <div className="hero-dash">
         <div className="hero-info">
-          <span className="hero-chip">📍 Piloto Boipeba, BA · cofre 2-de-3 real na {REDE} devnet</span>
           <h2 className="hero-titulo">{t('Impacto em tempo real')}</h2>
           <div className="hero-nums">
             <div>
@@ -149,12 +158,17 @@ export default function Dashboard() {
         {ETAPAS.map(([ic, rot, sub], i) => (
           <React.Fragment key={rot}>
             <div className="jornada-etapa">
-              <span className="jornada-num">{i + 1}</span>
-              <span className="jornada-icone">{ic}</span>
+              <span className="jornada-num">{ic}</span>
               <b>{rot}</b>
               <small>{sub}</small>
             </div>
-            {i < ETAPAS.length - 1 && <span className="jornada-seta" aria-hidden="true">›</span>}
+            {i < ETAPAS.length - 1 && (
+              <span className="jornada-seta" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </span>
+            )}
           </React.Fragment>
         ))}
       </div>
@@ -162,21 +176,21 @@ export default function Dashboard() {
       {/* ---------------- gráficos + feed ---------------- */}
       <div className={'grid g2 graficos-area' + focoGraf} style={{ marginTop: 14 }}>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>♻️ {t('Quilos validados por semana')}</h3>
+          <h3 style={{ marginTop: 0 }}>{t('Quilos validados por semana')}</h3>
           <BarrasKgSemana coletas={state.coletas} />
         </div>
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>💰 {t('Receita por fonte')}</h3>
+          <h3 style={{ marginTop: 0 }}>{t('Receita por fonte')}</h3>
           <DonutReceita vendas={state.vendas} />
         </div>
       </div>
 
       <div className="card" style={{ marginTop: 14 }}>
         <div className="feed-topo">
-          <h3 style={{ margin: 0 }}>⚡ {t('Últimas atividades na rede')}</h3>
+          <h3 style={{ margin: 0 }}>{t('Últimas atividades na rede')}</h3>
           <span className="mini">slot atual: {state.slot} · {state.transacoes.length} transações</span>
         </div>
-        {feed.length === 0 && <EstadoVazio icone="🌱" titulo="Nenhuma atividade ainda" />}
+        {feed.length === 0 && <EstadoVazio icone="" titulo="Nenhuma atividade ainda" />}
         <div className="feed">
           {feed.map(t => (
             <div className="feed-item" key={t.signature}>
