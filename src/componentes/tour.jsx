@@ -43,11 +43,11 @@ export const PASSOS_TOUR = [
   },
   {
     tab: 'carteira', icone: '👨‍👩‍👧', titulo: 'Família (operação)',
-    texto: 'A visão do agente que acompanha a família: conectar a carteira Picnic, conferir o endereço na Solana, o extrato e o saque via Pix. Sem seed phrase de 12 palavras — só celular e um PIN de 4 números, porque essa barreira exclui exatamente quem o projeto quer alcançar.',
+    texto: 'A visão do agente que acompanha a família: conectar a carteira Decaf, conferir o endereço na Solana, o extrato e o saque via Pix. Sem seed phrase de 12 palavras — só celular e um PIN de 4 números, porque essa barreira exclui exatamente quem o projeto quer alcançar.',
   },
   {
     tab: 'familia', icone: '📱', titulo: 'App da Família',
-    texto: 'A mesma conta, do lado de quem recebe. Nenhuma palavra técnica aparece aqui: é "conta da família", "dinheiro" e "cofre digital". Tem onboarding guiado pela tartaruga Tuca, saldo em reais e retirada em dois toques. Esta tela também abre sozinha, em modo celular, no endereço #/familia.',
+    texto: 'A mesma conta, do lado de quem recebe. Nenhuma palavra técnica aparece aqui: é "conta da família", "dinheiro" e "cofre digital". Tem onboarding guiado pelo caranguejo Tuca, saldo em reais e retirada em dois toques. Esta tela também abre sozinha, em modo celular, no endereço #/familia.',
   },
   {
     tab: 'dashboard', icone: '🎬', titulo: 'Pronto para explorar', semAlvo: true,

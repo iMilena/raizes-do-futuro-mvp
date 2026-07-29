@@ -25,7 +25,11 @@ onchain/chaves/
 # temporários dos testes
 testes/.tmp*/
 
-# capturas de tela geradas por 
-pm test -- telas (conferência visual)
+# capturas de tela geradas por `npm test -- telas` (conferência visual)
 capturas/
+
+# As respostas do formulário trazem dado pessoal da líder da equipe: nome
+# completo, idade, telefone, e-mail pessoal, gênero e cor/raça autodeclarados.
+# Nada disso pode ir para um repositório público — e o repositório é público.
+# O arquivo fica no disco de quem preenche, e vai para o formulário do edital.
 SUBMISSAO.md

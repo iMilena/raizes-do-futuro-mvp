@@ -236,7 +236,7 @@ export default function Dashboard() {
       <Dimensao classe="dim-confianca" icone="🔗" titulo={`Confiança digital (${REDE})`}
         resumo="cada centavo rastreável, nenhuma organização decide sozinha">
         <Kpi icone="🧾" num={state.transacoes.length} rot="transações rastreáveis" meta={`slot atual: ${state.slot}`} />
-        <Kpi icone="🧺" num={comCarteira + '/' + state.familias.length} rot={`famílias com conta ${PROVIDER_CARTEIRA}`} />
+        <Kpi icone="☕" num={comCarteira + '/' + state.familias.length} rot={`famílias com conta ${PROVIDER_CARTEIRA}`} />
         <Kpi icone="🗳️" num={propostasAbertas} rot="propostas aguardando assinatura" meta="limiar 2 de 3" />
         <Kpi icone="🔒" valor={reservado} rot="bônus reservado (nunca perdido)" />
       </Dimensao>

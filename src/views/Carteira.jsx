@@ -169,7 +169,7 @@ function DestravarPin({ familia }) {
   );
 }
 
-/* ---------- conectar carteira Picnic (sem seed phrase) ---------- */
+/* ---------- conectar carteira Decaf (sem seed phrase) ---------- */
 function Onboarding({ familia, onDone }) {
   const { dispatch } = useStore();
   const toast = useToast();
@@ -189,7 +189,7 @@ function Onboarding({ familia, onDone }) {
     setConectando(true);
     setTimeout(() => {
       dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, celular: tel });
-      toast(`Carteira ${PROVIDER_CARTEIRA} conectada na ${REDE} 🧺`);
+      toast(`Carteira ${PROVIDER_CARTEIRA} conectada na ${REDE} ☕`);
       setConectando(false);
       setPasso(3);
     }, 900);
@@ -236,7 +236,7 @@ function Onboarding({ familia, onDone }) {
             celular + agente Vivá. O PIN não é guardado em texto — só a marca de que foi definido.
           </p>
           <button className="acao" disabled={!pinOk || conectando} onClick={conectar}>
-            {conectando ? 'Conectando…' : `Conectar com ${PROVIDER_CARTEIRA} 🧺`}
+            {conectando ? 'Conectando…' : `Conectar com ${PROVIDER_CARTEIRA} ☕`}
           </button>
         </>
       )}

@@ -461,7 +461,7 @@ try {
   await espera(500);
   ok(cliqueAba === true, 'abre a aba do App da Família');
   ok(await ev('return __t.conta(".moldura-celular") === 1'), 'renderiza numa única moldura de celular');
-  ok(await ev('return __t.conta(".mascote-bicho") >= 1 && __t.txt().includes("🐢")'), 'mascote tartaruga presente');
+  ok(await ev('return __t.conta(".mascote-bicho") >= 1 && __t.txt().includes("🦀")'), 'mascote caranguejo presente');
   ok(await ev('return __t.txt().toLowerCase().includes("escolha sua família")'), 'mascote orienta a entrada');
   ok(await ev('return __t.txt().toLowerCase().includes("quem é você")'), 'seleção de família na entrada');
 
@@ -526,7 +526,7 @@ try {
   ok(await ev('return __t.tem("Bônus de julho")'), 'extrato em linguagem simples ("Bônus de julho — vacinação em dia")');
   ok(await ev('return !__t.tem("Fundo Infância")'), 'extrato não usa o jargão do programa');
 
-  // "Picnic" fica de fora da lista: é o nome do aplicativo que a família usa (como o nome de um banco),
+  // "Decaf" fica de fora da lista: é o nome do aplicativo que a família usa (como o nome de um banco),
   // não jargão cripto — e a escolha por ele é explícita no onboarding
   const jargao = await ev(`
     const el = document.querySelector('.fam-tela');
@@ -650,15 +650,15 @@ try {
   ok(await ev('return __t.conta(".missao-passo") === 4'), '4 missões na trilha');
   ok(await ev('return __t.tem("Escolher onde guardar") && __t.tem("Meu PIN") && __t.tem("Meus compromissos") && __t.tem("Como retirar")'), 'as 4 missões sequenciais');
   ok(await ev('return __t.conta(".balao") === 1'), 'mascote com balão de fala');
-  ok(await ev('return __t.tem("tartaruga de Boipeba")'), 'mascote se apresenta como tartaruga de Boipeba');
+  ok(await ev('return __t.tem("caranguejo de Boipeba")'), 'mascote se apresenta como caranguejo de Boipeba');
   ok(await ev('return __t.tem("cofre digital que ninguém pode desviar")'), 'explica o conceito em 1 frase');
 
-  // missão 1: escolher onde guardar (Picnic ou conta que já tem)
+  // missão 1: escolher onde guardar (Decaf ou conta que já tem)
   ok(await ev('return __t.conta(".btn-conexao") === 2'), 'oferece as 2 opções de onde guardar');
-  ok(await ev('return __t.tem("Conectar com Picnic") && __t.tem("recomendado")'), 'Picnic marcada como recomendada');
+  ok(await ev('return __t.tem("Conectar com Decaf") && __t.tem("recomendado")'), 'Decaf marcada como recomendada');
   ok(await ev('return __t.tem("Já tenho uma conta digital")'), 'segunda opção sem jargão cripto');
   ok(await ev('return __t.clicar(".fam-onb button.acao", "Missão cumprida") === "desabilitado"'), 'não avança sem escolher');
-  await ev('return __t.clicar(".btn-conexao", "Conectar com Picnic")');
+  await ev('return __t.clicar(".btn-conexao", "Conectar com Decaf")');
   await espera(300);
   ok(await ev('return __t.conta(".btn-conexao.sel") === 1'), 'opção escolhida fica destacada');
   ok(await ev('return __t.clicar(".fam-onb button.acao", "Missão cumprida") === true'), 'missão 1 conclui');
@@ -700,7 +700,7 @@ try {
     const f = s.familias.find(x => x.id === ${semConta.id});
     return { tem: !!f.carteira, provider: f.carteira?.provider, rede: f.carteira?.rede, chars: f.carteira?.end.length };
   `);
-  ok(contaCriada.tem && contaCriada.provider === 'Picnic' && contaCriada.rede === 'Solana' && contaCriada.chars === 44,
+  ok(contaCriada.tem && contaCriada.provider === 'Decaf' && contaCriada.rede === 'Solana' && contaCriada.chars === 44,
     `conta criada de fato (provider ${contaCriada.provider}, rede ${contaCriada.rede}, endereço de ${contaCriada.chars} chars)`);
 
   await ev('return __t.clicar(".fam-onb button.acao", "Abrir minha conta")');
@@ -793,7 +793,7 @@ try {
   `);
   ok(pos.tx > 5 && pos.props >= 1, `reset volta à seed (${pos.tx} tx, ${pos.props} propostas)`);
   ok(pos.aguardando === 1 && pos.assin === 1, 'seed traz 1 proposta multisig com 1 assinatura já coletada');
-  ok(pos.cofre && typeof pos.slot === 'number' && pos.prov === 'Picnic', 'reset preserva cofre, slot e provider Picnic');
+  ok(pos.cofre && typeof pos.slot === 'number' && pos.prov === 'Decaf', 'reset preserva cofre, slot e provider Decaf');
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'app segue funcional após o reset');
 
   /* ---------- 14. estado antigo/inválido ---------- */
@@ -1262,7 +1262,7 @@ try {
   ok(await ev('return __t.tem("62 kg")'), 'com o conteúdo da resposta');
   ok(await ev('return __t.tem("marcado como resolvido")'), 'e o circuito fecha marcado como resolvido');
 
-  /* ---------- 14c. voz da Tuca ---------- */
+  /* ---------- 14c. voz do Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
   await irPara(ALVO);
   await ev('return __t.clicar("nav.tabs button", "App da Família")');

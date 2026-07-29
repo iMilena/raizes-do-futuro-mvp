@@ -181,10 +181,10 @@ ok(s.transacoes.some(t => t.tipo === 'RESERVA'), 'existe transação tipo RESERV
 
 /* ---------- 7. criar conta reprocessa a reserva ---------- */
 secao('7. Conectar conta reabre a proposta reservada (retroativo)');
-s = d(s, { type: 'CRIAR_CARTEIRA', id: ana.id, provider: 'Picnic', celular: '(75) 99999-0000' });
+s = d(s, { type: 'CRIAR_CARTEIRA', id: ana.id, provider: 'Decaf', celular: '(75) 99999-0000' });
 const ana2 = s.familias.find(f => f.id === ana.id);
 ok(ana2.carteira?.end.length === 44, 'endereço de 44 chars gerado');
-ok(ana2.carteira.provider === 'Picnic' && ana2.carteira.rede === REDE, `provider Picnic, rede ${REDE}`);
+ok(ana2.carteira.provider === 'Decaf' && ana2.carteira.rede === REDE, `provider Decaf, rede ${REDE}`);
 ok(s.transacoes.some(t => t.tipo === 'CARTEIRA'), 'gerou transação tipo CARTEIRA');
 const pAna2 = s.propostas.find(x => x.id === pAna.id);
 ok(pAna2.status === 'aguardando', 'proposta reservada volta a aguardar assinaturas');
@@ -304,7 +304,7 @@ ok(calcularDeltas(s1, s1).length === 0, 'estado igual não gera operação nenhu
    fila é FIFO: se deixássemos entrar, uma família sem consentimento travaria
    todo o trabalho atrás dela. */
 const semConta = base.familias.find(f => !f.carteira);
-const semConsent = d(base, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
+const semConsent = d(base, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Decaf' });
 const opsSemConsent = calcularDeltas(base, semConsent);
 ok(!opsSemConsent.some(o => o.tipo === 'familia'),
   'família SEM consentimento não gera operação de família');
@@ -321,7 +321,7 @@ ok(Boolean(opCons), 'registrar consentimento gera a operação de consentimento'
 ok(opCons.consentimento.termoHash.length === 64, 'com o hash do termo apresentado');
 ok(!('resp' in opCons.consentimento), 'e sem o nome da pessoa');
 
-const comConta = d(consentida, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Picnic' });
+const comConta = d(consentida, { type: 'CRIAR_CARTEIRA', id: semConta.id, provider: 'Decaf' });
 const opsFam = calcularDeltas(consentida, comConta);
 const opFamilia = opsFam.find(o => o.tipo === 'familia');
 ok(Boolean(opFamilia), 'criar conta gera operação de família');

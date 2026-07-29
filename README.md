@@ -2,7 +2,7 @@
 
 Protótipo digital do projeto **Raízes do Futuro** (Youth Challenge Blockchain — UNICEF Brasil).
 
-Demonstra o ciclo completo: **Coleta → Validação DeTrash → Relatório de Circularidade → Receita (turistas + empresas) → Cofre multisig 2-de-3 (Fundo Infância) → Conta Picnic da família → Pix**, incluindo o **onboarding gamificado das famílias** — sem seed phrase, sem jargão.
+Demonstra o ciclo completo: **Coleta → Validação DeTrash → Relatório de Circularidade → Receita (turistas + empresas) → Cofre multisig 2-de-3 (Fundo Infância) → Conta Decaf da família → Pix**, incluindo o **onboarding gamificado das famílias** — sem seed phrase, sem jargão.
 
 ## Como rodar (VS Code)
 
@@ -32,7 +32,7 @@ Duas telas independentes:
 | Cofre do Fundo Infância | **multisig 2-de-3 (padrão Squads)** | nenhuma organização move o dinheiro sozinha |
 | Signatários | **Instituto Vivá**, **DeTrash**, **Representante Comunitário** | validação social, verificação ambiental e voz da comunidade |
 | Stablecoin | **BRZ/cRED** (1 = R$ 1) | a família nunca vê o valor oscilar |
-| Carteira da família | **Picnic** (`provider: 'Picnic'`, `rede: 'Solana'`) | custódia simplificada: celular + PIN de 4 números, **sem seed phrase** |
+| Carteira da família | **Decaf** (`provider: 'Decaf'`, `rede: 'Solana'`) | custódia simplificada: celular + PIN de 4 números, **sem seed phrase** |
 
 ### Fluxo de liberação do bônus
 
@@ -42,10 +42,10 @@ comprovação enviada pela família (foto, off-chain)
    → cofre cria uma proposta          → tx PROPOSTA        (status: aguardando)
    → signatário 1 assina              → tx ASSINATURA      (1/2)
    → signatário 2 assina              → tx ASSINATURA      (2/2) → limiar atingido
-   → cofre executa automaticamente    → tx LIBERAÇÃO       (debita cofre, credita a conta Picnic)
+   → cofre executa automaticamente    → tx LIBERAÇÃO       (debita cofre, credita a conta Decaf)
 ```
 
-Sem conta Picnic ou sem saldo livre no cofre, a proposta nasce **reservada** (tx `RESERVA`): o valor **nunca é perdido** e a proposta é reaberta sozinha quando a família cria a conta.
+Sem conta Decaf ou sem saldo livre no cofre, a proposta nasce **reservada** (tx `RESERVA`): o valor **nunca é perdido** e a proposta é reaberta sozinha quando a família cria a conta.
 
 Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSINATURA`, `LIBERAÇÃO`, `RESERVA`, `CARTEIRA`, `SAQUE`, `RENDA` (renda incondicional da coleta), `CONSENTIMENTO`, `CONTESTACAO` e `ANCORAGEM` (registro real na devnet) — mais `GÊNESE` e `CIRCULARIDADE`.
 
@@ -59,7 +59,7 @@ Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSIN
 | **🛒 Mercado** | Turista compra produto reciclado; empresa compra crédito/relatório ESG. Cada venda dispara a **animação do split 60/25/15** com contadores animados |
 | **🔗 Cofre Multisig** | Saldo e endereço do cofre, **painel de propostas** com os 3 signatários e botão "Assinar como […]", animação de execução ao atingir 2/3, e **explorador de transações** (tipo, descrição, signature truncada, slot) com modal de detalhes |
 | **📝 Cadastro** | Inclui família no piloto (nome, crianças, código pseudônimo) com o **consentimento no mesmo formulário**, e abre os **compromissos de cada mês** em lote |
-| **👨‍👩‍👧 Família (operação)** | Visão do agente: conectar carteira Picnic, metadados (`rede: Solana · provider: Picnic`), extrato e saque Pix |
+| **👨‍👩‍👧 Família (operação)** | Visão do agente: conectar carteira Decaf, metadados (`rede: Solana · provider: Decaf`), extrato e saque Pix |
 | **📱 App da Família** | A tela do celular, dentro de uma moldura — igual à rota `#/familia` |
 
 ## App da família (`#/familia`)
@@ -71,11 +71,11 @@ Mobile-first e com **zero jargão cripto** — nunca aparece "wallet", "token", 
 - **Retirar dinheiro** em 2 toques: digitar o valor → confirmação com QR code e comprovante simulado
 - **Extrato em linguagem simples**: "Bônus de julho — vacinação em dia · +R$ 60,00"
 - **Compromissos do mês** como cards, com "📎 Enviar foto do comprovante"
-- **Onboarding gamificado** para família sem conta: a mascote **Tuca, tartaruga de Boipeba 🐢**, com balões de fala, guia 4 missões sequenciais — *Escolher onde guardar → Meu PIN → Meus compromissos → Como retirar* — com barra de progresso, estrela a cada missão, confete em CSS puro e o badge **Família Raízes do Futuro 🏅** no fim. Cada missão explica um conceito em uma frase
+- **Onboarding gamificado** para família sem conta: o mascote **Tuca, caranguejo de Boipeba 🦀**, com balões de fala, guia 4 missões sequenciais — *Escolher onde guardar → Meu PIN → Meus compromissos → Como retirar* — com barra de progresso, estrela a cada missão, confete em CSS puro e o badge **Família Raízes do Futuro 🏅** no fim. Cada missão explica um conceito em uma frase
 - **Suas entregas**: cada coleta no nome dela, com peso, data e situação — e o convite a conferir
 - **"Isso está errado?"** em cada registro, com resposta do Instituto Vivá no próprio app
 - **Meta de poupança** definida por ela, que nunca bloqueia o saque
-- **Voz da Tuca** (opcional) e **letra maior**, para quem lê ou vê com dificuldade
+- **Voz do Tuca** (opcional) e **letra maior**, para quem lê ou vê com dificuldade
 - Aviso honesto de **sem internet**: o saldo continua certo, e o que ela fizer sobe quando o sinal voltar
 - Botão flutuante **💬 Falar com o Instituto Vivá**, com opção de **ligar** e de ser avisada no WhatsApp quando o bônus cair
 
@@ -92,7 +92,7 @@ Na primeira vez que alguém abre o painel, um **tour de 9 passos** aparece sozin
 
 No Dashboard, **▶ Ver o ciclo completo** executa a jornada inteira em 13 passos automáticos (~50 s), trocando de aba sozinho, destacando o elemento ativo e narrando cada etapa num card fixo:
 
-> ponto de partida → coleta → verificação DeTrash → relatório → receita → split 60/25/15 → comprovação da família → validação social → multisig 1 de 2 → multisig 2 de 2 (executa) → bônus na conta Picnic → retirada pelo Pix → ciclo completo
+> ponto de partida → coleta → verificação DeTrash → relatório → receita → split 60/25/15 → comprovação da família → validação social → multisig 1 de 2 → multisig 2 de 2 (executa) → bônus na conta Decaf → retirada pelo Pix → ciclo completo
 
 O primeiro passo já dá `RESET`, então a gravação pode ser repetida quantas vezes for preciso e sempre parte do mesmo estado.
 
@@ -137,9 +137,9 @@ Não é "apaguei tudo" nem "guardei tudo". Detalhes e comandos: [`supabase/migra
 
 **O expurgo não roda sozinho.** Agendador que ninguém monitora apaga dado em silêncio; a rotina mensal está em [`IMPLANTACAO.md`](IMPLANTACAO.md).
 
-## Voz da Tuca 🔊
+## Voz do Tuca 🔊
 
-A tartaruga lê os balões em voz alta (Web Speech, nativo, zero dependência). Não é enfeite: em Boipeba há adultos com pouca leitura fluente, e a tela fala de dinheiro e de saúde de criança — quem não lê bem depende de outra pessoa para entender o próprio saldo, que é a dependência que o projeto quer remover.
+O caranguejo lê os balões em voz alta (Web Speech, nativo, zero dependência). Não é enfeite: em Boipeba há adultos com pouca leitura fluente, e a tela fala de dinheiro e de saúde de criança — quem não lê bem depende de outra pessoa para entender o próprio saldo, que é a dependência que o projeto quer remover.
 
 Três regras que não se negociam:
 
@@ -260,7 +260,7 @@ Conferível em `explorer.solana.com/tx/<tx>?cluster=devnet` — o log do program
 
 ## Nota técnica
 
-A **jornada** é simulada: as transações ficam num `localStorage` (chave `raizes-mvp-v2`) com signatures base58 encadeadas e slot incremental, reproduzindo o formato da Solana sem nenhuma dependência web3 — o app roda **100% offline**. O **cofre não é simulado**: existe na Solana devnet como multisig nativo do SPL Token 2-de-3, e as liberações são executadas de verdade por duas organizações (ver `onchain/`). Em produção: mesma lógica, cofre **Squads** e carteiras **Picnic**.
+A **jornada** é simulada: as transações ficam num `localStorage` (chave `raizes-mvp-v2`) com signatures base58 encadeadas e slot incremental, reproduzindo o formato da Solana sem nenhuma dependência web3 — o app roda **100% offline**. O **cofre não é simulado**: existe na Solana devnet como multisig nativo do SPL Token 2-de-3, e as liberações são executadas de verdade por duas organizações (ver `onchain/`). Em produção: mesma lógica, cofre **Squads** e carteiras **Decaf**.
 
 Estado salvo de versões anteriores é descartado automaticamente se não tiver o formato atual, então o app nunca abre quebrado depois de uma atualização.
 
@@ -288,7 +288,7 @@ src/
     sincronizacao.js fila offline-first entre aparelho e nuvem
     auth.js          sessão, papel e permissões da operação
     i18n.jsx         seletor e strings PT/EN
-    preferencias.js  letra grande, voz da Tuca etc. (guardadas no aparelho)
+    preferencias.js  letra grande, voz do Tuca etc. (guardadas no aparelho)
     voz.js           Web Speech — números por extenso, sem emoji
   estilos/
     styles.css           casco do painel + app da família

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  useStore, fmt, trunc, BONUS_POR_CRIANCA,
+  useStore, fmt, trunc, BONUS_POR_CRIANCA, PROVIDER_CARTEIRA,
   temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN, progressoMeta,
 } from '../estado/store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../componentes/ui.jsx';
@@ -60,13 +60,13 @@ function Mascote({ fala }) {
 
   return (
     <div className="mascote">
-      <span className="mascote-bicho" style={{ fontSize: 38 }} aria-hidden="true">🐢</span>
+      <span className="mascote-bicho" style={{ fontSize: 38 }} aria-hidden="true">🦀</span>
       <div className="balao">
         {fala}
         {temVoz && (
           <button className={'balao-voz' + (ligada ? ' on' : '')} onClick={alternar}
             aria-pressed={ligada}
-            title={ligada ? 'Desligar a voz da Tuca' : 'Ouvir a Tuca ler em voz alta'}>
+            title={ligada ? 'Desligar a voz do Tuca' : 'Ouvir o Tuca ler em voz alta'}>
             {ligada ? '🔊' : '🔈'} <span>{ligada ? 'ouvindo' : 'ouvir'}</span>
           </button>
         )}
@@ -113,7 +113,7 @@ function QrFake({ semente = 7 }) {
 
 /* ------------------------------------------- onboarding gamificado (Tuca) ---- */
 const MISSOES = [
-  { icone: '🧺', rot: 'Escolher onde guardar' },
+  { icone: '☕', rot: 'Escolher onde guardar' },
   { icone: '🔢', rot: 'Meu PIN' },
   { icone: '📋', rot: 'Meus compromissos' },
   { icone: '💸', rot: 'Como retirar' },
@@ -142,8 +142,8 @@ function Onboarding({ familia, onDone }) {
   };
 
   const concluir = () => {
-    dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, provider: provider || 'Picnic' });
-    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo 📲' : ' na Picnic 🧺'} 🎉`);
+    dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, provider: provider || PROVIDER_CARTEIRA });
+    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo 📲' : ` na ${PROVIDER_CARTEIRA} ☕`} 🎉`);
     celebrar();
     setPronto(true);
   };
@@ -170,11 +170,15 @@ function Onboarding({ familia, onDone }) {
 
       {!pronto && missao === 0 && (
         <div className="card">
-          <Mascote fala={`Oi, ${familia.resp.split(' ')[0]}! Eu sou a Tuca, tartaruga de Boipeba. Vou te ajudar a criar a conta da sua família — leva 2 minutinhos. Primeiro: escolha onde o seu dinheiro vai ficar guardado.`} />
-          <button className={'btn-conexao' + (provider === 'Picnic' ? ' sel' : '')} onClick={() => setProvider('Picnic')}>
-            <span className="ic" aria-hidden="true">🧺</span>
-            <span><b>Conectar com Picnic</b> <span className="tag ok">recomendado</span><br />
-              <small>Aplicativo brasileiro, simples, com retirada em reais pelo Pix</small></span>
+          <Mascote fala={`Oi, ${familia.resp.split(' ')[0]}! Eu sou o Tuca, caranguejo de Boipeba. Vou te ajudar a criar a conta da sua família — leva 2 minutinhos. Primeiro: escolha onde o seu dinheiro vai ficar guardado.`} />
+          <button className={'btn-conexao' + (provider === PROVIDER_CARTEIRA ? ' sel' : '')} onClick={() => setProvider(PROVIDER_CARTEIRA)}>
+            <span className="ic" aria-hidden="true">☕</span>
+            <span><b>Conectar com {PROVIDER_CARTEIRA}</b> <span className="tag ok">recomendado</span><br />
+              {/* Dizia "aplicativo brasileiro". A Decaf não é — e afirmar
+                  nacionalidade de um parceiro que ainda não está integrado é
+                  inventar credencial. O que a família precisa saber é o que a
+                  tela faz por ela. */}
+              <small>Simples de usar, com retirada em reais pelo Pix</small></span>
           </button>
           <button className={'btn-conexao' + (provider === 'Solana' ? ' sel' : '')} onClick={() => setProvider('Solana')}>
             <span className="ic" aria-hidden="true">📲</span>
@@ -874,7 +878,13 @@ export default function PaginaFamilia({ standalone = false }) {
             <div className={'card saldo-card' + focoSaldo}>
               <span className="saldo-rot">Você tem</span>
               <ValorAnimado valor={f.saldo} className="saldo-numero" />
-              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Picnic' ? 'Picnic 🧺' : 'do seu aplicativo 📲'}</span>
+              {/* A pergunta é "é conta que a família já tinha?", não "é a marca X".
+                  Comparar com o nome do provedor atual quebra em cima de quem já
+                  usa o app: quem criou a conta antes tem 'Picnic' gravado no
+                  celular, e a tela passaria a dizer "do seu aplicativo" para uma
+                  conta que a operação criou. Invertido, qualquer provedor
+                  custodial cai no rótulo certo — hoje e no próximo. */}
+              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Solana' ? 'do seu aplicativo 📲' : `${PROVIDER_CARTEIRA} ☕`}</span>
 
               {/* De onde vem o dinheiro — a parte que o app escondia.
                   A renda do trabalho é INCONDICIONAL e é o princípio nº 1 do

@@ -7,15 +7,20 @@ const KEY = 'raizes-mvp-v2';
 /* --------------------------------------------------- constantes públicas ---- */
 export const REDE = 'Solana';
 export const MOEDA = 'BRZ/cRED';
-export const PROVIDER_CARTEIRA = 'Picnic';
+export const PROVIDER_CARTEIRA = 'Decaf';
 export const TAXA_SOLANA = 0.000005; // SOL — patrocinada pela operação
 export const BONUS_POR_CRIANCA = 30;
 export const SPLIT = { renda: 0.6, fundo: 0.25, operacao: 0.15 };
 
+/* `iniciais` no lugar do emoji que a refatoração de UI removeu.
+   O avatar do signatário é `assinou ? '✓' : <o que vem aqui>` — com emoji vazio,
+   quem ainda não assinou ficava um círculo verde em branco, e o painel do cofre é
+   exatamente onde alguém precisa ver DE QUEM se está esperando assinatura. Sigla
+   segue a mesma decisão do menu, que trocou emoji por marca curta. */
 export const SIGNATARIOS = [
-  { id: 'viva', nome: 'Instituto Vivá', papel: 'Mobilização e validação social', emoji: '', endereco: null },
-  { id: 'detrash', nome: 'DeTrash', papel: 'Validação ambiental (metodologia)', emoji: '', endereco: null },
-  { id: 'comunidade', nome: 'Representante Comunitário', papel: 'Controle social do território', emoji: '', endereco: null },
+  { id: 'viva', nome: 'Instituto Vivá', papel: 'Mobilização e validação social', iniciais: 'IV', endereco: null },
+  { id: 'detrash', nome: 'DeTrash', papel: 'Validação ambiental (metodologia)', iniciais: 'DT', endereco: null },
+  { id: 'comunidade', nome: 'Representante Comunitário', papel: 'Controle social do território', iniciais: 'RC', endereco: null },
 ];
 export const signatarioPor = id => SIGNATARIOS.find(s => s.id === id);
 
@@ -464,7 +469,7 @@ function seed() {
     familias: [
       {
         id: 1, resp: 'Maria de Lourdes', criancas: 2, saldo: 0,
-        carteira: { end: solAddr('familia-1'), provider: 'Picnic', rede: REDE, criadaEm: '2026-07-08', celular: '(75) 9 9124-3311' },
+        carteira: { end: solAddr('familia-1'), provider: 'Decaf', rede: REDE, criadaEm: '2026-07-08', celular: '(75) 9 9124-3311' },
         condicoes: [
           { id: 1, mes: 'Julho', tipo: 'Vacinação em dia (2 crianças)', status: 'liberada' },
           { id: 5, mes: 'Julho', tipo: 'Consulta pediátrica em dia', status: 'pendente' },
@@ -473,7 +478,7 @@ function seed() {
       },
       {
         id: 2, resp: 'José Raimundo', criancas: 3, saldo: 0,
-        carteira: { end: solAddr('familia-2'), provider: 'Picnic', rede: REDE, criadaEm: '2026-07-09', celular: '(75) 9 8871-0456' },
+        carteira: { end: solAddr('familia-2'), provider: 'Decaf', rede: REDE, criadaEm: '2026-07-09', celular: '(75) 9 8871-0456' },
         condicoes: [
           { id: 3, mes: 'Julho', tipo: 'Matrícula escolar (3 crianças)', status: 'aguardando-assinaturas' },
         ],
@@ -497,8 +502,8 @@ function seed() {
 
   /* história registrada na cadeia (na ordem em que aconteceu) */
   pushTx(state, 'GÊNESE', `Cofre multisig do Fundo Infância implantado na ${REDE} — limiar 2 de 3 (Instituto Vivá, DeTrash, Representante Comunitário)`, 0);
-  pushTx(state, 'CARTEIRA', `Carteira Picnic (${REDE}) conectada para família de Maria de Lourdes — sem dados pessoais on-chain`, 0);
-  pushTx(state, 'CARTEIRA', `Carteira Picnic (${REDE}) conectada para família de José Raimundo — sem dados pessoais on-chain`, 0);
+  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de Maria de Lourdes — sem dados pessoais on-chain`, 0);
+  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de José Raimundo — sem dados pessoais on-chain`, 0);
   pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 45 kg de Plástico PET — Praia de Cueira', 0);
   pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 60 kg de Vidro — Velha Boipeba', 0);
   pushTx(state, 'CIRCULARIDADE', 'Relatório de Circularidade emitido: 105 kg validados (Julho 2026 — quinzena 1)', 0);
@@ -510,7 +515,7 @@ function seed() {
   state.caixas.fundoLiberado += bonusMaria;
   state.familias[0].saldo += bonusMaria;
   state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho — vacinação em dia', valor: bonusMaria });
-  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} → conta Picnic de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
+  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} → conta Decaf de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
 
   pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo — Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
   pushTx(state, 'ASSINATURA', 'Instituto Vivá assinou a proposta #1 (1 de 2 necessárias)', 0, { propostaId: 1, signatario: 'viva' });
