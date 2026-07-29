@@ -63,7 +63,15 @@ async function ev(expr) {
 const HELPERS = `
 window.__t = {
   txt: () => document.body.innerText,
-  tem: s => document.body.innerText.includes(s),
+  /* Sem sensibilidade a caixa, DE PROPÓSITO.
+     \`innerText\` devolve o texto JÁ TRANSFORMADO pelo CSS: um
+     \`text-transform:uppercase\` num rótulo faz "já liberado às famílias" virar
+     "JÁ LIBERADO ÀS FAMÍLIAS" e derruba a asserção sem que nada tenha
+     quebrado na tela. Aconteceu duas vezes — e caixa é apresentação, não
+     conteúdo: quem verifica "este texto está visível" não deve ser refém da
+     decisão tipográfica de quem desenha. Nas asserções NEGATIVAS (ausência de
+     jargão) ignorar a caixa só aumenta o rigor. */
+  tem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
   clicar: (sel, txt) => {
     const els = [...document.querySelectorAll(sel)];
     const el = txt ? els.find(e => e.innerText.trim().includes(txt)) : els[0];

@@ -99,7 +99,10 @@ export async function abrirNavegador({ porta = 9333, edge = process.env.EDGE } =
 export const AJUDANTES = `
 window.__t = {
   txt: () => document.body.innerText,
-  tem: s => document.body.innerText.includes(s),
+  /* ignora caixa: innerText devolve o texto transformado pelo CSS, e um
+     text-transform:uppercase num rótulo derrubaria a asserção sem nada ter
+     quebrado. Ver o comentário longo em navegador.mjs. */
+  tem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
   contem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
   clicar: (sel, txt) => {
     const els = [...document.querySelectorAll(sel)];
