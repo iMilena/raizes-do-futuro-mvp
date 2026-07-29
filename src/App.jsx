@@ -20,14 +20,14 @@ import PaginaRastreio from './views/Rastreio.jsx';
    O grupo só organiza a barra lateral; a ordem continua sendo a da jornada,
    porque as setas "próxima etapa" e o tour guiado dependem dela. */
 const TABS = [
-  ['dashboard', '📊', 'Dashboard', 'visão geral do piloto', 'Visão geral'],
-  ['coleta', '🧹', 'Coletor', 'registrar coleta', 'Operação'],
-  ['validacao', '✅', 'Instituto Vivá', 'validar & aprovar', 'Operação'],
-  ['mercado', '🛒', 'Mercado', 'turista & empresa', 'Operação'],
-  ['fundo', '🔗', 'Cofre Multisig', 'Solana · 2-de-3', 'Governança'],
-  ['cadastro', '📝', 'Cadastro', 'incluir família', 'Famílias'],
-  ['carteira', '👨‍👩‍👧', 'Família (operação)', 'visão do agente', 'Famílias'],
-  ['familia', '📱', 'App da Família', 'como a família vê', 'Famílias'],
+  ['dashboard', '', 'Dashboard', 'visão geral do piloto', 'Visão geral'],
+  ['coleta', '', 'Coletor', 'registrar coleta', 'Operação'],
+  ['validacao', '', 'Instituto Vivá', 'validar & aprovar', 'Operação'],
+  ['mercado', '', 'Mercado', 'turista & empresa', 'Operação'],
+  ['fundo', '', 'Cofre Multisig', 'Solana · 2-de-3', 'Governança'],
+  ['cadastro', '', 'Cadastro', 'incluir família', 'Famílias'],
+  ['carteira', '', 'Família (operação)', 'visão do agente', 'Famílias'],
+  ['familia', '', 'App da Família', 'como a família vê', 'Famílias'],
 ];
 
 /** Anuncia cada nova transação registrada na rede simulada. */
@@ -426,7 +426,9 @@ function Painel({ tab, setTab }) {
                 <button key={id}
                   className={(tab === id ? 'on' : '') + (alvo === id ? ' tour-alvo' : '')}
                   onClick={() => setTab(id)}>
-                  <span className="tab-ico">{ico}</span>
+                  <span className="tab-ico">
+                    {id === 'fundo' ? <img src="./logos/SOL-logo.png" alt="Solana" style={{ width: 16, height: 16, objectFit: 'contain' }} /> : ico}
+                  </span>
                   <span className="tab-txt">
                     <span className="tab-rot">{t(rot)}</span>
                     <span className="tab-sub">{TABS.findIndex(x => x[0] === id) + 1} · {t(sub)}</span>
@@ -481,6 +483,12 @@ function Painel({ tab, setTab }) {
               Plataforma Raízes do Futuro · Youth Challenge Blockchain — UNICEF Brasil
               <small>Cofre multisig real na Solana devnet · jornada do app simulada</small>
             </span>
+            <div className="rodape-parceiros">
+              <img src="/logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá" />
+              <img src="/logos/Detrash.png" alt="DeTrash" title="DeTrash" />
+              <img src="/logos/Recy.png" alt="Recy" title="Recy" />
+              <img src="/logos/SOL-logo.png" alt="Solana" title="Solana" />
+            </div>
             <div className="rodape-acoes">
               <button className="acao sec" onClick={exportar}>⭳ {t('Exportar dados')}</button>
               <details className="painel-config">
