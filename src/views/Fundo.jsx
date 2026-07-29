@@ -86,7 +86,7 @@ function CardProposta({ proposta, familia }) {
           const assinou = proposta.assinaturas.includes(s.id);
           return (
             <div key={s.id} className={'signatario' + (assinou ? ' assinou' : '')}>
-              <div className="avatar">{assinou ? '✓' : s.emoji}</div>
+              <div className="avatar">{assinou ? '✓' : s.iniciais}</div>
               <div className="signatario-info">
                 <b>{s.nome}</b>
                 <span className="mini">{s.papel}</span>

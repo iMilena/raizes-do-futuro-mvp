@@ -483,11 +483,19 @@ function Painel({ tab, setTab }) {
               Plataforma Raízes do Futuro · Youth Challenge Blockchain — UNICEF Brasil
               <small>Cofre multisig real na Solana devnet · jornada do app simulada</small>
             </span>
+            {/* Só quem está de pé.
+                A Rede Recy saiu desta faixa: o FundoInfancia.sol foi escrito no
+                padrão dela e auditado, mas NÃO está implantado (o cabeçalho do
+                contrato diz isso em letras maiúsculas), e não há proxy na
+                Sepolia. Logo de parceiro ao lado de Vivá, DeTrash e Solana lê
+                como integração ativa — e a submissão afirma o contrário. Quando
+                o proxy existir, o logo volta.
+                Caminhos relativos: o absoluto `/logos/…` quebra se o MVP for
+                publicado sob subcaminho (GitHub Pages). */}
             <div className="rodape-parceiros">
-              <img src="/logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá" />
-              <img src="/logos/Detrash.png" alt="DeTrash" title="DeTrash" />
-              <img src="/logos/Recy.png" alt="Recy" title="Recy" />
-              <img src="/logos/SOL-logo.png" alt="Solana" title="Solana" />
+              <img src="./logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá — presença territorial e validação social" />
+              <img src="./logos/Detrash.png" alt="DeTrash" title="DeTrash — metodologia de validação ambiental" />
+              <img src="./logos/SOL-logo.png" alt="Solana" title="Solana — cofre multisig 2-de-3 na devnet" />
             </div>
             <div className="rodape-acoes">
               <button className="acao sec" onClick={exportar}>⭳ {t('Exportar dados')}</button>
