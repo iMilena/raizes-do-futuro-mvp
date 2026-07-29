@@ -13,9 +13,9 @@ export const BONUS_POR_CRIANCA = 30;
 export const SPLIT = { renda: 0.6, fundo: 0.25, operacao: 0.15 };
 
 export const SIGNATARIOS = [
-  { id: 'viva', nome: 'Instituto Vivá', papel: 'Mobilização e validação social', emoji: '🌱', endereco: null },
-  { id: 'detrash', nome: 'DeTrash', papel: 'Validação ambiental (metodologia)', emoji: '♻️', endereco: null },
-  { id: 'comunidade', nome: 'Representante Comunitário', papel: 'Controle social do território', emoji: '🤝', endereco: null },
+  { id: 'viva', nome: 'Instituto Vivá', papel: 'Mobilização e validação social', emoji: '', endereco: null },
+  { id: 'detrash', nome: 'DeTrash', papel: 'Validação ambiental (metodologia)', emoji: '', endereco: null },
+  { id: 'comunidade', nome: 'Representante Comunitário', papel: 'Controle social do território', emoji: '', endereco: null },
 ];
 export const signatarioPor = id => SIGNATARIOS.find(s => s.id === id);
 
