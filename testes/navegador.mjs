@@ -183,7 +183,7 @@ try {
 
   /* ---------- 0. tour de primeira visita ---------- */
   secao('0. Tour de primeira visita do painel');
-  await irParaPrimeiraVisita(ALVO);
+  await irParaPrimeiraVisita(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".tour") === 1'), 'tour abre sozinho na primeira visita');
   ok(await ev('return __t.tem("Bem-vindo ao Raízes do Futuro")'), 'passo 1 dá boas-vindas e explica o ciclo');
   ok(await ev('return __t.tem("1 de 9")'), 'contador mostra 1 de 9');
@@ -298,7 +298,7 @@ try {
 
   /* ---------- 1. carga inicial e dashboard ---------- */
   secao('1. Carga inicial · Dashboard');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".tour") === 0'), 'visitante que já viu o tour entra direto no painel');
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'Dashboard renderiza');
   ok(await ev('return __t.tem("Raízes do Futuro")'), 'cabeçalho presente');
@@ -448,7 +448,7 @@ try {
   /* ---------- 7. app da família ---------- */
   secao('7. App da Família — entrada, saldo, compromissos, extrato');
   // seção autocontida: estado limpo, para a família ainda ter um compromisso pendente
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   const cliqueAba = await ev('return __t.clicar("nav.tabs button", "App da Família")');
   await espera(500);
   ok(cliqueAba === true, 'abre a aba do App da Família');
@@ -619,7 +619,7 @@ try {
 
   /* ---------- 10. onboarding gamificado ---------- */
   secao('10. Onboarding gamificado (família sem conta)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "App da Família")');
   await espera(400);
   const semConta = await ev(`
@@ -726,7 +726,7 @@ try {
 
   /* ---------- 12. modo demo guiado ---------- */
   secao('12. Modo demo guiado (▶ Ver o ciclo completo)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await espera(300);
   await ev('return __t.clicar(".btn-demo", "Ver o ciclo completo")');
   await espera(900);
@@ -799,7 +799,7 @@ try {
 
   /* ---------- 14a. ancoragem do relatório na Solana devnet ---------- */
   secao('14a. Ancoragem do relatório na Solana devnet');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
   await espera(900);
   ok(await ev('return __t.tem("ainda não ancorado")'), 'relatório da seed aparece como não ancorado');
@@ -850,7 +850,7 @@ try {
 
   /* ---------- 14b. QR de rastreio do produto ---------- */
   secao('14b. QR de rastreio do produto (jornada da peça)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "Mercado")');
   await espera(600);
 
@@ -945,7 +945,7 @@ try {
 
   /* ---------- 14b2. cadastro de família ---------- */
   secao('14b2. Cadastro de família (com consentimento no mesmo formulário)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   ok(await ev('return __t.clicar("nav.tabs button", "Cadastro")'), 'abre a aba de Cadastro');
   await espera(600);
   await ev(HELPERS + ' return 1;');
@@ -1055,7 +1055,7 @@ try {
 
   /* ---------- 14b3. meta de poupança ---------- */
   secao('14b3. Meta de poupança (definida pela família, sem tutela)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
@@ -1133,7 +1133,7 @@ try {
 
   /* ---------- 14b4. a família confere e contesta ---------- */
   secao('14b4. Suas entregas e "isso está errado"');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
@@ -1256,7 +1256,7 @@ try {
 
   /* ---------- 14c. voz da Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   await ev('return __t.clicar("nav.tabs button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
@@ -1300,7 +1300,7 @@ try {
 
   /* ---------- 14d. idioma ---------- */
   secao('14d. Português e inglês');
-  await irPara(ALVO);
+  await irPara(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".idioma button") === 2'), 'seletor PT/EN no cabeçalho');
   ok(await ev('return document.documentElement.lang === "pt-BR"'), 'português é o padrão');
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'Dashboard em português');

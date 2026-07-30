@@ -15,6 +15,8 @@ import Carteira from './views/Carteira.jsx';
 import Cadastro from './views/Cadastro.jsx';
 import PaginaFamilia from './views/PaginaFamilia.jsx';
 import PaginaRastreio from './views/Rastreio.jsx';
+import { Landing } from './landing';
+import { Login } from './login/Login';
 
 /* [id, ícone, rótulo, subtítulo, grupo do menu]
    O grupo só organiza a barra lateral; a ordem continua sendo a da jornada,
@@ -572,14 +574,32 @@ export default function App() {
     );
   }
 
-  return (
-    <IdiomaProvider>
-      <ToastProvider>
-        <DemoProvider setTab={setTab}>
-          <AvisosDeRede />
-          <Painel tab={tab} setTab={setTab} />
-        </DemoProvider>
-      </ToastProvider>
-    </IdiomaProvider>
-  );
+  // rota de login, antes de entrar no painel
+  if (rota.startsWith('#/login')) {
+    return (
+      <Login
+        onLogin={async ({ email, password }) => {
+          // TODO: substituir pela chamada real de autenticação
+          console.log('login attempt', email, password);
+          window.location.hash = '#/painel';
+        }}
+      />
+    );
+  }
+
+  // painel operacional — agora vive em #/painel, não mais na raiz
+  if (rota.startsWith('#/painel')) {
+    return (
+      <IdiomaProvider>
+        <ToastProvider>
+          <DemoProvider setTab={setTab}>
+            <AvisosDeRede />
+            <Painel tab={tab} setTab={setTab} />
+          </DemoProvider>
+        </ToastProvider>
+      </IdiomaProvider>
+    );
+  }
+
+  return <Landing />;
 }
