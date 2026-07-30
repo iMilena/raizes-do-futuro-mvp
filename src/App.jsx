@@ -587,32 +587,18 @@ export default function App() {
     );
   }
 
-  /* Rota de login.
-     A autenticação de verdade JÁ EXISTE neste projeto (lib/auth.js, GoTrue, com
-     papéis e RLS conferidos por 44 asserções). Então esta tela usa ela, em vez
-     do placeholder que veio no PR — que imprimia a SENHA no console do navegador
-     e abria o painel com qualquer credencial. Senha em log é defeito de segurança
-     sem contrapartida, e porta que parece trancada e não está é pior do que porta
-     nenhuma: quem olha acredita que o painel está protegido.
+  /* Entrada do painel — sem credencial, por decisão de produto.
+     O painel é a demonstração da jornada e roda local: `nuvem.ativo()` exige
+     sessão, então sem login nada sobe para o banco e não há o que proteger aqui.
+     A autenticação de verdade (lib/auth.js, papéis e RLS, 44 asserções) está no
+     cabeçalho do painel, no componente `Perfil` — onde a sessão de fato libera
+     escrita na nuvem em nome de uma organização.
 
-     Falhar o login NÃO fecha a demonstração: sem sessão o app roda 100% local
-     (nuvem.ativo() exige sessão), e é assim que o modo demo e o vídeo funcionam.
-     Quem só quer ver a jornada entra pelo painel direto; a sessão serve para
-     falar com o banco em nome de uma organização. */
+     O placeholder que veio no PR fazia pior que isto: pedia e-mail e senha,
+     imprimia a SENHA no console e abria o painel com qualquer credencial. Uma
+     porta honestamente aberta é melhor do que uma tranca de mentira. */
   if (rota.startsWith('#/login')) {
-    return (
-      <Login
-        onLogin={async ({ email, password }) => {
-          const cfg = nuvem.configuracao();
-          if (!cfg) {
-            window.location.hash = '#/painel';   // sem nuvem configurada não há o que autenticar
-            return;
-          }
-          await auth.entrar(cfg, email, password); // lança com mensagem em pt-BR quando falha
-          window.location.hash = '#/painel';
-        }}
-      />
-    );
+    return <Login onLogin={async () => { window.location.hash = '#/painel'; }} />;
   }
 
   // painel operacional — agora vive em #/painel, não mais na raiz

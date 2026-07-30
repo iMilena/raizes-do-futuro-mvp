@@ -1,30 +1,26 @@
 import { useState } from 'react';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { logoRaizes } from '../landing/images';
 import './styles/login.css';
 
+/* ---------------------------------------------------------------------------
+   Entrada do painel.
+
+   Sem campos de e-mail e senha, de propósito: o painel é a demonstração da
+   jornada e roda 100% local — `nuvem.ativo()` exige sessão, então sem login nada
+   sobe para o banco. Pedir credencial aqui só criaria uma porta que qualquer um
+   abre, e porta que parece trancada e não está é pior do que porta nenhuma.
+
+   A autenticação DE VERDADE não desapareceu: ela vive no cabeçalho do painel
+   (componente `Perfil`, que chama `auth.entrar`), que é onde ela controla algo —
+   é a sessão que permite escrever na nuvem sob as políticas por papel. Quem opera
+   entra por lá; quem só quer ver o ciclo entra por aqui.
+
+   Por isso o texto desta tela não diz "bem-vindo de volta" nem promete conferir
+   nada: diz o que acontece.
+--------------------------------------------------------------------------- */
 export function Login({ onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [erro, setErro] = useState('');
-
-  const handleEmailChange = (event) => {
-    setEmail(event.target.value);
-    setEmailError('');
-  };
-
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-    setPasswordError('');
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword((current) => !current);
-  };
 
   const goBackToLanding = () => {
     window.location.hash = '#/';
@@ -32,34 +28,11 @@ export function Login({ onLogin }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    const nextEmailError = email.trim() ? '' : 'Informe seu e-mail.';
-    const nextPasswordError = password.trim() ? '' : 'Informe sua senha.';
-
-    if (nextEmailError || nextPasswordError) {
-      setEmailError(nextEmailError);
-      setPasswordError(nextPasswordError);
-      return;
-    }
-
     setIsLoading(true);
-    setErro('');
-
-    if (onLogin) {
-      /* `try/finally` sem `catch` deixava a falha subir como rejeição não tratada:
-         o botão parava de girar e a pessoa não recebia motivo nenhum. Quem digita
-         a senha errada precisa saber que foi a senha — e o auth.js já devolve a
-         mensagem certa em português, inclusive o caso de usuário sem papel. */
-      try {
-        await onLogin({ email, password });
-      } catch (e) {
-        setErro(e?.message || 'Não foi possível entrar. Tente de novo.');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Placeholder até a integração real com a API de autenticação.
-      setTimeout(() => setIsLoading(false), 1200);
+    try {
+      if (onLogin) await onLogin({});
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -80,69 +53,22 @@ export function Login({ onLogin }) {
           <span className="login-brand-text">Raízes do Futuro</span>
         </div>
 
-        <h1 className="login-title">Bem-vindo de volta</h1>
+        <h1 className="login-title">Painel do projeto</h1>
+        <p className="login-sub">
+          Acompanhe o ciclo completo: coleta validada, receita dividida por código
+          e o cofre 2-de-3 liberando o bônus das famílias.
+        </p>
 
         <form onSubmit={handleSubmit} className="login-form" noValidate>
-          <div className="login-field">
-            <label htmlFor="login-email" className="login-label">
-              E-mail
-            </label>
-            <div className="login-input-wrapper">
-              <Mail size={17} className="login-input-icon" />
-              <input
-                id="login-email"
-                type="email"
-                className={`login-input${emailError ? ' login-input--error' : ''}`}
-                placeholder="seu@email.com"
-                value={email}
-                onChange={handleEmailChange}
-                autoComplete="email"
-              />
-            </div>
-            {emailError && <div className="login-error">{emailError}</div>}
-          </div>
-
-          <div className="login-field">
-            <label htmlFor="login-password" className="login-label">
-              Senha
-            </label>
-            <div className="login-input-wrapper">
-              <Lock size={17} className="login-input-icon" />
-              <input
-                id="login-password"
-                type={showPassword ? 'text' : 'password'}
-                className={`login-input login-input--with-toggle${
-                  passwordError ? ' login-input--error' : ''
-                }`}
-                placeholder="••••••••"
-                value={password}
-                onChange={handlePasswordChange}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                className="login-toggle-visibility"
-                onClick={toggleShowPassword}
-                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-              >
-                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-              </button>
-            </div>
-            {passwordError && <div className="login-error">{passwordError}</div>}
-          </div>
-
-          {erro && <p className="login-erro" role="alert">{erro}</p>}
-
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {isLoading ? 'Abrindo…' : 'Entrar no painel'}
           </button>
-
-          <div className="login-forgot-wrapper">
-            <a href="#" className="login-forgot">
-              Esqueci minha senha
-            </a>
-          </div>
         </form>
+
+        <p className="login-nota">
+          Demonstração aberta — nada sai deste aparelho. O acesso da operação,
+          com login por organização, fica dentro do painel.
+        </p>
       </div>
     </div>
   );

@@ -204,3 +204,21 @@ body {
   font-size: 14px;
   line-height: 1.45;
 }
+
+/* Subtítulo e nota da entrada sem credencial.
+   O `.login-erro` acima ficou sem uso quando os campos saíram — mantido porque o
+   Perfil do painel usa a mesma linguagem visual para falha de login real. */
+.login-page .login-sub {
+  margin: 6px 0 22px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #4a5f54;
+  text-align: center;
+}
+.login-page .login-nota {
+  margin: 18px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b7f74;
+  text-align: center;
+}
