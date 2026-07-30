@@ -10,6 +10,7 @@ export function Login({ onLogin }) {
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [erro, setErro] = useState('');
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -42,10 +43,17 @@ export function Login({ onLogin }) {
     }
 
     setIsLoading(true);
+    setErro('');
 
     if (onLogin) {
+      /* `try/finally` sem `catch` deixava a falha subir como rejeição não tratada:
+         o botão parava de girar e a pessoa não recebia motivo nenhum. Quem digita
+         a senha errada precisa saber que foi a senha — e o auth.js já devolve a
+         mensagem certa em português, inclusive o caso de usuário sem papel. */
       try {
         await onLogin({ email, password });
+      } catch (e) {
+        setErro(e?.message || 'Não foi possível entrar. Tente de novo.');
       } finally {
         setIsLoading(false);
       }
@@ -122,6 +130,8 @@ export function Login({ onLogin }) {
             </div>
             {passwordError && <div className="login-error">{passwordError}</div>}
           </div>
+
+          {erro && <p className="login-erro" role="alert">{erro}</p>}
 
           <button type="submit" className="login-button" disabled={isLoading}>
             {isLoading ? 'Entrando...' : 'Entrar'}

@@ -19,7 +19,9 @@ Duas telas independentes:
 
 | Endereço | Para quem |
 |---|---|
-| http://localhost:5173 | painel da operação e dos parceiros (8 abas) |
+| http://localhost:5173 | **landing page** do projeto — porta de entrada pública |
+| http://localhost:5173/#/painel | painel da operação e dos parceiros (8 abas) |
+| http://localhost:5173/#/login | entrada da operação (autentica de verdade, via lib/auth.js) |
 | http://localhost:5173/#/familia | **app da família**, mobile-first — a tela que a família usa no celular |
 
 ## Arquitetura simulada

@@ -16,11 +16,15 @@ const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SAIDA = join(RAIZ, 'capturas');
 const ALVO = process.env.ALVO ?? 'http://localhost:5173';
 
+/* O hash deixou de poder ser vazio: a raiz virou a landing, e as quatro telas do
+   painel passaram a ser capturadas em cima da página de apresentação — a primeira
+   captura chegava a estourar o tempo do captureScreenshot, porque a landing é
+   muito alta e carrega ~2,9 MB de imagens. */
 const TELAS = [
-  ['painel-dashboard', '', 'Dashboard'],
-  ['painel-cofre', '', 'Cofre Multisig'],
-  ['painel-mercado', '', 'Mercado'],
-  ['painel-validacao', '', 'Instituto Vivá'],
+  ['painel-dashboard', '#/painel', 'Dashboard'],
+  ['painel-cofre', '#/painel', 'Cofre Multisig'],
+  ['painel-mercado', '#/painel', 'Mercado'],
+  ['painel-validacao', '#/painel', 'Instituto Vivá'],
   ['app-familia', '#/familia', null],
 ];
 
@@ -57,13 +61,20 @@ try {
     }
   }
 
-  /* overflow horizontal é o defeito que screenshot esconde e usuário sente */
+  /* Overflow horizontal é o defeito que screenshot esconde e usuário sente.
+     Agora em DUAS rotas: a raiz virou a landing, e checar só ela deixaria o
+     painel sem cobertura — a troca de rota mudaria em silêncio o que este teste
+     verifica. A landing é a mais nova e a menos testada das duas. */
   await nav.cdp('Emulation.setDeviceMetricsOverride', { width: 412, height: 900, deviceScaleFactor: 1, mobile: true });
-  await nav.cdp('Page.navigate', { url: ALVO });
-  await espera(1500);
-  const vaza = await nav.ev('return document.documentElement.scrollWidth - window.innerWidth');
-  console.log(vaza > 2 ? `  ✗ vaza ${vaza}px na horizontal em 412px` : '  ✓ sem vazamento horizontal em 412px');
-  if (vaza > 2) erros.push('overflow');
+  for (const [rota, nome] of [['', 'landing (raiz)'], ['/#/painel', 'painel']]) {
+    await nav.cdp('Page.navigate', { url: ALVO + rota });
+    await espera(1800);
+    const vaza = await nav.ev('return document.documentElement.scrollWidth - window.innerWidth');
+    console.log(vaza > 2
+      ? `  ✗ ${nome}: vaza ${vaza}px na horizontal em 412px`
+      : `  ✓ ${nome}: sem vazamento horizontal em 412px`);
+    if (vaza > 2) erros.push('overflow em ' + nome);
+  }
 } finally {
   await nav.fechar();
 }

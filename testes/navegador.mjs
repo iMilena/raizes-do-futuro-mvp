@@ -728,9 +728,20 @@ try {
   ok(await ev('return __t.tem("Voltar ao painel")'), 'link de volta ao painel');
   ok(await ev('return __t.conta(".mascote-bicho") >= 1'), 'mascote presente na rota própria');
   ok(await ev('return __t.conta(".moldura-celular") === 0'), 'na rota própria não há moldura (é o próprio celular)');
+  /* O link de volta tem de LEVAR ao painel, não só existir.
+     Com a landing na raiz, a asserção antiga ("hash = #/" devolve o painel)
+     deixou de descrever a verdade — e o link do app da família estava indo para
+     a página de apresentação com o rótulo "Voltar ao painel do projeto". Agora
+     o teste clica no link de verdade, que é o que a família faria. */
+  await ev('return __t.clicar(".voltar-painel")');
+  await espera(700);
+  ok(await ev('return __t.conta("nav.tabs") === 1'), 'o link "Voltar ao painel" abre o painel, não a landing');
+  ok(await ev('return location.hash.indexOf("painel") > -1'), 'e deixa a rota do painel na barra de endereço');
+
+  /* a raiz agora é a landing — vale afirmar, para a troca não passar em branco */
   await ev('window.location.hash = "#/"; return 1;');
-  await espera(500);
-  ok(await ev('return __t.conta("nav.tabs") === 1'), 'volta ao painel ao trocar o hash');
+  await espera(600);
+  ok(await ev('return __t.conta("nav.tabs") === 0'), 'a raiz não é mais o painel (virou a landing)');
 
   /* ---------- 12. modo demo guiado ---------- */
   secao('12. Modo demo guiado (▶ Ver o ciclo completo)');
@@ -1373,8 +1384,10 @@ try {
      o saldo ANTIGO depois de um saque — a pessoa sacaria e continuaria vendo o
      dinheiro na conta. Aqui os quadros são desligados de propósito. */
   secao('16. O número não depende da animação (rAF desligado)');
-  await ev(`localStorage.removeItem('raizes-idioma-v1'); window.location.hash = '#/'; return 1;`);
-  await espera(400);
+  /* '#/' era o painel quando esta seção foi escrita; hoje é a landing, e o
+     clique em "Mercado" caía no vazio — as três asserções liam "(sem barra)". */
+  await ev(`localStorage.removeItem('raizes-idioma-v1'); window.location.hash = '#/painel'; return 1;`);
+  await espera(600);
   await ev('return __t.clicar("nav.tabs button", "Mercado")');
   await espera(350);
   await ev('window.__raf = window.requestAnimationFrame; window.requestAnimationFrame = function () { return 0; }; return true');

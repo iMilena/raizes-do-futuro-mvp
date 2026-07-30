@@ -72,7 +72,7 @@ try {
   B = await abrirNavegador({ porta: 9351 });
 
   const preparar = async (nav, rotulo) => {
-    await nav.cdp('Page.navigate', { url: ALVO });
+    await nav.cdp('Page.navigate', { url: ALVO + '/#/painel' });
     await espera(900);
     /* injeta a sessão como se a pessoa tivesse entrado na tela: src/lib/auth.js
        restaura desta chave no boot. Assim os dois aparelhos sincronizam. */

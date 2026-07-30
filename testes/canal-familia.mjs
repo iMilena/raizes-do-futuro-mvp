@@ -161,7 +161,7 @@ try {
   } else {
     const op = await abrirNavegador({ porta: 9356 });
     try {
-      await op.cdp('Page.navigate', { url: ALVO });
+      await op.cdp('Page.navigate', { url: ALVO + '/#/painel' });
       await espera(900);
       await op.ev(`
         localStorage.clear();

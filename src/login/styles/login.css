@@ -190,3 +190,17 @@ body {
 .login-page .login-back-button:hover {
   background: var(--rf-color-bg-soft);
 }
+
+/* Erro geral do login (senha errada, usuário sem papel, rede fora).
+   O formulário já tinha estilo para erro de campo, mas não para o motivo que
+   vem do servidor — e sem ele a falha ficava invisível. */
+.login-erro {
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: #fdeceb;
+  border: 1px solid #f3c2bd;
+  color: #8f2c22;
+  font-size: 14px;
+  line-height: 1.45;
+}
