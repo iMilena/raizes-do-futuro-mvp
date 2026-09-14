@@ -1,0 +1,417 @@
+/* ---------------------------------------------------------------------------
+   Estilo do app de campo.
+
+   As decisões daqui vêm todas da mesma cena: pessoa de pé na praia, sol a
+   pino, uma mão segurando saco de material e a outra o celular, dedo molhado de
+   água salgada, tela com areia.
+
+   · ALVO MÍNIMO DE 64 px. O recomendado costuma ser 44. Aqui é maior porque dedo
+     molhado escorrega e ninguém vai apertar duas vezes com paciência.
+   · CONTRASTE ALTO E FUNDO CLARO. Tela de celular no sol perde quase todo o
+     contraste. Cinza sobre branco desaparece, então não existe cinza claro aqui.
+   · TUDO NA METADE DE BAIXO. O polegar de quem segura o celular com uma mão
+     alcança a parte inferior, não o topo. Título em cima, ação embaixo, sempre.
+   · POUCO TEXTO, E SEM JARGÃO. Nada de "hash", "sincronizar", "validar". O que
+     aparece é "foto", "material", "peso", "guardado".
+   · SEM MENU. O fluxo é uma linha reta: foto, material, peso, pronto.
+--------------------------------------------------------------------------- */
+
+:root {
+  --verde: #2e5a3e;
+  --verde-escuro: #1f3f2b;
+  --acento: #7fd99a;
+  --areia: #f7f4ec;
+  --branco: #ffffff;
+  --tinta: #12211a;
+  --atencao: #b35309;
+  --atencao-fundo: #fff4e5;
+  --alerta: #a02020;
+  --borda: #c9d3cc;
+
+  /* Alvo de toque. Todo botão do app usa esta medida, não uma medida própria. */
+  --alvo: 72px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--areia);
+  color: var(--tinta);
+  font-family: 'Manrope Variable', 'Manrope', system-ui, -apple-system, sans-serif;
+  /* 18px de base: o padrão de 16 é pequeno demais para ler no sol. */
+  font-size: 18px;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+#raiz { height: 100%; }
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--areia);
+}
+
+/* ------------------------------------------------------------- cabeçalho --- */
+
+.campo-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--verde);
+  color: var(--branco);
+  /* Respeita o recorte da tela (notch) sem depender de biblioteca. */
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+}
+
+.campo-topo h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.campo-passo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Fila e rede, sempre visíveis: quem está em campo precisa saber se o que
+   registrou já saiu do aparelho, sem abrir tela nenhuma. */
+.campo-estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.bolinha {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--acento);
+}
+
+.bolinha.offline { background: #f0c000; }
+
+/* ---------------------------------------------------------------- corpo --- */
+
+.campo-corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px 0;
+}
+
+.campo-pergunta {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.campo-dica {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #3d5147;
+}
+
+/* Rodapé fixo: a ação principal fica sempre no alcance do polegar. */
+.campo-rodape {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to bottom, rgba(247, 244, 236, 0), var(--areia) 22%);
+}
+
+/* --------------------------------------------------------------- botões --- */
+
+.botao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--alvo);
+  padding: 16px 20px;
+  border: 3px solid transparent;
+  border-radius: 16px;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  /* Sem realce azul do toque e sem seleção acidental de texto ao arrastar. */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.botao-principal {
+  background: var(--verde);
+  color: var(--branco);
+}
+
+.botao-principal:active { background: var(--verde-escuro); }
+
+.botao-secundario {
+  background: var(--branco);
+  color: var(--verde-escuro);
+  border-color: var(--verde);
+}
+
+.botao-secundario:active { background: #e8f2ea; }
+
+.botao:disabled {
+  /* Desabilitado ainda precisa ser legível no sol: opacidade baixa some. */
+  background: #d6ded8;
+  color: #6a7a71;
+  border-color: transparent;
+  cursor: default;
+}
+
+.botao-gigante {
+  min-height: 140px;
+  font-size: 1.6rem;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.botao-voltar {
+  min-height: 56px;
+  background: none;
+  border: none;
+  color: var(--verde-escuro);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: left;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------- foto --- */
+
+.foto-previa {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 3px solid var(--verde);
+  background: #dfe6e0;
+}
+
+.foto-vazia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 3px dashed var(--borda);
+  border-radius: 18px;
+  font-size: 4rem;
+}
+
+/* ------------------------------------------------------------- material --- */
+
+.material-lista {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.material-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 104px;
+  padding: 12px;
+  border: 3px solid var(--borda);
+  border-radius: 16px;
+  background: var(--branco);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--tinta);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.material-item .icone { font-size: 2rem; }
+
+.material-item[aria-pressed='true'] {
+  border-color: var(--verde);
+  background: #e8f2ea;
+  /* Marca também com traço, e não só com cor: a cor some no sol e há quem não
+     distinga verde de cinza. */
+  box-shadow: inset 0 0 0 3px var(--acento);
+}
+
+.sugestao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--branco);
+  border: 3px solid var(--verde);
+}
+
+.sugestao .confianca {
+  margin-left: auto;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.sugestao.duvida {
+  border-color: var(--atencao);
+  background: var(--atencao-fundo);
+}
+
+/* ----------------------------------------------------------------- peso --- */
+
+.peso-visor {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--branco);
+  border: 3px solid var(--verde);
+  font-size: 3.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.peso-visor .unidade {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3d5147;
+}
+
+/* Teclado próprio, e não o do sistema: o teclado numérico do celular abre com
+   teclas pequenas, cobre metade da tela e some quando o dedo está molhado. */
+.teclado {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.tecla {
+  min-height: var(--alvo);
+  border: 3px solid var(--borda);
+  border-radius: 14px;
+  background: var(--branco);
+  font: inherit;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--tinta);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tecla:active { background: #e8f2ea; }
+.tecla.apagar { font-size: 1.3rem; }
+
+/* ---------------------------------------------------------------- final --- */
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: var(--branco);
+  border-radius: 16px;
+  border: 3px solid var(--borda);
+}
+
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.1rem;
+}
+
+.resumo-linha b { font-weight: 800; }
+
+.sucesso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.sucesso .marca {
+  font-size: 4.5rem;
+  line-height: 1;
+}
+
+.aviso {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--atencao-fundo);
+  border: 3px solid var(--atencao);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.aviso b { font-weight: 800; }
+
+/* ----------------------------------------------------------------- fila --- */
+
+.fila-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  text-align: center;
+}
+
+.fila-caixa {
+  padding: 14px 8px;
+  border-radius: 14px;
+  background: var(--branco);
+  border: 3px solid var(--borda);
+}
+
+.fila-caixa .numero {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.fila-caixa .rotulo {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #3d5147;
+}
+
+/* Quem prefere menos movimento na tela não recebe animação nenhuma. */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

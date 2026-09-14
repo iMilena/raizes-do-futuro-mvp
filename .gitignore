@@ -33,3 +33,19 @@ capturas/
 # Nada disso pode ir para um repositório público — e o repositório é público.
 # O arquivo fica no disco de quem preenche, e vai para o formulário do edital.
 SUBMISSAO.md
+
+# Módulo de Validação de Coleta: ambiente e dados do pipeline de modelo.
+# Os datasets são públicos e baixáveis (`python -m raizes_modelo.dados.preparar`),
+# e somam centenas de MB. As execuções de treino são reproduzíveis a partir da
+# configuração versionada, então o checkpoint também não precisa entrar no git.
+modelo/.venv/
+modelo/dados/
+modelo/execucoes/
+modelo/**/__pycache__/
+modelo/.pytest_cache/
+
+# O ONNX exportado é artefato de build, gerado por `raizes_modelo.exportar`.
+# Fica de fora por padrão porque são megabytes que mudam a cada retreino. Para
+# publicar o app sem treinar, comente as duas linhas abaixo e versione o modelo.
+public/modelo/*.onnx
+public/modelo/*.json

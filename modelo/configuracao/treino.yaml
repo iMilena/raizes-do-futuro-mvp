@@ -1,0 +1,96 @@
+# ---------------------------------------------------------------------------
+# Configuração do treino do classificador de material reciclável.
+#
+# Tudo o que muda entre uma execução e outra mora aqui, e nada mora no código.
+# Quem for retreinar com as fotos de Boipeba mexe neste arquivo, não em .py.
+# ---------------------------------------------------------------------------
+
+# Semente única para random, numpy e torch. Trocar isto muda a divisão dos
+# dados e a inicialização da cabeça, então o resultado deixa de ser comparável.
+semente: 42
+
+# Ordem importa: é a ordem dos neurônios de saída, e vai igual para o ONNX,
+# para o JSON do modelo e para a interface do app.
+classes: [PET, aluminio, vidro, papelao, outros]
+
+dados:
+  diretorio: dados           # relativo a modelo/
+  divisao: { treino: 0.70, validacao: 0.15, teste: 0.15 }
+  # Teto por classe, aplicado depois de juntar as fontes. Sem ele, "outros"
+  # engole o conjunto (é a classe coringa do TACO) e o modelo aprende a chutar
+  # "outros" para tudo, com acurácia alta e utilidade zero.
+  max_por_classe: 2500
+
+  trashnet:
+    usar: true
+    url: https://github.com/garythung/trashnet/raw/master/data/dataset-resized.zip
+    # O projeto vende papelão, e papel de escritório entra no mesmo fardo.
+    # Separar as duas coisas seria uma classe que a operação não usa.
+    papel_como_papelao: true
+
+  taco:
+    usar: true
+    url_anotacoes: https://raw.githubusercontent.com/pedropro/TACO/master/data/annotations.json
+    # As imagens do TACO vêm uma a uma do Flickr, e parte dos links já morreu.
+    # Baixamos um subconjunto: o ganho por imagem cai rápido e o tempo de
+    # download não.
+    max_imagens: 1500
+    trabalhadores: 12
+    # Recorte pela caixa da anotação, com folga para o contexto não sumir.
+    margem_recorte: 0.12
+    # Recorte menor que isto vira borrão depois de redimensionar para 224.
+    area_minima_px: 4096
+
+modelo:
+  # MobileNetV3-Small: 2.5 M parâmetros, pensada para celular, e com pesos de
+  # ImageNet no torchvision. EfficientNet-Lite0 acerta um pouco mais em papel,
+  # mas não vem no torchvision e pesa quase o triplo depois do ONNX.
+  arquitetura: mobilenetv3_small
+  tamanho_entrada: 224
+  pesos_iniciais: IMAGENET1K_V1
+  # Normalização do ImageNet. O app precisa dos mesmos números, e eles viajam
+  # no classificador.json justamente para não serem redigitados errado lá.
+  media: [0.485, 0.456, 0.406]
+  desvio: [0.229, 0.224, 0.225]
+
+treino:
+  epocas: 14
+  # Primeiras épocas só com a cabeça nova: descongelar tudo de cara destrói os
+  # filtros de ImageNet enquanto a cabeça ainda está aleatória.
+  epocas_so_cabeca: 3
+  lote: 32
+  taxa_aprendizado: 0.001
+  taxa_aprendizado_tronco: 0.0001
+  decaimento_peso: 0.00001
+  # Compensa o desbalanceamento que sobra depois do teto por classe.
+  pesos_por_classe: true
+  paciencia: 5              # early stopping, em épocas sem ganho no F1 macro
+  trabalhadores_dados: 4
+
+exportacao:
+  opset: 13
+  quantizar_int8: true
+  # Só convolução e multiplicação de matriz. É onde está o peso do arquivo, e
+  # quantizar o resto (hardswish, squeeze-and-excite) quebra a MobileNetV3 em
+  # silêncio: o modelo sai com 5% de concordância com o original e nenhum erro.
+  tipos_quantizados: [Conv, Gemm]
+  # Concordância mínima com o fp32 para a versão quantizada ir para campo.
+  concordancia_minima: 0.97
+  # Alvo do módulo. Ultrapassar não quebra nada, mas é sinal de que a escolha
+  # de arquitetura saiu do trilho.
+  tamanho_maximo_mb: 10
+  saida: ../public/modelo
+
+limiar:
+  # Abaixo disto o registro não é classificado automaticamente: vai para
+  # revisão humana. Ponto de partida; `calibracao.py` recalcula com os dados.
+  confianca_minima: 0.70
+
+afinamento:
+  # Caminho do fine-tune com as fotos reais de Boipeba, quando elas chegarem.
+  diretorio_fotos: dados/boipeba
+  epocas: 8
+  taxa_aprendizado: 0.0002
+  # Mantém as fotos públicas junto no treino, para o modelo não esquecer o que
+  # já sabia ao ver 300 fotos novas.
+  proporcao_dados_publicos: 0.5
