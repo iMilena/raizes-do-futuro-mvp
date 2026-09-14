@@ -112,3 +112,62 @@ As duas consultas estão nas seções 1 e 2. A de normalização de e-mail é a 
 ### O que essa lista aprendeu
 
 Ela começou dizendo "os itens em código estão feitos e testados; o que falta depende de pessoas". Estava errada nos dois lados: faltavam duas migrações no banco, e o que depende de pessoas não tem como ser conferido por quem escreve o código. Marcar caixinha de memória é o que fez a 03 sumir — por isso agora há um teste que sonda o banco em vez de perguntar a alguém.
+
+---
+
+## 5. App de campo (módulo de Validação de Coleta)
+
+O módulo tem documentação própria em [VALIDACAO.md](VALIDACAO.md). O que entra
+aqui é só o que precisa acontecer **antes de um catador usar em campo**, que é
+justamente o que nenhum teste consegue conferir.
+
+### Antes de entregar o celular
+
+- [ ] **`VITE_SAL_PSEUDONIMO` definido** no ambiente de build. Sem ele, o app usa
+      um sal de demonstração que é público, e com a lista de 30 famílias o
+      pseudônimo do coletor é revertido por força bruta em um segundo. O painel
+      de revisão mostra um aviso vermelho enquanto isso não for feito.
+- [ ] **`VITE_COLETOR_ID` e `VITE_PONTO_COLETA`** ajustados por aparelho. O
+      piloto assume um aparelho por coletor.
+- [ ] **Publicado em HTTPS.** Sem isso o navegador não oferece a instalação na
+      tela inicial e não registra o service worker, e o app deixa de funcionar
+      offline. `npm run build` gera `campo.html` e `revisao.html` junto com o
+      resto; os dois são arquivos novos no `dist/`.
+- [ ] **Primeira abertura feita onde tem sinal**, com o ícone instalado na tela
+      inicial ali mesmo. É nessa abertura que o service worker guarda o app, o
+      WebAssembly (14 MB) e o modelo (6 MB). Antes disso, o app não abre sem
+      rede. Entregar o celular sem esse passo é entregar um app que não funciona
+      na praia, que é onde ele precisa funcionar.
+- [ ] **Modelo exportado e publicado** em `public/modelo/`. Ele é gitignorado por
+      ser artefato de build: quem publica roda `python -m raizes_modelo.exportar`
+      (ver [modelo/README.md](modelo/README.md)) ou versiona o arquivo. Sem o
+      modelo o app continua funcionando, com o catador escolhendo o material à
+      mão, e é assim que ele deve se comportar.
+
+### Com pessoas
+
+- [ ] **Quem revisa a fila, e com que frequência.** Com o modelo atual, treinado
+      só em dados públicos, cerca de **46% dos registros vão para conferência
+      humana**. Isso encolhe quando houver fine-tune com as fotos de Boipeba, e
+      até lá é trabalho real de alguém, todo dia.
+- [ ] **Combinado com os catadores sobre a sinalização.** O sistema aponta
+      coincidência, não acusa ninguém, e a tela foi escrita assim. Mas quem vai
+      receber a mensagem precisa ouvir isso de uma pessoa antes de ver na tela.
+- [ ] **Prazo de retenção das fotos definido e escrito na política de
+      privacidade.** O padrão é 30 dias, contados da coleta, e a limpeza roda
+      sozinha na abertura do app. Foto de registro sinalizado que ainda espera
+      decisão fica guardada até alguém decidir.
+- [ ] **Primeira semana com conferência manual em paralelo**, comparando o
+      caderno com o app. É o que vai dizer se os limiares antifraude estão perto
+      do certo: todos estão em valores de partida, nenhum foi calibrado com dado
+      de Boipeba.
+
+### O que ainda não está ligado
+
+- A fila sobe para um transporte **em memória**, não para o Supabase. O adaptador
+  é uma troca de uma linha, descrita em VALIDACAO.md, e precisa de uma migração
+  nova com a tabela de registros.
+- A ancoragem usa uma **ancoradora simulada**. A interface e os testes de
+  contrato estão prontos para a equipe de blockchain plugar o contrato real.
+- O painel de revisão lê o **banco local do navegador** em que está aberto. Vira
+  base compartilhada na mesma troca do transporte.

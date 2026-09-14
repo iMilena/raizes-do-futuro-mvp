@@ -1,0 +1,26 @@
+{
+  "//": [
+    "TypeScript cobre SÓ o módulo de Validação de Coleta (src/validacao) e seus testes.",
+    "O resto do app é JSX puro e continua sendo: `allowJs` ficaria checando 3 mil",
+    "linhas que ninguém pediu para checar agora, e o build do Vite não usa este",
+    "arquivo para nada — ele serve ao editor e ao `npm run checar-tipos`."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src/validacao/**/*.ts", "src/validacao/**/*.tsx", "testes/validacao/**/*.ts"]
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raizesdofuturo.org/esquemas/evidencia-coleta-v1.json",
+  "title": "Registro de Evidência de Coleta",
+  "description": "Evidência verificável por máquina de uma coleta de material reciclável em Boipeba. O objeto `conteudo` é o que entra no hash keccak256 e na árvore de Merkle do dia. O resto é metadado posterior e nunca vai para a cadeia.",
+  "type": "object",
+  "required": ["conteudo", "hashConteudo", "assinatura", "sinalizacoes", "timestampServidor", "revisao"],
+  "additionalProperties": false,
+  "properties": {
+    "conteudo": { "$ref": "#/$defs/conteudo" },
+    "hashConteudo": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "keccak256 do JSON canônico de `conteudo`. Folha da árvore de Merkle."
+    },
+    "assinatura": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/assinatura" }],
+      "description": "Assinatura do hashConteudo pela chave do aparelho."
+    },
+    "sinalizacoes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/sinalizacao" },
+      "description": "Fora do hash: pode crescer quando novas checagens rodam sobre registros antigos."
+    },
+    "timestampServidor": {
+      "oneOf": [{ "type": "null" }, { "type": "string", "format": "date-time" }],
+      "description": "Preenchido quando a fila sobe. Fora do hash, porque no momento da coleta não existe."
+    },
+    "revisao": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/revisao" }],
+      "description": "Decisão humana. Fora do hash: o sistema sinaliza, a pessoa decide, e a decisão vem depois."
+    }
+  },
+  "$defs": {
+    "classeMaterial": { "enum": ["PET", "aluminio", "vidro", "papelao", "outros"] },
+    "conteudo": {
+      "type": "object",
+      "required": [
+        "id", "versaoEsquema", "classificacao", "pesoKg", "ocupacaoQuadro",
+        "pHash", "geohash", "timestampDispositivo", "pontoColetaId", "coletorPseudonimo"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid", "description": "Gerado no aparelho. É também a chave de idempotência da sincronização." },
+        "versaoEsquema": { "const": "evidencia-coleta-v1" },
+        "classificacao": {
+          "type": "object",
+          "required": ["classeSugerida", "confianca", "classeFinal", "corrigidoPorHumano", "versaoModelo"],
+          "additionalProperties": false,
+          "properties": {
+            "classeSugerida": { "$ref": "#/$defs/classeMaterial" },
+            "confianca": { "type": "number", "minimum": 0, "maximum": 1 },
+            "classeFinal": { "$ref": "#/$defs/classeMaterial" },
+            "corrigidoPorHumano": { "type": "boolean", "description": "Correção humana é dado de retreino." },
+            "versaoModelo": { "type": "string", "minLength": 1 }
+          }
+        },
+        "pesoKg": { "type": "number", "exclusiveMinimum": 0, "maximum": 2000, "description": "Vem da balança. Nunca estimado por foto." },
+        "ocupacaoQuadro": {
+          "oneOf": [{ "type": "null" }, { "type": "number", "minimum": 0, "maximum": 1 }],
+          "description": "Fração do quadro ocupada pelo material. Não é volume nem peso: serve só para detectar incoerência grosseira."
+        },
+        "pHash": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "Hash perceptual DCT de 64 bits da foto. A foto não sai do aparelho." },
+        "geohash": { "type": "string", "pattern": "^[0-9b-hjkmnp-z]{7}$", "description": "Precisão 7, aproximadamente 150 m. Confirma o território sem expor a casa de ninguém." },
+        "timestampDispositivo": { "type": "string", "format": "date-time" },
+        "pontoColetaId": { "type": "string", "minLength": 1, "description": "Lugar, não pessoa." },
+        "coletorPseudonimo": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "HMAC-SHA256 do id do coletor com sal do projeto. Irreversível sem o sal." }
+      }
+    },
+    "assinatura": {
+      "type": "object",
+      "required": ["algoritmo", "chavePublica", "valor"],
+      "additionalProperties": false,
+      "properties": {
+        "algoritmo": { "const": "ECDSA-P256-SHA256" },
+        "chavePublica": { "type": "string", "minLength": 1 },
+        "valor": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sinalizacao": {
+      "type": "object",
+      "required": ["codigo", "gravidade", "motivo"],
+      "additionalProperties": false,
+      "properties": {
+        "codigo": {
+          "enum": ["confianca_baixa", "foto_reaproveitada", "pilha_recontada", "sequencia_improvavel", "peso_incoerente", "fora_do_territorio"]
+        },
+        "gravidade": { "enum": ["atencao", "alta"] },
+        "motivo": { "type": "string", "minLength": 1, "description": "Frase legível para quem revisa." },
+        "detalhes": { "type": "object" },
+        "registrosRelacionados": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "revisao": {
+      "type": "object",
+      "required": ["decisao", "autor", "justificativa", "timestamp"],
+      "additionalProperties": false,
+      "properties": {
+        "decisao": { "enum": ["aprovado", "rejeitado"] },
+        "autor": { "type": "string", "minLength": 1, "description": "Identificador de operação, não nome de pessoa." },
+        "justificativa": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

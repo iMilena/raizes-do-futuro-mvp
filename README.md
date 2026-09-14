@@ -23,6 +23,15 @@ Duas telas independentes:
 | http://localhost:5173/#/painel | painel da operação e dos parceiros (8 abas) |
 | http://localhost:5173/#/login | entrada da operação (autentica de verdade, via lib/auth.js) |
 | http://localhost:5173/#/familia | **app da família**, mobile-first — a tela que a família usa no celular |
+| http://localhost:5173/campo.html | **app de campo do catador** — registro de coleta com evidência verificável, funciona sem internet |
+| http://localhost:5173/revisao.html | **painel de revisão** da coordenação — os registros que pediram conferência humana (a mesma tela está na aba **Conferência** do painel) |
+
+As duas últimas são o **módulo de Validação de Coleta**, que transforma a etapa
+de validação (hoje apoiada em confiança pessoal) em evidência verificável por
+máquina: classificação do material no próprio aparelho, hash perceptual da foto,
+árvore de Merkle diária e ancoragem. Documentação em
+[VALIDACAO.md](VALIDACAO.md); o pipeline do modelo em
+[modelo/README.md](modelo/README.md).
 
 ## Arquitetura simulada
 
