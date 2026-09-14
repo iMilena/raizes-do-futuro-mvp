@@ -1,10 +1,21 @@
-/* Painel de revisão: uso em notebook, com tempo para ler.
+/* ---------------------------------------------------------------------------
+   Painel de revisão: uso em notebook, com tempo para ler.
 
    Paleta e tipografia da marca, hierarquia clara, e nenhum elemento decorativo
    que dispute atenção com o que importa aqui: o motivo da sinalização e os
-   números que o sustentam. */
+   números que o sustentam.
 
-:root {
+   TUDO ESCOPADO SOB `.revisao`, inclusive as variáveis de cor. Este arquivo é
+   carregado em dois lugares: na página própria (revisao.html) e dentro do painel
+   da operação, que tem o styles.css inteiro em volta. Regra global daqui
+   vazaria para o painel; regra do painel entra aqui por elemento, e é isso que
+   o "reset de fronteira" logo abaixo neutraliza.
+
+   O que existe de página (fundo, fonte do documento, margem do body) mora em
+   pagina.css, que só a entrada autônoma carrega.
+--------------------------------------------------------------------------- */
+
+.revisao {
   --verde: #2e5a3e;
   --verde-escuro: #1f3f2b;
   --acento: #7fd99a;
@@ -17,113 +28,180 @@
   --atencao-fundo: #fff4e5;
   --alerta: #a02020;
   --alerta-fundo: #fdeaea;
-}
 
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--areia);
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
   color: var(--tinta);
   font-family: "Manrope Variable", "Manrope", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.45;
+  text-align: left;
 }
 
-code { font-family: ui-monospace, "IBM Plex Mono", monospace; font-size: 0.85em; }
+.revisao, .revisao * { box-sizing: border-box; }
 
-.revisao { max-width: 1040px; margin: 0 auto; padding: 24px 20px 60px; }
+/* ------------------------------------------------- reset de fronteira ------
+   O styles.css do painel estiliza h2, h3, table, th, td, input, select e label
+   POR ELEMENTO, e é carregado em toda rota. Sem isto, os títulos daqui chegam
+   com a fonte e a margem do painel, a tabela encolhe para 13px, e o campo "quem
+   está revisando" vira um rótulo cinza em caixa alta de 10px.
 
-.revisao-topo {
+   Cada propriedade abaixo existe porque uma regra de lá a define. Não é reset
+   preventivo. */
+
+.revisao h1, .revisao h2, .revisao h3, .revisao h4 {
+  font-family: inherit;
+  letter-spacing: normal;
+  color: inherit;
+  margin: 0;
+}
+
+.revisao table { font-size: inherit; }
+
+.revisao label {
+  display: block;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.revisao input, .revisao textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.revisao code { font-family: ui-monospace, "IBM Plex Mono", monospace; font-size: 0.85em; }
+
+/* ------------------------------------------------------------- cabeçalho --- */
+
+.revisao .revisao-topo {
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 24px; flex-wrap: wrap; margin-bottom: 20px;
 }
-.revisao-topo h1 { margin: 0; font-size: 1.7rem; color: var(--verde-escuro); }
-.revisao-topo p { margin: 4px 0 0; color: var(--suave); }
+.revisao .revisao-topo h1 { font-size: 1.7rem; color: var(--verde-escuro); }
+.revisao .revisao-topo p { margin: 4px 0 0; color: var(--suave); }
 
-.revisao-autor { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; color: var(--suave); }
-.revisao-autor input {
-  font: inherit; font-size: 1rem; padding: 8px 12px;
+.revisao .revisao-autor {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.8rem; color: var(--suave);
+}
+.revisao .revisao-autor input {
+  font-size: 1rem; padding: 8px 12px; width: auto;
   border: 2px solid var(--borda); border-radius: 10px; background: var(--branco);
 }
 
-.revisao-alerta {
+.revisao .revisao-alerta {
   padding: 12px 16px; margin-bottom: 16px; border-radius: 12px;
   background: var(--atencao-fundo); border: 2px solid var(--atencao); font-size: 0.95rem;
 }
 
-.revisao-numeros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
-.numero-caixa {
+.revisao .revisao-numeros {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;
+}
+.revisao .numero-caixa {
   padding: 14px 16px; background: var(--branco);
   border: 2px solid var(--borda); border-radius: 14px;
 }
-.numero-caixa.destaque { border-color: var(--atencao); background: var(--atencao-fundo); }
-.numero-caixa .numero { display: block; font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
-.numero-caixa .rotulo { font-size: 0.8rem; color: var(--suave); font-weight: 700; }
+.revisao .numero-caixa.destaque { border-color: var(--atencao); background: var(--atencao-fundo); }
+.revisao .numero-caixa .numero { display: block; font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+.revisao .numero-caixa .rotulo { font-size: 0.8rem; color: var(--suave); font-weight: 700; }
 
-.revisao-filtros { display: flex; gap: 8px; margin-bottom: 18px; }
-.filtro {
+.revisao .revisao-filtros { display: flex; gap: 8px; margin-bottom: 18px; }
+.revisao .filtro {
   padding: 8px 16px; border: 2px solid var(--borda); border-radius: 999px;
   background: var(--branco); font: inherit; font-weight: 700; color: var(--suave); cursor: pointer;
 }
-.filtro.ativo { border-color: var(--verde); background: var(--verde); color: var(--branco); }
+.revisao .filtro.ativo { border-color: var(--verde); background: var(--verde); color: var(--branco); }
 
-.revisao-lista { display: flex; flex-direction: column; gap: 16px; }
-.vazio { color: var(--suave); padding: 28px; text-align: center; background: var(--branco); border-radius: 14px; }
+/* ------------------------------------------------------------ os cartões --- */
 
-.cartao {
+.revisao .revisao-lista { display: flex; flex-direction: column; gap: 16px; }
+.revisao .vazio {
+  color: var(--suave); padding: 28px; text-align: center;
+  background: var(--branco); border-radius: 14px;
+}
+
+.revisao .cartao {
   background: var(--branco); border: 2px solid var(--borda);
   border-left: 8px solid var(--atencao); border-radius: 14px; padding: 18px 20px;
 }
-.cartao.grave { border-left-color: var(--alerta); }
-.cartao header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.cartao h3 { margin: 0; font-size: 1.2rem; }
-.cartao .quando { color: var(--suave); font-size: 0.9rem; }
+.revisao .cartao.grave { border-left-color: var(--alerta); }
+.revisao .cartao header {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+}
+.revisao .cartao h3 { font-size: 1.2rem; }
+.revisao .cartao .quando { color: var(--suave); font-size: 0.9rem; }
 
-.dados { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0; }
-.dados dt { font-size: 0.75rem; color: var(--suave); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
-.dados dd { margin: 2px 0 0; font-size: 0.95rem; }
+.revisao .dados {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px; margin: 14px 0;
+}
+.revisao .dados dt {
+  font-size: 0.75rem; color: var(--suave); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.revisao .dados dd { margin: 2px 0 0; font-size: 0.95rem; }
 
-.sinais { display: flex; flex-direction: column; gap: 10px; }
-.sinal { padding: 12px 14px; border-radius: 10px; background: var(--atencao-fundo); border: 1px solid var(--atencao); }
-.sinal.alta { background: var(--alerta-fundo); border-color: var(--alerta); }
-.sinal ul { margin: 8px 0 0; padding-left: 18px; font-size: 0.85rem; color: var(--suave); }
-.sinal li span { font-weight: 700; }
+.revisao .sinais { display: flex; flex-direction: column; gap: 10px; }
+.revisao .sinal {
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--atencao-fundo); border: 1px solid var(--atencao);
+}
+.revisao .sinal.alta { background: var(--alerta-fundo); border-color: var(--alerta); }
+.revisao .sinal ul { margin: 8px 0 0; padding-left: 18px; font-size: 0.85rem; color: var(--suave); }
+.revisao .sinal li span { font-weight: 700; }
 
-.relacionados { margin-top: 14px; font-size: 0.9rem; color: var(--suave); }
-.relacionados h4 { margin: 0 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.revisao .relacionados { margin-top: 14px; font-size: 0.9rem; color: var(--suave); }
+.revisao .relacionados h4 {
+  margin-bottom: 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em;
+}
 
-.decisao-anterior {
+.revisao .decisao-anterior {
   margin-top: 14px; padding: 10px 12px; border-radius: 10px;
   background: #eef3ef; font-size: 0.9rem;
 }
 
-.cartao footer { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-.cartao textarea {
-  width: 100%; font: inherit; padding: 10px 12px;
+.revisao .cartao footer { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.revisao .cartao textarea {
+  width: 100%; padding: 10px 12px; background: var(--branco);
   border: 2px solid var(--borda); border-radius: 10px; resize: vertical;
 }
-.acoes { display: flex; gap: 10px; }
-.botao-aprovar, .botao-rejeitar {
+.revisao .acoes { display: flex; gap: 10px; }
+.revisao .botao-aprovar, .revisao .botao-rejeitar {
   flex: 1; padding: 12px; border-radius: 10px; border: 2px solid transparent;
   font: inherit; font-weight: 800; cursor: pointer;
 }
-.botao-aprovar { background: var(--verde); color: var(--branco); }
-.botao-rejeitar { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
+.revisao .botao-aprovar { background: var(--verde); color: var(--branco); }
+.revisao .botao-rejeitar { background: var(--branco); color: var(--alerta); border-color: var(--alerta); }
 
-.revisao-lotes { margin-top: 36px; }
-.revisao-lotes h2 { font-size: 1.2rem; color: var(--verde-escuro); margin-bottom: 4px; }
-.campo-dica { color: var(--suave); font-size: 0.9rem; margin-top: 0; }
-.revisao-lotes table { width: 100%; border-collapse: collapse; background: var(--branco); border-radius: 12px; overflow: hidden; }
-.revisao-lotes th, .revisao-lotes td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--borda); font-size: 0.9rem; }
-.revisao-lotes th { background: #eef3ef; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--suave); }
-.botao-pequeno {
-  padding: 6px 12px; border-radius: 8px; border: 2px solid var(--verde);
-  background: var(--branco); color: var(--verde-escuro); font: inherit; font-weight: 700; cursor: pointer;
+/* ----------------------------------------------------------- lotes do dia --- */
+
+.revisao .revisao-lotes { margin-top: 36px; }
+.revisao .revisao-lotes h2 { font-size: 1.2rem; color: var(--verde-escuro); margin-bottom: 4px; }
+.revisao .campo-dica { color: var(--suave); font-size: 0.9rem; margin-top: 0; }
+.revisao .revisao-lotes table {
+  width: 100%; border-collapse: collapse; background: var(--branco);
+  border-radius: 12px; overflow: hidden;
 }
-.ancorado { color: var(--verde); font-weight: 700; }
+.revisao .revisao-lotes th, .revisao .revisao-lotes td {
+  padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--borda); font-size: 0.9rem;
+}
+.revisao .revisao-lotes th {
+  background: #eef3ef; font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.03em; color: var(--suave); font-weight: 700;
+}
+.revisao .botao-pequeno {
+  padding: 6px 12px; border-radius: 8px; border: 2px solid var(--verde);
+  background: var(--branco); color: var(--verde-escuro); font: inherit;
+  font-weight: 700; cursor: pointer;
+}
+.revisao .ancorado { color: var(--verde); font-weight: 700; }
 
 @media (max-width: 720px) {
-  .revisao-numeros { grid-template-columns: repeat(2, 1fr); }
-  .acoes { flex-direction: column; }
+  .revisao .revisao-numeros { grid-template-columns: repeat(2, 1fr); }
+  .revisao .acoes { flex-direction: column; }
 }

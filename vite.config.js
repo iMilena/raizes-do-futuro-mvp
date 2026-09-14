@@ -22,8 +22,17 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // onnxruntime-web traz .wasm e usa Worker: deixar o Vite pré-empacotar a
-    // biblioteca inteira quebra o carregamento dos artefatos em desenvolvimento.
-    exclude: ['onnxruntime-web'],
+    /* O onnxruntime-web resolve o próprio .wasm relativo ao arquivo JS dele.
+       Pré-empacotado, o JS vai parar em node_modules/.vite/deps/ e o .wasm não
+       vai junto: o pedido cai no fallback de SPA do servidor, chega HTML onde
+       deveria chegar binário, e o console diz "expected magic word 00 61 73 6d,
+       found 3c 21 64 6f" (que é "<!do", o começo do index.html).
+
+       As duas entradas são necessárias. O app importa o subcaminho
+       `onnxruntime-web/wasm` (o pacote inteiro traz o backend WebGPU e um .wasm
+       de 28 MB), e o Vite trata subcaminho como entrada própria de otimização:
+       excluir só o nome do pacote não pega. Isso vale para desenvolvimento; no
+       build o Rollup emite o .wasm como ativo e o caminho fecha sozinho. */
+    exclude: ['onnxruntime-web', 'onnxruntime-web/wasm'],
   },
 });

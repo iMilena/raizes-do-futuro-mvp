@@ -24,7 +24,7 @@ A divisão de papéis é simples e não se sobrepõe:
 | Camada antifraude | [`src/validacao/antifraude/`](src/validacao/antifraude/) | pHash, geohash, detecções, motivos legíveis |
 | Evidência e Merkle | [`src/validacao/dominio/`](src/validacao/dominio/), [`src/validacao/ancoragem/`](src/validacao/ancoragem/) | esquema, keccak256, árvore, prova de inclusão, ancoradora |
 | Fila offline | [`src/validacao/armazenamento/`](src/validacao/armazenamento/), [`src/validacao/sincronizacao/`](src/validacao/sincronizacao/) | IndexedDB e sincronização idempotente |
-| Painel de revisão | [`revisao.html`](revisao.html), [`src/validacao/revisao/`](src/validacao/revisao/) | a tela da coordenação |
+| Painel de revisão | aba **Conferência** do painel, e [`revisao.html`](revisao.html) | a tela da coordenação, nos dois lugares |
 | Testes | [`testes/validacao/`](testes/validacao/), [`modelo/testes/`](modelo/testes/) | 184 em TypeScript, 19 em Python |
 
 ## Como rodar
@@ -45,6 +45,24 @@ O app de campo funciona sem o modelo: se o ONNX não estiver exportado ainda, el
 avisa e o catador escolhe o material à mão. Para ter a classificação automática,
 siga o [README do modelo](modelo/README.md), que termina gravando
 `public/modelo/`.
+
+## Onde a coordenação revisa
+
+A mesma tela vive em dois lugares, e o componente é um só
+([PainelRevisao.tsx](src/validacao/revisao/PainelRevisao.tsx)):
+
+- **aba "Conferência"** do painel da operação, ao lado de "Instituto Vivá". É o
+  caminho normal: quem revisa já trabalha no painel.
+- **[revisao.html](revisao.html)**, página própria, para abrir direto sem o
+  painel em volta.
+
+Dentro do painel ela entra por `lazy()`, como as outras telas, então quem não
+abre a aba não baixa os 10 kB dela. O CSS é todo escopado sob `.revisao`,
+inclusive as variáveis de cor, e tem um reset de fronteira explícito: o
+`styles.css` do painel estiliza `h2`, `h3`, `table`, `input` e `label` por
+elemento, e é carregado em toda rota. Sem esse reset, o título chega com a régua
+do painel e o campo "quem está revisando" vira um rótulo cinza de 10px em caixa
+alta. A fumaça (`npm run fumaca:telas`) mede exatamente isso, em pixel.
 
 ## O fluxo, do começo ao fim
 
@@ -283,6 +301,11 @@ Coisas que este módulo não resolve, e que é melhor estarem escritas:
 - **O painel lê o banco local do navegador em que está aberto.** É o suficiente
   para demonstração e para revisar no mesmo aparelho, e vira a base compartilhada
   na mesma troca de uma linha que liga o transporte ao Supabase, descrita acima.
+- **Convivem dois caminhos de validação.** A aba "Instituto Vivá" do painel tem o
+  botão antigo, de um clique e sem evidência anexada, que é justamente o que este
+  módulo substitui. Ele continua lá porque aposentá-lo é decisão de operação, com
+  gente treinada nele, e porque enquanto o transporte for em memória os dois não
+  compartilham dados. A aba avisa disso em texto, e aponta para a Conferência.
 - **Um aparelho, um coletor.** O piloto assume isso, e a identidade do aparelho é
   a chave que assina. Aparelho compartilhado entre coletores exigiria repensar a
   assinatura.

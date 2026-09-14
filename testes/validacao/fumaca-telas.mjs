@@ -32,8 +32,12 @@ const pular = motivo => { console.log(`\n[fumaça] pulada: ${motivo}`); process.
 
 const edgeExe = CAMINHOS_EDGE.find(existsSync);
 if (!edgeExe) pular('Edge não encontrado (defina EDGE=caminho\\para\\msedge.exe)');
+/* Dez segundos, e sondando campo.html em vez da raiz. A primeira resposta do
+   servidor de desenvolvimento inclui transformar o app inteiro, e passa de dois
+   segundos com folga: sonda curta faz o teste "pular" por lentidão, que é o
+   jeito mais silencioso de um teste deixar de rodar. */
 try {
-  await fetch(ALVO, { signal: AbortSignal.timeout(2500) });
+  await fetch(`${ALVO}/campo.html`, { signal: AbortSignal.timeout(10000) });
 } catch {
   pular(`nada respondendo em ${ALVO}. Rode \`npm run dev\` em outro terminal.`);
 }
@@ -153,6 +157,37 @@ try {
   ok(await ev(`return document.querySelectorAll('.filtro').length === 3`), 'filtros presentes');
   ok(await ev(`return !!document.querySelector('.revisao-lotes table')`),
     'tabela de lotes diários presente');
+
+  console.log('\n--- a mesma tela, dentro do painel da operação ---');
+  await cdp('Page.navigate', { url: `${ALVO}/#/painel` });
+  await espera(3500);
+
+  const abriu = await ev(`
+    const alvo = [...document.querySelectorAll('button')]
+      .find(b => b.textContent.includes('Conferência'));
+    if (!alvo) return 'aba não encontrada no menu';
+    alvo.click();
+    await new Promise(r => setTimeout(r, 1200));
+    return document.querySelector('.revisao') ? 'ok' : 'a aba abriu vazia';
+  `);
+  ok(abriu === 'ok', `a aba Conferência monta o painel de revisão (${abriu})`);
+
+  /* O styles.css do painel estiliza h2, h3, table, input e label por elemento, e
+     é carregado em toda rota. Estas duas medidas são o que denuncia o vazamento:
+     o título encolhendo para o tamanho do painel, e o campo de autor virando
+     rótulo de 10px em caixa alta. */
+  ok(await ev(`
+    const h1 = document.querySelector('.revisao-topo h1');
+    return h1 && parseFloat(getComputedStyle(h1).fontSize) > 22;
+  `), 'o título da tela não encolheu para a régua do painel');
+  ok(await ev(`
+    const campo = document.querySelector('.revisao-autor input');
+    return campo && parseFloat(getComputedStyle(campo).fontSize) >= 15
+      && getComputedStyle(campo).textTransform === 'none';
+  `), 'o campo de quem revisa não virou rótulo do painel');
+  ok(await ev(`
+    return getComputedStyle(document.body).backgroundColor !== 'rgb(247, 244, 236)';
+  `), 'o fundo do painel continua sendo o do painel');
 
   const ruido = erros.filter(e => !/favicon|chrome-extension/i.test(String(e)));
   ok(ruido.length === 0, ruido.length ? `console limpo (achei: ${ruido.join(' | ')})` : 'console limpo');

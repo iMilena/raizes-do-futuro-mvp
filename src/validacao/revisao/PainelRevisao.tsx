@@ -13,6 +13,10 @@
    caminho é falar com a pessoa, que é o que a coordenação já faz hoje.
 --------------------------------------------------------------------------- */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+/* O componente carrega o próprio estilo: ele é montado em dois lugares (a página
+   revisao.html e uma aba do painel da operação), e deixar a importação a cargo de
+   quem monta é garantir que um dos dois esqueça. */
+import './estilos/revisao.css';
 import { BancoLocal } from '../armazenamento/bd.js';
 import type { RegistroGuardado } from '../armazenamento/bd.js';
 import { verificarAssinatura } from '../identidade/chave-dispositivo.js';

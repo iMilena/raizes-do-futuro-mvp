@@ -29,6 +29,11 @@ import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo pro
 const Dashboard = lazy(() => import('../views/Dashboard.jsx'));
 const Coleta = lazy(() => import('../views/Coleta.jsx'));
 const Validacao = lazy(() => import('../views/Validacao.jsx'));
+/* Do módulo de Validação de Coleta. É TSX no meio do JSX, e o Vite não se
+   incomoda: o que muda é só o carregador. Mora em src/validacao/ porque também
+   é servido como página própria (revisao.html), para a coordenação que prefere
+   abrir direto. Ver VALIDACAO.md. */
+const Conferencia = lazy(() => import('../validacao/revisao/PainelRevisao.tsx'));
 const Mercado = lazy(() => import('../views/Mercado.jsx'));
 const Fundo = lazy(() => import('../views/Fundo.jsx'));
 const Carteira = lazy(() => import('../views/Carteira.jsx'));
@@ -48,6 +53,11 @@ const TABS = [
   ['dashboard', '', 'Dashboard', 'visão geral do piloto', 'Visão geral'],
   ['coleta', '', 'Coletor', 'registrar coleta', 'Operação'],
   ['validacao', '', 'Instituto Vivá', 'validar & aprovar', 'Operação'],
+  /* "Conferência" e não "Validação de Coleta": a aba acima já se chama Validação
+     e faz outra coisa (emite o Relatório de Circularidade e valida as condições
+     das crianças). Dois itens com o mesmo nome no menu, cada um fazendo uma
+     coisa, é confusão garantida na primeira demonstração. */
+  ['conferencia', '', 'Conferência', 'coletas sinalizadas', 'Operação'],
   ['mercado', '', 'Mercado', 'turista & empresa', 'Operação'],
   ['fundo', '', 'Cofre Multisig', 'Solana · 2-de-3', 'Governança'],
   ['cadastro', '', 'Cadastro', 'incluir família', 'Famílias'],
@@ -495,6 +505,7 @@ function Painel({ tab, setTab }) {
             {tab === 'dashboard' && <Dashboard />}
             {tab === 'coleta' && <Coleta />}
             {tab === 'validacao' && <Validacao />}
+            {tab === 'conferencia' && <Conferencia />}
             {tab === 'mercado' && <Mercado />}
             {tab === 'fundo' && <Fundo />}
             {tab === 'cadastro' && <Cadastro />}

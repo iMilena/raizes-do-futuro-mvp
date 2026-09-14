@@ -7,7 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import PainelRevisao from './PainelRevisao.js';
 import '@fontsource-variable/manrope';
-import './estilos/revisao.css';
+import './estilos/pagina.css';
 
 ReactDOM.createRoot(document.getElementById('raiz')!).render(
   <React.StrictMode>

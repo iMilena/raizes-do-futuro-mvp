@@ -48,8 +48,10 @@ if (!existsSync(join(RAIZ, 'public', 'modelo', 'classificador.onnx'))) {
 const edgeExe = CAMINHOS_EDGE.find(existsSync);
 if (!edgeExe) pular('Edge não encontrado (defina EDGE=caminho\\para\\msedge.exe)');
 
+/* Dez segundos: a primeira resposta do servidor de desenvolvimento inclui
+   transformar o app inteiro, e passa de dois segundos com folga. */
 try {
-  await fetch(ALVO, { signal: AbortSignal.timeout(2500) });
+  await fetch(`${ALVO}/campo.html`, { signal: AbortSignal.timeout(10000) });
 } catch {
   pular(`nada respondendo em ${ALVO}. Rode \`npm run dev\` em outro terminal.`);
 }

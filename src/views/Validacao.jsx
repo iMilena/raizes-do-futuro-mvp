@@ -268,6 +268,18 @@ export default function Validacao() {
       <div className="grid g2">
         <div className={'card destaque' + focoColetas + focoRel}>
           <h3>1 · Coletas aguardando validação DeTrash</h3>
+
+          {/* O botão abaixo é o caminho antigo: um clique, sem evidência anexada.
+              Continua aqui porque a operação trabalha com ele hoje e aposentá-lo é
+              decisão de campo, não de código. O caminho novo, com foto, hash
+              perceptual, assinatura do aparelho e conferência humana, está na aba
+              Conferência (módulo de Validação de Coleta, ver VALIDACAO.md). */}
+          <div className="aviso" style={{ marginBottom: 12 }}>
+            <b>Validação por confiança.</b> Este botão marca a coleta como validada sem
+            evidência anexada. As coletas registradas pelo app de campo trazem foto,
+            hash perceptual e assinatura do aparelho, e são conferidas na aba{' '}
+            <b>Conferência</b>.
+          </div>
           {pendentes.length === 0 && (
             <EstadoVazio icone="✅" titulo="Nenhuma coleta pendente" dica="Registre uma nova ação na aba 🧹 Coletor." />
           )}
