@@ -1,37 +1,72 @@
+/* ---------------------------------------------------------------------------
+   Tokens do Raízes do Futuro.
+
+   Um sistema só, prefixado `--rf-`. O redesign trouxe a rampa noturna e as
+   fontes de display/dados; em vez de abrir um segundo vocabulário ao lado do
+   antigo, os nomes novos entraram aqui e os antigos continuam apontando para
+   as mesmas cores de marca. Quem importa este arquivo (landing e entrada do
+   painel) enxerga um conjunto coerente.
+--------------------------------------------------------------------------- */
 :root {
+  /* ---- Rampa noturna: o fundo caminha do verde profundo até a areia ---- */
+  --rf-ink: #04100d;
+  --rf-abyss: #061713;
+  --rf-deep: #0a2720;
+  --rf-tide: #0e3227;
+  --rf-reef: #13392b;
+  --rf-moss: #183f2e;
+
   /* ---- Cores de marca ---- */
-  --rf-color-primary: #2e5a3e; /* verde-escuro principal (botões, destaques) */
+  --rf-color-primary: #2e5a3e; /* verde-escuro principal */
   --rf-color-primary-dark: #1e3d2a; /* verde-escuro hover */
-  --rf-color-accent: #7fd99a; /* verde-claro (destaque no texto, links ativos) */
-  --rf-color-accent-2: #c1622e; /* terracota (rótulos, selos) */
+  --rf-color-accent: #7fd99a; /* menta — o acento, sempre */
+  --rf-mint: #7fd99a;
+  --rf-foam: #cfedd9;
+  --rf-dawn: #f3b267; /* âmbar — só no ciclo e na divisão do valor */
+  --rf-clay: #d97742; /* terracota — idem */
+  --rf-color-accent-2: var(--rf-clay);
 
-  /* ---- Superfícies ---- */
+  /* ---- Dia: onde a página amanhece ---- */
+  --rf-sand: #e9e4d5;
+  --rf-paper: #f3f0e6;
+
+  /* ---- Superfícies (painel legado) ---- */
   --rf-color-bg: #ffffff;
-  --rf-color-bg-soft: #f3f5ee; /* fundo da seção "Como Funciona" */
-  --rf-color-bg-cta: #e4ede1; /* fundo da seção de CTA e ícones sociais */
-  --rf-color-surface: #ffffff; /* cards */
+  --rf-color-bg-soft: #f3f5ee;
+  --rf-color-bg-cta: #e4ede1;
+  --rf-color-surface: #ffffff;
 
-  /* ---- Texto ---- */
+  /* ---- Texto (painel legado) ---- */
   --rf-color-text: #14170f;
   --rf-color-text-secondary: #3a3f36;
   --rf-color-text-muted: #666666;
   --rf-color-text-faint: #999999;
   --rf-color-text-inverse: #ffffff;
 
-  /* ---- Bordas / linhas ---- */
+  /* ---- Bordas / linhas (painel legado) ---- */
   --rf-color-border: #e5e5e5;
   --rf-color-border-soft: #eeeeee;
 
   /* ---- Tipografia ---- */
+  --rf-font-display: "Fraunces Variable", "Fraunces", "Iowan Old Style",
+    Georgia, serif;
   --rf-font-family:
-    "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Manrope Variable", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --rf-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
   --rf-font-weight-regular: 400;
   --rf-font-weight-medium: 500;
   --rf-font-weight-semibold: 600;
   --rf-font-weight-bold: 700;
   --rf-font-weight-extrabold: 800;
 
+  /* ---- Medidas ---- */
+  --rf-maxw: 1180px;
+  --rf-gutter: clamp(20px, 5vw, 56px);
+
   /* ---- Raios ---- */
+  --rf-radius-xs: 8px;
   --rf-radius-sm: 14px;
   --rf-radius-md: 20px;
   --rf-radius-lg: 24px;
@@ -41,9 +76,39 @@
   /* ---- Sombras ---- */
   --rf-shadow-card: 0 10px 30px rgba(0, 0, 0, 0.15);
   --rf-shadow-image: 0 20px 50px rgba(0, 0, 0, 0.12);
+  --rf-shadow-portal: 0 40px 90px -40px rgba(0, 0, 0, 0.85);
 
   /* ---- Transições ---- */
   --rf-transition-fast: 0.2s ease;
   --rf-transition-medium: 0.4s ease;
   --rf-transition-slow: 0.6s ease;
+  --rf-ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --rf-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Zonas de cor. Cada seção declara em qual mundo está, e o texto, as linhas e
+   as superfícies se ajustam sozinhos. É o que permite a rampa atravessar a
+   página inteira sem escrever cor de texto seção a seção.
+--------------------------------------------------------------------------- */
+.rf-noite {
+  --rf-fg: #e9f3ec;
+  --rf-dim: #94b1a3;
+  --rf-faint: #7d9b8c;
+  --rf-line: rgba(207, 237, 217, 0.15);
+  --rf-line-strong: rgba(207, 237, 217, 0.3);
+  --rf-surface: rgba(255, 255, 255, 0.045);
+  --rf-surface-2: rgba(255, 255, 255, 0.08);
+  --rf-accent: var(--rf-mint);
+}
+
+.rf-dia {
+  --rf-fg: #0c1f17;
+  --rf-dim: #4a6055;
+  --rf-faint: #5c6f64;
+  --rf-line: rgba(12, 31, 23, 0.14);
+  --rf-line-strong: rgba(12, 31, 23, 0.28);
+  --rf-surface: rgba(255, 255, 255, 0.66);
+  --rf-surface-2: #ffffff;
+  --rf-accent: var(--rf-color-primary);
 }

@@ -55,6 +55,9 @@
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* Salto de âncora também é movimento: quem pediu menos movimento no sistema
+   recebe o pulo direto, sem a viagem. Vale para o painel e para a landing. */
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
 body{
   margin:0;
   font-family:var(--fonte);

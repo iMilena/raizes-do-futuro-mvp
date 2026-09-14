@@ -1,45 +1,46 @@
-import { pilaresData } from '../data/content';
-import { pilaresComunidade } from '../images';
+import { Revelar } from './Revelar';
+import { ICONES_PILAR } from '../icons/Icons';
+import { pilares } from '../data/content';
+
+/* O fundo de cada pilar dá um passo dentro da rampa, para o bloco de quatro
+   não virar um retângulo chapado no meio da descida para a areia. */
+const FUNDOS = [
+  ['#1A4430', '#173E2C'],
+  ['#194230', '#163C2B'],
+  ['#173E2C', '#143829'],
+  ['#163C2B', '#133628'],
+];
 
 export function Pilares() {
-  const [col1, col2] = [
-    pilaresData.items.slice(0, 2),
-    pilaresData.items.slice(2, 4),
-  ];
-
   return (
-    <div className="pilares">
-      <h2 className="pilares-title">{pilaresData.title}</h2>
+    <section className="rf-ato rf-noite" style={{ '--rf-de': '#293E24', '--rf-ate': '#463A21' }}>
+      <div className="rf-wrap">
+        <Revelar como="span" className="rf-eyebrow">
+          {pilares.eyebrow}
+        </Revelar>
+        <Revelar como="h2" className="rf-h-sec" atraso={80} style={{ maxWidth: '14ch' }}>
+          {pilares.titulo}
+        </Revelar>
 
-      <div className="pilares-grid">
-        <div className="pilares-column">
-          {col1.map((item) => (
-            <div key={item.number}>
-              <div className="pilar-number">{item.number}</div>
-              <div className="pilar-title">{item.title}</div>
-              <div className="pilar-text">{item.text}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="pilares-image-wrapper">
-          <img
-            src={pilaresComunidade}
-            className="pilares-image"
-            alt="Mutirão de coleta comunitária em Boipeba"
-          />
-        </div>
-
-        <div className="pilares-column">
-          {col2.map((item) => (
-            <div key={item.number}>
-              <div className="pilar-number">{item.number}</div>
-              <div className="pilar-title">{item.title}</div>
-              <div className="pilar-text">{item.text}</div>
-            </div>
-          ))}
-        </div>
+        <Revelar className="rf-pilares" atraso={160}>
+          {pilares.itens.map((pilar, i) => {
+            const Icone = ICONES_PILAR[pilar.icone];
+            return (
+              <div
+                className="rf-pilar"
+                key={pilar.id}
+                style={{ '--rf-de': FUNDOS[i][0], '--rf-ate': FUNDOS[i][1] }}
+              >
+                <Icone className="rf-pilar-ico" />
+                <h3>{pilar.titulo}</h3>
+                <p>{pilar.texto}</p>
+              </div>
+            );
+          })}
+        </Revelar>
       </div>
-    </div>
+    </section>
   );
 }
+
+export default Pilares;

@@ -1,17 +1,39 @@
-import { ArrowRightIcon } from '../icons/Icons';
+import { Revelar } from './Revelar';
 import { cta } from '../data/content';
-import { ctaMangue } from '../images';
+import { rolarAte } from '../hooks/useCromoDoScroll';
 
-export function Cta() {
+export function Cta({ aoAbrirContato }) {
   return (
-    <div className="cta">
-      <div className="cta-content">
-        <h2 className="cta-title">{cta.title}</h2>
-        <button type="button" className="cta-button">
-          {cta.buttonLabel}
-          <ArrowRightIcon size={14} color="#fff" />
-        </button>
+    <section
+      className="rf-ato rf-dia rf-cta"
+      id="contato"
+      style={{ '--rf-de': '#EFEBDE', '--rf-ate': '#E7E1D0' }}
+    >
+      <div className="rf-wrap">
+        <Revelar como="span" className="rf-eyebrow rf-eyebrow-centro">
+          {cta.eyebrow}
+        </Revelar>
+        <Revelar como="h2" atraso={80} className="rf-cta-titulo">
+          {cta.titulo}
+        </Revelar>
+        <Revelar className="rf-cta-acoes" atraso={160}>
+          <button type="button" className="rf-btn" onClick={aoAbrirContato}>
+            {cta.primario}
+          </button>
+          <a
+            className="rf-btn rf-btn-fantasma"
+            href="#parceiros"
+            onClick={(e) => {
+              e.preventDefault();
+              rolarAte('parceiros');
+            }}
+          >
+            {cta.secundario}
+          </a>
+        </Revelar>
       </div>
-    </div>
+    </section>
   );
 }
+
+export default Cta;

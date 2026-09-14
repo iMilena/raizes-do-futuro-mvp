@@ -7,17 +7,32 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node testes/executar.mjs"
+    "test": "node testes/executar.mjs",
+    "test:validacao": "vitest run",
+    "test:validacao:assistir": "vitest",
+    "checar-tipos": "tsc --noEmit",
+    "medir:inferencia": "node testes/validacao/medir-inferencia.mjs",
+    "fumaca:telas": "node testes/validacao/fumaca-telas.mjs"
   },
   "dependencies": {
-    "framer-motion": "^12.43.0",
-    "lucide-react": "^1.27.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "js-sha3": "^0.9.3",
+    "onnxruntime-web": "^1.29.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.3.4",
     "esbuild": "^0.21.5",
-    "vite": "^5.4.11"
+    "fake-indexeddb": "^6.2.5",
+    "puppeteer-core": "^25.11.0",
+    "sharp": "^0.35.4",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.9"
   }
 }

@@ -1,224 +1,423 @@
 @import "../../landing/styles/variables.css";
 
-html,
-body {
+/* ============================================================================
+   A PORTA DO PAINEL
+
+   Um cartão só, centrado sobre a foto do mutirão desfocada. A foto é a mesma
+   do herói da landing (mesmo arquivo, mesma variante WebP já em cache): quem
+   chega aqui vindo do site reconhece o lugar antes de ler qualquer palavra.
+   ========================================================================= */
+
+.entrada {
+  --rf-fg: #e9f3ec;
+  --rf-dim: #94b1a3;
+  --rf-faint: #7d9b8c;
+  --rf-line: rgba(207, 237, 217, 0.15);
+  --rf-line-strong: rgba(207, 237, 217, 0.3);
+
+  min-height: 100dvh;
   margin: 0;
-  padding: 0;
-}
-
-.login-page {
-  min-height: 100vh;
-  width: 100%;
-  background: var(--rf-color-primary-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  background: var(--rf-ink);
+  color: var(--rf-fg);
   font-family: var(--rf-font-family);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 5vh, 64px) 20px;
+  position: relative;
+  isolation: isolate;
+}
+
+.entrada *,
+.entrada *::before,
+.entrada *::after {
   box-sizing: border-box;
 }
 
-.login-page * {
-  box-sizing: border-box;
+/* Mesma fronteira da landing: o `styles.css` do painel estiliza `h1`, `label` e
+   `input` por elemento, e esta página é servida com ele carregado. Ver o bloco
+   equivalente em `landing/styles/landing.css`. */
+.entrada :where(h1, h2, h3) {
+  margin: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.entrada :where(label) {
+  display: block;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-.login-page .login-card {
+.entrada :focus-visible {
+  outline: 2px solid var(--rf-mint);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* --------------------------------------------------------------- o fundo -- */
+.entrada-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+.entrada-fundo picture,
+.entrada-fundo img {
+  display: block;
   width: 100%;
-  max-width: 400px;
-  background: var(--rf-color-surface);
-  border-radius: var(--rf-radius-lg);
-  box-shadow: var(--rf-shadow-card);
-  padding: 40px 32px;
+  height: 100%;
+}
+.entrada-fundo img {
+  object-fit: cover;
+  object-position: 50% 44%;
+  /* Desfoque no CSS em vez de um arquivo desfocado à parte: é a mesma imagem
+     que o herói já baixou, e o navegador não busca nada de novo. */
+  filter: blur(22px) saturate(0.95) brightness(0.7);
+  transform: scale(1.14);
+}
+.entrada-fundo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 62% at 50% 36%, rgba(8, 34, 28, 0.18), rgba(4, 16, 13, 0.84) 78%),
+    linear-gradient(180deg, rgba(4, 16, 13, 0.72), rgba(4, 16, 13, 0.92));
+}
+.entrada-grao {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.login-page .login-brand {
-  display: flex;
+/* -------------------------------------------------------------- o cartão -- */
+.entrada-portal {
+  width: 100%;
+  max-width: 540px;
+  border: 1px solid var(--rf-line-strong);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(10, 39, 32, 0.9), rgba(5, 21, 17, 0.94));
+  backdrop-filter: blur(18px);
+  box-shadow: var(--rf-shadow-portal);
+  padding: clamp(28px, 5vw, 42px);
+  animation: entrada-subir 0.8s var(--rf-ease) both;
+}
+@keyframes entrada-subir {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.entrada .rf-marca {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 28px;
+  gap: 11px;
 }
-
-.login-page .login-brand-logo {
-  width: 40px;
-  height: 40px;
+.entrada .rf-marca-logo {
+  flex: none;
   object-fit: contain;
 }
-
-.login-page .login-brand-text {
-  font-weight: var(--rf-font-weight-bold);
-  font-size: 19px;
-  color: var(--rf-color-text);
+.entrada .rf-marca-nome {
+  font-family: var(--rf-font-display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.01em;
 }
 
-.login-page .login-title {
-  font-size: 22px;
-  font-weight: var(--rf-font-weight-extrabold);
-  text-align: center;
-  margin: 0 0 28px;
-  color: var(--rf-color-text);
-  font-family: var(--rf-font-family);
-}
-
-.login-page .login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.login-page .login-field {
-  display: flex;
-  flex-direction: column;
-}
-
-.login-page .login-label {
-  font-size: 13px;
-  font-weight: var(--rf-font-weight-semibold);
-  color: var(--rf-color-text-secondary);
-  margin-bottom: 6px;
-}
-
-.login-page .login-input-wrapper {
-  position: relative;
+.entrada-eyebrow {
   display: flex;
   align-items: center;
+  gap: 11px;
+  margin-top: 32px;
+  font-family: var(--rf-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--rf-mint);
 }
-
-.login-page .login-input-icon {
-  position: absolute;
-  left: 14px;
-  color: var(--rf-color-text-muted);
-  pointer-events: none;
-}
-
-.login-page .login-input {
-  width: 100%;
-  padding: 12px 14px 12px 42px;
-  border-radius: 12px;
-  border: 1px solid var(--rf-color-border);
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--rf-color-text);
-  transition: border-color var(--rf-transition-fast);
-}
-
-.login-page .login-input--with-toggle {
-  padding-right: 42px;
-}
-
-.login-page .login-input:focus {
-  outline: none;
-  border-color: var(--rf-color-primary);
-}
-
-.login-page .login-input--error {
-  border-color: #c0392b;
-}
-
-.login-page .login-toggle-visibility {
-  position: absolute;
-  right: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--rf-color-text-muted);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.login-page .login-error {
-  font-size: 12px;
-  color: #c0392b;
-  margin-top: 6px;
-}
-
-.login-page .login-button {
-  margin-top: 8px;
-  background: var(--rf-color-primary);
-  color: var(--rf-color-text-inverse);
-  border: none;
-  border-radius: var(--rf-radius-pill);
-  padding: 14px 24px;
-  font-weight: var(--rf-font-weight-semibold);
-  font-size: 15px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background var(--rf-transition-fast);
-}
-
-.login-page .login-button:hover:not(:disabled) {
-  background: var(--rf-color-primary-dark);
-}
-
-.login-page .login-button:disabled {
-  cursor: not-allowed;
+.entrada-eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: currentColor;
   opacity: 0.7;
 }
 
-.login-page .login-forgot-wrapper {
-  text-align: center;
-  margin-top: 4px;
+.entrada-titulo {
+  margin: 14px 0 0;
+  font-family: var(--rf-font-display);
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-size: clamp(28px, 5.4vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.entrada-lede {
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--rf-dim);
+  max-width: 42ch;
 }
 
-.login-page .login-forgot {
-  font-size: 13px;
-  color: var(--rf-color-primary);
-  text-decoration: none;
+/* --------------------------------------------------------------- ações ---- */
+.entrada-acoes {
+  margin-top: 28px;
+  display: grid;
+  gap: 10px;
 }
-
-.login-page .login-forgot:hover {
-  text-decoration: underline;
-}
-
-.login-page .login-back-button {
+.entrada-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  color: var(--rf-color-text-secondary);
+  gap: 9px;
+  padding: 14px 22px;
+  border-radius: var(--rf-radius-pill);
+  width: 100%;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14.5px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: var(--rf-mint);
+  color: var(--rf-ink);
+  transition:
+    transform 0.35s var(--rf-ease),
+    box-shadow 0.35s var(--rf-ease);
+}
+.entrada-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(127, 217, 154, 0.6);
+}
+.entrada-btn:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+.entrada-btn-fantasma {
+  background: transparent;
+  color: var(--rf-fg);
+  border: 1px solid var(--rf-line-strong);
+  box-shadow: none;
+}
+.entrada-btn-fantasma:hover {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+.entrada-btn-seta {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.entrada-demo {
+  margin: 14px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--rf-dim);
+}
+
+/* ------------------------------------------------------- pedir credencial - */
+.entrada-regua {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rf-line);
+}
+.entrada-pedir {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   background: none;
   border: none;
+  padding: 0;
   cursor: pointer;
-  margin-bottom: 20px;
-  transition: background var(--rf-transition-fast);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--rf-fg);
+  text-align: left;
 }
-
-.login-page .login-back-button:hover {
-  background: var(--rf-color-bg-soft);
-}
-
-/* Erro geral do login (senha errada, usuário sem papel, rede fora).
-   O formulário já tinha estilo para erro de campo, mas não para o motivo que
-   vem do servidor — e sem ele a falha ficava invisível. */
-.login-erro {
-  margin: 0 0 14px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  background: #fdeceb;
-  border: 1px solid #f3c2bd;
-  color: #8f2c22;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-/* Subtítulo e nota da entrada sem credencial.
-   O `.login-erro` acima ficou sem uso quando os campos saíram — mantido porque o
-   Perfil do painel usa a mesma linguagem visual para falha de login real. */
-.login-page .login-sub {
-  margin: 6px 0 22px;
-  font-size: 15px;
-  line-height: 1.5;
-  color: #4a5f54;
-  text-align: center;
-}
-.login-page .login-nota {
-  margin: 18px 0 0;
+.entrada-pedir-sub {
+  display: block;
+  margin-top: 4px;
   font-size: 13px;
-  line-height: 1.5;
-  color: #6b7f74;
-  text-align: center;
+  font-weight: 400;
+  color: var(--rf-dim);
+}
+.entrada-chevron {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--rf-mint);
+  transition: transform 0.45s var(--rf-ease);
+}
+.entrada-pedir[aria-expanded="true"] .entrada-chevron {
+  transform: rotate(180deg);
+}
+
+.entrada-painel {
+  overflow: hidden;
+  transition: height 0.5s var(--rf-ease);
+}
+.entrada-painel > div {
+  padding-top: 22px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.4s var(--rf-ease) 0.08s,
+    transform 0.4s var(--rf-ease) 0.08s;
+}
+.entrada-painel.is-aberto > div {
+  opacity: 1;
+  transform: none;
+}
+
+.entrada-campo {
+  display: block;
+  margin-bottom: 14px;
+}
+.entrada-campo > span {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--rf-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rf-faint);
+}
+.entrada-campo input,
+.entrada-campo select,
+.entrada-campo textarea {
+  width: 100%;
+  box-shadow: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--rf-fg);
+  background: rgba(4, 16, 13, 0.6);
+  border: 1px solid var(--rf-line-strong);
+  transition:
+    border-color 0.3s,
+    background 0.3s;
+}
+.entrada-campo textarea {
+  min-height: 88px;
+  resize: vertical;
+  line-height: 1.55;
+}
+.entrada-campo input:focus,
+.entrada-campo select:focus,
+.entrada-campo textarea:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--rf-mint);
+  background: rgba(4, 16, 13, 0.8);
+}
+.entrada-campo select option {
+  background: var(--rf-deep);
+  color: var(--rf-fg);
+}
+.entrada-dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.entrada-linha-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 4px;
+}
+.entrada-linha-acoes .entrada-btn {
+  width: auto;
+  flex: 1 1 auto;
+  padding: 12px 18px;
+  font-size: 13.5px;
+}
+
+.entrada-aviso {
+  margin-top: 13px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  border: 1px solid rgba(127, 217, 154, 0.4);
+  background: rgba(127, 217, 154, 0.1);
+  color: var(--rf-foam);
+  opacity: 0;
+  transform: translateY(-5px);
+  transition:
+    opacity 0.35s,
+    transform 0.35s;
+}
+.entrada-aviso.is-visivel {
+  opacity: 1;
+  transform: none;
+}
+
+/* --------------------------------------------------------------- rodapé --- */
+.entrada-miudo {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rf-line);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--rf-faint);
+}
+.entrada-miudo b {
+  color: var(--rf-dim);
+  font-weight: 600;
+}
+
+.entrada-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--rf-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.entrada-voltar:hover {
+  color: var(--rf-mint);
+}
+.entrada-voltar-seta {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+@media (max-width: 480px) {
+  .entrada-dupla {
+    grid-template-columns: 1fr;
+  }
+  .entrada-portal {
+    border-radius: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entrada *,
+  .entrada *::before,
+  .entrada *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

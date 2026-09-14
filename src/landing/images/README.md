@@ -1,46 +1,48 @@
 # Imagens da landing page
 
-Esta pasta reúne todas as imagens usadas na landing page do "Raízes do Futuro".
+Todas as fotos da landing e da porta do painel moram aqui, junto das variantes
+WebP que o site realmente serve.
 
-## O que já está aqui
-- `hero-aerial.jpg` — foto real usada no topo do site (hero). Foi
-  comprimida (de ~4,3 MB para ~380 KB) para não pesar o repositório;
-  se quiser trocar por uma versão em maior qualidade, vale comprimir
-  antes de commitar (ex: `convert original.png -resize 1920x1920\> -quality 85 hero-aerial.jpg`).
+## Como uma foto é servida
 
-## O que ainda é placeholder
-As demais imagens (avatares do card flutuante, fotos dos cards de "Como
-Funciona", da seção "Os Quatro Pilares", do FAQ e do CTA final) ainda
-apontam para fotos de banco de imagens (Unsplash), usadas só como
-referência de enquadramento e proporção.
+Nada importa a foto direto. Cada uma é descrita em `index.js` como um objeto
+com o original (fallback), o `srcset` em WebP e as dimensões, e é o componente
+`components/Foto.jsx` que monta o `<picture>`:
 
-## Como trocar por fotos reais do projeto
-1. Coloque o arquivo de imagem final nesta mesma pasta (ex:
-   `coleta-validacao.jpg`, `familia-boipeba.jpg` etc).
-2. Abra o arquivo `index.js` desta pasta.
-3. Troque a URL do Unsplash correspondente por um import local, por
-   exemplo:
+- **WebP** em duas ou três larguras, escolhidas pelo navegador conforme o
+  `sizes` que cada uso declara;
+- **JPEG/PNG original** como fallback, para quem não lê WebP;
+- **`width` e `height`** sempre no `<img>`, para o navegador reservar o espaço
+  antes do download — é o que mantém o *layout shift* em zero.
 
-   ```js
-   // antes
-   export const coletaValidacao = 'https://images.unsplash.com/...';
+## Trocar ou incluir uma foto
 
-   // depois
-   import coletaValidacao from './coleta-validacao.jpg';
-   export { coletaValidacao };
-   ```
+1. Coloque o arquivo final nesta pasta.
+2. Se for uma foto nova, acrescente-a à lista `FOTOS` em
+   `scripts/otimizar-imagens.mjs`, com as larguras que fazem sentido para o uso.
+3. Rode `node scripts/otimizar-imagens.mjs`. Ele regrava a pasta `webp/` inteira.
+4. Ajuste o descritor correspondente em `index.js` (imports, `srcset`, `width`,
+   `height` e `alt`).
+5. Commite também os `.webp` gerados: assim o build não depende do `sharp`.
 
-Nenhum componente precisa ser alterado — todos importam as imagens a
-partir de `images/index.js`, então a troca é feita em um único lugar.
+## Onde cada foto aparece
 
-## Imagens usadas hoje (mapa rápido)
-| Variável             | Onde aparece                         |
-| --------------------- | ------------------------------------- |
-| `heroAerial`          | Fundo da seção principal (hero)       |
-| `avatarFamilia1/2`    | Avatares do card "Famílias Impactadas"|
-| `coletaValidacao`     | Card "Coleta e Validação"             |
-| `fundoInfancia`       | Card "Fundo Infância" (destaque)      |
-| `rendaDireta`         | Card "Renda Direta"                   |
-| `pilaresComunidade`   | Imagem central de "Os Quatro Pilares" |
-| `faqMateriais`        | Imagem ao lado do FAQ                 |
-| `ctaMangue`           | Imagem do bloco de call-to-action     |
+| Descritor em `index.js` | Onde aparece                                              |
+| ----------------------- | --------------------------------------------------------- |
+| `coletaValidacao`       | Herói, ponta "Coleta e Validação" e o fundo desfocado da porta do painel |
+| `fundoInfancia`         | Ponta "Fundo Infância"                                     |
+| `rendaDireta`           | Ponta "Renda Direta" e a faixa de luz que vira o dia       |
+| `pilaresComunidade`     | Foto ao lado dos três signatários, em "Quem opera o ciclo" |
+| `logoRaizes`            | Marca no topo, no rodapé, no contato e na porta do painel  |
+
+`hero-boipeba.jpeg`, `hero-aerial.jpg`, `FAQ.jpeg`, `criancas-boipeba.jpeg` e
+`logo_footer.png` continuam na pasta mas **não são exportados de propósito**: um
+`export` sem uso arrasta a foto inteira para dentro do bundle. Basta reimportá-los
+em `index.js` se voltarem a ser usados.
+
+## Texto alternativo
+
+O `alt` de cada foto vive junto do descritor, e não espalhado pelos componentes:
+a mesma foto às vezes descreve coisas diferentes conforme o lugar, e nesses casos
+quem usa passa um `alt` próprio para `<Foto>`. Foto decorativa recebe `alt=""`
+explicitamente — nunca fica sem o atributo.

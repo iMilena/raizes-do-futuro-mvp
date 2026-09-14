@@ -10,7 +10,7 @@
       "name": "Painel do projeto",
       "short_name": "Painel",
       "description": "Visão da operação: coleta, validação, mercado e cofre",
-      "url": "./#/"
+      "url": "./#/painel"
     }
   ],
   "display": "standalone",
