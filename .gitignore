@@ -45,7 +45,16 @@ modelo/**/__pycache__/
 modelo/.pytest_cache/
 
 # O ONNX exportado é artefato de build, gerado por `raizes_modelo.exportar`.
-# Fica de fora por padrão porque são megabytes que mudam a cada retreino. Para
-# publicar o app sem treinar, comente as duas linhas abaixo e versione o modelo.
+# Fica de fora por padrão porque são megabytes que mudam a cada retreino.
 public/modelo/*.onnx
 public/modelo/*.json
+
+# Menos o modelo que está publicado. Sem ele em produção o app de campo cai na
+# escolha manual de material e o reconhecimento pela câmera simplesmente não
+# existe para quem usa o site — só para quem roda o projeto com o modelo na
+# máquina. São 5,9 MB versionados de propósito: é o preço de publicar sem uma
+# etapa de treino no deploy, que a Vercel não tem como rodar (é Python e leva
+# minutos). Ao retreinar, exportar e commitar a versão nova por cima.
+# O `-fp32` continua de fora: o manifesto não o carrega.
+!public/modelo/classificador.onnx
+!public/modelo/classificador.json

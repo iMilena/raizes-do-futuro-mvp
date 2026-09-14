@@ -1,0 +1,50 @@
+{
+  "versao": "mobilenetv3_small-padrao-e12",
+  "arquivo": "classificador.onnx",
+  "classes": [
+    "PET",
+    "aluminio",
+    "vidro",
+    "papelao",
+    "outros"
+  ],
+  "rotulos": [
+    "Plástico PET",
+    "Alumínio",
+    "Vidro",
+    "Papelão",
+    "Outros"
+  ],
+  "tamanho_entrada": 224,
+  "normalizacao": {
+    "media": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "desvio": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "saida": "probabilidades",
+  "temperatura_embutida": 0.9129,
+  "limiar_confianca": 0.87,
+  "medidas": {
+    "fp32": {
+      "tamanho_mb": 6.11,
+      "latencia_mediana_ms": 2.0,
+      "latencia_p95_ms": 4.5
+    },
+    "int8": {
+      "tamanho_mb": 6.11,
+      "latencia_mediana_ms": 2.2,
+      "latencia_p95_ms": 5.0
+    },
+    "concordancia_int8_fp32": 1.0,
+    "desvio_maximo_confianca": 0.0,
+    "quantizacao": "descartada por baixa concordância"
+  },
+  "exportado_em": "2026-09-14T17:41:00-0300"
+}
