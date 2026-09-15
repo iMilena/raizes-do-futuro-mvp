@@ -112,7 +112,7 @@ console.log(`faixa de teste: ${N}`);
 try {
   /* ---------------------------------------------------------------- base --- */
   secao('1. Entidades operacionais aceitam escrita');
-  /* Consentimento PRIMEIRO: desde a migração 02 a policy am_criar recusa
+  /* Consentimento PRIMEIRO: desde a migração 02 a policy fam_criar recusa
      família sem consentimento ativo. Esta suíte foi escrita antes disso e
      inseria família direto — o 403 resultante era a policy funcionando, não
      defeito. Registrar aqui é o que o app faz na aba Cadastro. */

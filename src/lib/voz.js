@@ -93,7 +93,7 @@ export function paraFala(texto) {
     .replace(/\bkg\b/gi, 'quilos')
     .replace(/\bPix\b/g, 'Pics')
     // remove emoji e símbolos gráficos, que a síntese tenta descrever
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]|\u{FE0F}|\u{200D}/gu, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
