@@ -1,0 +1,576 @@
+/* ============================================================================
+   Primitivos do painel
+
+   Todo nome leva o prefixo `pn-`. Não é gosto: a folha do MVP
+   (`src/estilos/styles.css`) já define `.card`, `.grid`, `.mono`, `.feed` e
+   `.kpi`, e as telas que ainda não foram migradas dependem dela. Sem prefixo,
+   o primeiro commit desta série quebraria as oito telas de uma vez. Com ele, as
+   duas folhas convivem, e cada tela troca de vocabulário no seu commit. Quando
+   a última migrar, a folha antiga é podada.
+
+   Nenhuma cor escrita aqui: tudo sai de token (ver src/styles/tokens.css).
+   ========================================================================= */
+
+/* ---------------------------------------------------------------- base --- */
+.painel-raizes {
+  font-family: var(--fu);
+  color: var(--t1);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.painel-raizes *,
+.painel-raizes *::before,
+.painel-raizes *::after {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------- cabeçalho de tela --- */
+/* Igual nas nove telas, e nesta ordem: onde estou, o que é isto, para que
+   serve. Resumo antes do detalhe. */
+.pn-shead {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 2px;
+}
+.pn-stepchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  font-family: var(--fm);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  background: var(--tide);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+/* Um dos dois únicos lugares com Fraunces. O outro é a manchete do destaque
+   do Dashboard. */
+.pn-shead h1 {
+  font-family: var(--fd);
+  font-size: clamp(24px, 2.9vw, 33px);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  color: var(--foam);
+  margin: 0;
+}
+.pn-purpose {
+  font-size: 14.5px;
+  color: var(--t2);
+  max-width: 62ch;
+  line-height: 1.6;
+  margin: 0;
+}
+.pn-purpose b {
+  color: var(--foam);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- card --- */
+/* Nem tudo é card. Borda, preenchimento e raio entram por papel, não
+   carimbados em todo bloco. */
+.pn-card {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: var(--rl);
+  padding: 20px;
+  box-shadow: var(--sh);
+  min-width: 0;
+}
+.pn-card.pad-s { padding: 16px; }
+.pn-card-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.pn-card-t {
+  font-family: var(--fu);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+.pn-card-n {
+  font-size: 12.5px;
+  color: var(--t3);
+  line-height: 1.55;
+  max-width: 62ch;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------- seções --- */
+.pn-sect {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.pn-sect-lab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-sect-lab::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* --------------------------------------------------------------- grade --- */
+/* `min-width:0` em todo filho: item de grid sem isso é a causa número um de
+   rolagem horizontal, porque o conteúdo interno se recusa a encolher. */
+.pn-grid { display: grid; gap: 16px; }
+.pn-grid > * { min-width: 0; }
+.pn-g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pn-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pn-g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pn-g-58 { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.pn-g-73 { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+
+/* --------------------------------------------------------------- pill --- */
+/* Ponto mais texto, nunca só cor: quem não distingue verde de âmbar ainda lê o
+   estado. A cor semântica é separada do acento da marca. */
+.pn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.pn-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+  background: currentColor;
+}
+.pn-pill.sq i { border-radius: 1px; }
+.pn-pill.ok { color: var(--ok); }
+.pn-pill.warn { color: var(--warn); }
+.pn-pill.crit { color: var(--crit); }
+.pn-pill.wait { color: var(--wait); }
+.pn-pill.ok,
+.pn-pill.warn,
+.pn-pill.crit,
+.pn-pill.wait {
+  border-color: color-mix(in srgb, currentColor 34%, transparent);
+  background: color-mix(in srgb, currentColor 11%, transparent);
+}
+
+/* ------------------------------------------------------------- ledger --- */
+/* Toda evidência on-chain com a mesma textura, em qualquer tela. */
+.pn-mono {
+  font-family: var(--fm);
+  font-size: 11.5px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.pn-hashchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--t2);
+  background: var(--tide);
+  border: 1px solid var(--line);
+  border-radius: var(--rs);
+  padding: 4px 7px;
+}
+.pn-hashchip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pn-hashchip button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--t4);
+  padding: 0 1px;
+  display: grid;
+  place-items: center;
+}
+.pn-hashchip button:hover { color: var(--t1); }
+/* O retorno da cópia é a cor, por 1,1 s. Trocar o ícone por um "✓" faria a
+   largura do chip pular e mudaria o desenho do traço no meio da ação. */
+.pn-hashchip button.copiado { color: var(--accent-ink); }
+
+.pn-ledger {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+.pn-ledger-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  background: var(--tide);
+  padding: 10px 13px;
+}
+.pn-ledger-row.solo { grid-template-columns: minmax(0, 1fr); }
+.pn-ledger-row .k {
+  font-size: 11.5px;
+  color: var(--t3);
+}
+.pn-xlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--t1);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-3);
+}
+.pn-xlink:hover {
+  color: var(--accent-ink);
+  border-bottom-color: var(--accent-ink);
+}
+
+/* ------------------------------------------------------------ figuras --- */
+.pn-fig { display: grid; gap: 3px; }
+.pn-fig .v {
+  font-family: var(--fu);
+  font-size: clamp(21px, 2.3vw, 27px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.pn-fig .l {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t4);
+  line-height: 1.4;
+}
+.pn-fig .s {
+  font-size: 11.5px;
+  color: var(--t3);
+}
+.pn-figrow {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+.pn-figrow > div {
+  background: var(--deep);
+  padding: 16px 18px;
+  min-width: 0;
+}
+
+/* -------------------------------------------------------------- notas --- */
+.pn-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border-radius: var(--rm);
+  padding: 13px 15px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  border: 1px solid;
+}
+.pn-note .ni {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
+  margin-top: 1px;
+}
+.pn-note .ni .ic {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.6;
+}
+.pn-note.i {
+  background: color-mix(in srgb, var(--t3) 7%, transparent);
+  border-color: var(--line-2);
+  color: var(--t2);
+}
+.pn-note.i .ni { background: var(--reef); color: var(--t2); }
+.pn-note.w {
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+  color: var(--t2);
+}
+.pn-note.w .ni {
+  background: color-mix(in srgb, var(--warn) 17%, transparent);
+  color: var(--warn);
+}
+.pn-note b { color: var(--foam); }
+.pn-note.w b { color: var(--warn-strong); }
+
+/* -------------------------------------------------------------- vazio --- */
+/* Título, uma linha dizendo o que faria aquilo aparecer, e quando fizer
+   sentido o caminho até a etapa que gera o dado. */
+.pn-empty {
+  display: grid;
+  gap: 7px;
+  place-items: center;
+  text-align: center;
+  padding: 30px 18px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--rm);
+  background: var(--empty-bg);
+}
+.pn-empty .t { font-size: 13.5px; font-weight: 600; color: var(--t2); }
+.pn-empty .d { font-size: 12px; color: var(--t4); max-width: 42ch; }
+
+/* ----------------------------------------------------------- tabelas --- */
+.pn-tbl-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  box-shadow: var(--sh);
+}
+.pn-tbl-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 520px;
+}
+.pn-tbl-wrap thead th {
+  text-align: left;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+  font-weight: 600;
+  padding: 11px 14px;
+  background: var(--abyss);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.pn-tbl-wrap tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  color: var(--t2);
+}
+.pn-tbl-wrap tbody tr:last-child td { border-bottom: 0; }
+.pn-tbl-wrap tbody tr { background: var(--deep); }
+.pn-tbl-wrap tbody tr:hover { background: var(--tide); }
+.pn-tbl-wrap td.t4 { color: var(--t4); }
+.pn-tbl-wrap td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  font-family: var(--fm);
+  font-size: 12px;
+  color: var(--t1);
+}
+.pn-tbl-wrap td strong { color: var(--foam); font-weight: 600; }
+/* A linha que pede ação se anuncia pela forma, não só pela cor. */
+.pn-tbl-wrap tr.needs td:first-child { box-shadow: inset 2px 0 0 var(--warn); }
+.pn-tbl-wrap tr.blocked td:first-child { box-shadow: inset 2px 0 0 var(--crit); }
+.pn-tbl-wrap tr.done td:first-child { box-shadow: inset 2px 0 0 var(--line-3); }
+
+/* --------------------------------------------------------- formulário --- */
+.pn-field { display: grid; gap: 6px; margin-bottom: 14px; }
+.pn-field > label {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-inp {
+  width: 100%;
+  background: var(--tide);
+  border: 1px solid var(--line-2);
+  border-radius: var(--rs);
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--t1);
+  box-shadow: none;
+}
+.pn-inp::placeholder { color: var(--t4); }
+.pn-inp:focus {
+  border-color: var(--accent-ink);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 22%, transparent);
+}
+select.pn-inp {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--t3) 50%),
+    linear-gradient(135deg, var(--t3) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+textarea.pn-inp { min-height: 90px; resize: vertical; line-height: 1.5; }
+.pn-hint { font-size: 11.5px; color: var(--t3); line-height: 1.5; }
+.pn-hint b { color: var(--foam); }
+
+.pn-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--tide);
+  border: 1px solid var(--line);
+  border-radius: var(--rs);
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.pn-check:hover { border-color: var(--line-3); }
+.pn-check input {
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.pn-check .cl { font-size: 13px; color: var(--t1); }
+.pn-check input:checked + .cl { color: var(--foam); font-weight: 600; }
+
+.pn-drop {
+  border: 1px dashed var(--line-3);
+  border-radius: var(--rm);
+  padding: 18px;
+  text-align: center;
+  background: var(--tide);
+}
+.pn-drop .t { font-size: 13px; font-weight: 600; color: var(--t1); }
+.pn-drop .d { font-size: 11.5px; color: var(--t3); margin-top: 4px; }
+
+/* -------------------------------------------------------------- botão --- */
+/* Um dos quatro lugares do verde da marca. No máximo um primário por bloco. */
+.pn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--accent-on);
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.pn-btn:hover { background: var(--accent-h); }
+.pn-btn.ghost {
+  background: none;
+  color: var(--t1);
+  border: 1px solid var(--line-2);
+}
+.pn-btn.ghost:hover { background: var(--tide); border-color: var(--line-3); }
+.pn-btn.sm { padding: 6px 13px; font-size: 12px; }
+.pn-btn:disabled {
+  background: var(--reef);
+  color: var(--t4);
+  cursor: not-allowed;
+}
+.pn-btn.ghost:disabled { background: none; }
+
+/* ------------------------------------------------------------ medidor --- */
+.pn-meter {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--reef);
+  overflow: hidden;
+  margin-top: 9px;
+}
+.pn-meter i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--chart-mark);
+}
+.pn-meter.alerta i { background: var(--warn); }
+
+/* -------------------------------------------------- navegação de etapa --- */
+.pn-stepnav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+.pn-snav {
+  display: grid;
+  gap: 3px;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  padding: 13px 16px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--t2);
+  font: inherit;
+  box-shadow: var(--sh);
+  min-width: 0;
+}
+.pn-snav:hover:not(:disabled) {
+  border-color: var(--line-3);
+  background: var(--tide);
+}
+.pn-snav .d {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-snav .t {
+  font-family: var(--fu);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--foam);
+  letter-spacing: -0.012em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pn-snav.next { text-align: right; }
+.pn-snav.next .d { justify-content: flex-end; }
+.pn-snav:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* --------------------------------------------------------- responsivo --- */
+@media (max-width: 1080px) {
+  .pn-g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pn-g-58,
+  .pn-g-73,
+  .pn-g3 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .pn-g2 { grid-template-columns: minmax(0, 1fr); }
+  .pn-stepnav { grid-template-columns: minmax(0, 1fr); }
+  .pn-card { padding: 16px; }
+}
