@@ -1,0 +1,85 @@
+/* ----------------------------------------------------------------------------
+   Etapa 3: Instituto Vivá.
+---------------------------------------------------------------------------- */
+
+/* Um item de fila. Não é card dentro de card: só uma régua separando, porque
+   cartão aninhado em cartão dobra a borda e afunda o conteúdo. */
+.pn-item-validar {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pn-item-validar:last-child { border-bottom: 0; padding-bottom: 0; }
+.pn-item-validar-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pn-item-validar b { font-size: 16px; color: var(--foam); letter-spacing: -0.015em; }
+
+/* ------------------------------------------------------------ relatório --- */
+.pn-relatorio {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.pn-relatorio-cab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pn-relatorio-cab strong { color: var(--foam); font-size: 14px; }
+.pn-ancoragem { margin-top: 0; }
+
+/* Hash e comando longos: o chip ocupa a linha inteira e o texto trunca dentro
+   dele, em vez de esticar o diálogo. */
+.pn-chip-largo { width: 100%; }
+
+/* --------------------------------------------------------- contestações --- */
+.pn-contest {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pn-contest:last-child { border-bottom: 0; padding-bottom: 0; }
+.pn-contest-cab {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pn-contest-cab b { color: var(--foam); }
+.pn-contest-detalhe {
+  margin-top: 7px;
+  padding: 9px 12px;
+  border-left: 2px solid var(--line-3);
+  background: var(--tide);
+  border-radius: 0 var(--rs) var(--rs) 0;
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.5;
+}
+
+.pn-corrigir-peso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  background: var(--tide);
+  border: 1px solid var(--line);
+  border-radius: var(--rs);
+}
+.pn-corrigir-peso .pn-inp { width: 110px; }
+
+.pn-acoes-linha {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
