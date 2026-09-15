@@ -326,6 +326,16 @@
 .pn-fbtns { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
 
 /* ---------------------------------------------------------- responsivo --- */
+/* Entre 900 e 1200 a lateral ainda ocupa 272px e a barra do topo tem de caber
+   em ~750px com contexto, busca, dois seletores, dois botões, perfil e a
+   pílula de rede. Não cabe: a busca desce para a própria linha antes disso, e
+   é o que impede a pílula de empurrar a página para o lado. */
+@media (max-width: 1200px) {
+  .pn-topbar { flex-wrap: wrap; }
+  .pn-search { order: 5; max-width: none; flex-basis: 100%; }
+  .pn-tbtn .rotulo-longo { display: none; }
+}
+
 @media (max-width: 900px) {
   .pn-app { grid-template-columns: minmax(0, 1fr); }
 
@@ -336,6 +346,10 @@
     height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    /* Item de grid sem `min-width: 0` não encolhe abaixo do conteúdo, e o
+       stepper de nove etapas empurrava a página inteira para o lado em vez de
+       rolar dentro da própria faixa. */
+    min-width: 0;
   }
   .pn-journey {
     display: flex;
@@ -343,6 +357,7 @@
     padding: 10px 14px;
     gap: 8px;
     flex: none;
+    min-width: 0;
   }
   .pn-jgroup { display: none; }
   .pn-jlist { display: flex; gap: 8px; padding: 0; }
