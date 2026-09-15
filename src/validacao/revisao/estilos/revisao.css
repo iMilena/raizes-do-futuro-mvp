@@ -211,6 +211,11 @@
 .revisao .revisao-lotes { margin-top: 36px; }
 .revisao .revisao-lotes h2 { font-size: 1.2rem; color: var(--verde-escuro); margin-bottom: 4px; }
 .revisao .campo-dica { color: var(--suave); font-size: 0.9rem; margin-top: 0; }
+/* A tabela de lotes tem seis colunas, uma delas uma raiz de Merkle. A 390px ela
+   nao cabe, e sem este container ela empurrava a pagina inteira de lado. Rola a
+   tabela, nunca a tela. */
+.revisao .revisao-lotes .rolagem { overflow-x: auto; border-radius: 12px; }
+.revisao .revisao-lotes .rolagem table { min-width: 560px; }
 .revisao .revisao-lotes table {
   width: 100%; border-collapse: collapse; background: var(--branco);
   border-radius: 12px; overflow: hidden;

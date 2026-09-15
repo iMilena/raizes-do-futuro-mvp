@@ -268,6 +268,7 @@ export default function PainelRevisao({ embutido = false }: PropsPainelRevisao) 
           Só a raiz de Merkle e os totais vão para a cadeia. Nenhuma foto, nenhum nome,
           nenhuma localização exata, nenhum registro individual.
         </p>
+        <div className="rolagem">
         <table>
           <thead>
             <tr>
@@ -285,7 +286,7 @@ export default function PainelRevisao({ embutido = false }: PropsPainelRevisao) 
                 <td><code>{lote.payload.merkleRoot.slice(0, 18)}…</code></td>
                 <td>
                   {ancoragens.has(lote.dataLote)
-                    ? <span className="ancorado">⚓ {ancoragens.get(lote.dataLote)?.slice(0, 12)}…</span>
+                    ? <span className="ancorado">ancorado {ancoragens.get(lote.dataLote)?.slice(0, 12)}…</span>
                     : <button className="botao-pequeno" onClick={() => void ancorar(lote.dataLote)}>
                         ancorar (simulado)
                       </button>}
@@ -294,6 +295,7 @@ export default function PainelRevisao({ embutido = false }: PropsPainelRevisao) 
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );
