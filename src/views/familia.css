@@ -1,0 +1,61 @@
+/* ----------------------------------------------------------------------------
+   Etapa 9: App da Família.
+
+   O interior desta tela continua sendo o app do celular, com a linguagem
+   visual dele: letra grande, botão de dedo, cor viva. O que muda aqui é só uma
+   coisa, e vale para o app inteiro: onde havia emoji agora há ícone de traço.
+
+   Emoji tinha três problemas nesta tela em particular. Ele muda de desenho
+   conforme o aparelho, e este app roda em celular popular; ele não herda a cor
+   do texto, então a letra maior aumentava a letra e não o símbolo; e o leitor
+   de tela lê o nome de catálogo ("caranguejo", "rosto sem ver") no meio de uma
+   frase sobre dinheiro. Ícone de traço resolve os três, e como ele herda
+   `currentColor` e `em`, cresce junto com a letra quando a família aumenta.
+---------------------------------------------------------------------------- */
+
+/* Regra geral do app da família: o ícone acompanha o texto ao lado dele, em vez
+   de ter tamanho fixo. É o que faz o botão "A+" funcionar de verdade. */
+.fam-tela .ic {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+}
+
+/* --------------------------------------------------------------- Tuca ----- */
+.fam-tela .mascote-bicho .ic { width: 38px; height: 38px; }
+
+.fam-tela .balao-voz { display: inline-flex; align-items: center; gap: 5px; }
+.fam-tela .balao-voz .ic { width: 14px; height: 14px; vertical-align: 0; }
+
+/* -------------------------------------------------------------- missões --- */
+.fam-tela .missao-icone { display: block; line-height: 0; }
+.fam-tela .missao-icone .ic { width: 19px; height: 19px; vertical-align: 0; }
+
+/* O ícone de conexão herda o tamanho que o emoji tinha, porque ele é o alvo
+   visual do botão inteiro, não um adorno ao lado do texto. */
+.fam-tela .ic-conexao { flex: 0 0 auto; line-height: 0; }
+.fam-tela .ic-conexao .ic { width: 28px; height: 28px; vertical-align: 0; }
+
+.fam-tela .medalha-voa .ic { width: 56px; height: 56px; vertical-align: 0; }
+.fam-tela .badge-medalha { line-height: 0; }
+.fam-tela .badge-medalha .ic { width: 62px; height: 62px; vertical-align: 0; }
+
+/* As quatro estrelas do fim das missões: enfileiradas, e fora da árvore de
+   acessibilidade, porque o texto ao lado já diz "todas as 4 missões". */
+.fam-tela .badge-estrelas { display: inline-flex; align-items: center; gap: 6px; }
+.fam-tela .badge-estrelas .ic { width: 14px; height: 14px; vertical-align: 0; }
+
+.fam-tela .recibo-check { line-height: 0; }
+.fam-tela .recibo-check .ic { width: 46px; height: 46px; vertical-align: 0; }
+
+/* O número do passo é um círculo verde; o ícone que às vezes ocupa esse lugar
+   precisa caber dentro dele sem esticar o círculo. */
+.fam-tela .passo-a-passo > div > span:first-child .ic {
+  width: 15px;
+  height: 15px;
+  vertical-align: 0;
+}
+
+/* Estado vazio sem ícone: o título passa a ser a primeira coisa, então o bloco
+   perde o respiro que o símbolo dava. */
+.fam-tela .vazio { padding-top: 22px; }

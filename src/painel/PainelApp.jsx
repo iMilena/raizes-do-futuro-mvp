@@ -665,6 +665,10 @@ export default function PainelApp({ rota }) {
         <ToastProvider>
           <DemoProvider setTab={() => {}}>
             <AvisosDeRede />
+            {/* O sprite mora no topo do painel, e esta rota não passa por lá.
+                Sem ele, cada `<use>` do app da família aponta para um símbolo
+                que não existe e o ícone some sem erro nenhum no console. */}
+            <SpriteIcones />
             <div className="rota-familia">
               <Suspense fallback={<Carregando />}><PaginaFamilia standalone /></Suspense>
               {/* `setRota('')` levava ao painel quando o painel morava na raiz.

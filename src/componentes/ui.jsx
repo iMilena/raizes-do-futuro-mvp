@@ -139,10 +139,13 @@ export function Badge({ tom = 'info', children }) {
 }
 
 /* ------------------------------------------------------------ estado vazio ---- */
-export function EstadoVazio({ icone = '🌱', titulo, dica, acao }) {
+/* Sem ícone por padrão. O broto que ficava aqui era emoji: mudava de desenho a
+   cada sistema, não herdava a cor do texto, e o leitor de tela anunciava
+   "muda" no meio de um estado vazio. Quem quiser um ícone passa um `<Icon>`. */
+export function EstadoVazio({ icone = null, titulo, dica, acao }) {
   return (
     <div className="vazio">
-      <div className="vazio-icone">{icone}</div>
+      {icone && <div className="vazio-icone">{icone}</div>}
       <b>{titulo}</b>
       {dica && <p>{dica}</p>}
       {acao}

@@ -82,7 +82,10 @@ export default [
          da árvore, rótulo aponta para o campo. Deixar como aviso seria escrever
          a regra e não cobrá-la. */
       ...a11y.flatConfigs.recommended.rules,
-      'jsx-a11y/label-has-associated-control': ['error', { assert: 'either' }],
+      /* `depth: 3` porque o rótulo do app da família embrulha o texto em
+         `<span><b>…</b><small>…</small></span>`: a frase existe, só está uma
+         camada mais fundo do que o padrão da regra procura. */
+      'jsx-a11y/label-has-associated-control': ['error', { assert: 'either', depth: 3 }],
       /* Região que rola precisa chegar pelo teclado (WCAG 2.1.1): sem
          `tabIndex`, quem navega sem mouse não consegue rolar o termo de
          consentimento. `region` entra na lista de papéis que podem receber

@@ -4,12 +4,15 @@ import {
   temPin, conferirPin, hashPin, novoSal, MAX_TENTATIVAS_PIN, progressoMeta,
 } from '../estado/store.jsx';
 import { useToast, Badge, EstadoVazio, ValorAnimado, Confete, BarraProgresso } from '../componentes/ui.jsx';
+import { Icon } from '../painel/ui/Icones.jsx';
+import { TelaCabecalho } from '../painel/ui/TelaCabecalho.jsx';
 import { useDemo, useDestaque } from '../componentes/demo.jsx';
 import { sha256Arquivo } from '../lib/evidencia.js';
 import { letraGrande, salvarLetra } from '../lib/preferencias.js';
 import {
   vozDisponivel, vozLigada, ligarVoz, falar, parar as pararVoz, aoMudarVozes,
 } from '../lib/voz.js';
+import './familia.css';
 
 /* ---------------------------------------------------------------------------
    App da Família — a tela que a família usa no celular.
@@ -20,9 +23,9 @@ import {
 const STATUS = {
   pendente: ['pend', 'enviar comprovante'],
   comprovada: ['info', 'em análise'],
-  'aguardando-assinaturas': ['prop', 'aprovado — liberando'],
-  liberada: ['ok', 'bônus recebido ✔'],
-  'validada-aguardando': ['info', 'guardado para você 🔒'],
+  'aguardando-assinaturas': ['prop', 'aprovado, liberando'],
+  liberada: ['ok', 'bônus recebido'],
+  'validada-aguardando': ['info', 'guardado para você'],
 };
 
 /**
@@ -60,14 +63,15 @@ function Mascote({ fala }) {
 
   return (
     <div className="mascote">
-      <span className="mascote-bicho" style={{ fontSize: 38 }} aria-hidden="true">🦀</span>
+      <span className="mascote-bicho" aria-hidden="true"><Icon name="caranguejo" /></span>
       <div className="balao">
         {fala}
         {temVoz && (
           <button className={'balao-voz' + (ligada ? ' on' : '')} onClick={alternar}
             aria-pressed={ligada}
             title={ligada ? 'Desligar a voz do Tuca' : 'Ouvir o Tuca ler em voz alta'}>
-            {ligada ? '🔊' : '🔈'} <span>{ligada ? 'ouvindo' : 'ouvir'}</span>
+            <Icon name={ligada ? 'sound' : 'sem-som'} />
+            <span>{ligada ? 'ouvindo' : 'ouvir'}</span>
           </button>
         )}
       </div>
@@ -113,10 +117,10 @@ function QrFake({ semente = 7 }) {
 
 /* ------------------------------------------- onboarding gamificado (Tuca) ---- */
 const MISSOES = [
-  { icone: '☕', rot: 'Escolher onde guardar' },
-  { icone: '🔢', rot: 'Meu PIN' },
-  { icone: '📋', rot: 'Meus compromissos' },
-  { icone: '💸', rot: 'Como retirar' },
+  { icone: 'copo', rot: 'Escolher onde guardar' },
+  { icone: 'teclado', rot: 'Meu PIN' },
+  { icone: 'lista', rot: 'Meus compromissos' },
+  { icone: 'dinheiro', rot: 'Como retirar' },
 ];
 
 function Onboarding({ familia, onDone }) {
@@ -143,14 +147,14 @@ function Onboarding({ familia, onDone }) {
 
   const concluir = () => {
     dispatch({ type: 'CRIAR_CARTEIRA', id: familia.id, provider: provider || PROVIDER_CARTEIRA });
-    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo 📲' : ` na ${PROVIDER_CARTEIRA} ☕`} 🎉`);
+    toast(`Conta da família criada${provider === 'Solana' ? ' no seu aplicativo' : ` na ${PROVIDER_CARTEIRA}`}`);
     celebrar();
     setPronto(true);
   };
 
   return (
     <div className="fam-onb">
-      {medalha && <span className="medalha-voa" aria-hidden="true">🌟</span>}
+      {medalha && <span className="medalha-voa" aria-hidden="true"><Icon name="estrela" /></span>}
       {pronto && <Confete />}
 
       <BarraProgresso
@@ -162,7 +166,9 @@ function Onboarding({ familia, onDone }) {
         {MISSOES.map((m, i) => (
           <div key={m.rot} role="listitem"
             className={'missao-passo' + (i === missao && !pronto ? ' atual' : '') + (i < missao || pronto ? ' feita' : '')}>
-            <span className="missao-icone">{i < missao || pronto ? '✅' : m.icone}</span>
+            <span className="missao-icone">
+              <Icon name={i < missao || pronto ? 'check' : m.icone} />
+            </span>
             <span className="missao-rot">{m.rot}</span>
           </div>
         ))}
@@ -170,9 +176,9 @@ function Onboarding({ familia, onDone }) {
 
       {!pronto && missao === 0 && (
         <div className="card">
-          <Mascote fala={`Oi, ${familia.resp.split(' ')[0]}! Eu sou o Tuca, caranguejo de Boipeba. Vou te ajudar a criar a conta da sua família — leva 2 minutinhos. Primeiro: escolha onde o seu dinheiro vai ficar guardado.`} />
+          <Mascote fala={`Oi, ${familia.resp.split(' ')[0]}! Eu sou o Tuca, caranguejo de Boipeba. Vou te ajudar a criar a conta da sua família, leva 2 minutinhos. Primeiro: escolha onde o seu dinheiro vai ficar guardado.`} />
           <button className={'btn-conexao' + (provider === PROVIDER_CARTEIRA ? ' sel' : '')} onClick={() => setProvider(PROVIDER_CARTEIRA)}>
-            <span className="ic" aria-hidden="true">☕</span>
+            <span className="ic-conexao" aria-hidden="true"><Icon name="copo" /></span>
             <span><b>Conectar com {PROVIDER_CARTEIRA}</b> <span className="tag ok">recomendado</span><br />
               {/* Dizia "aplicativo brasileiro". A Decaf não é — e afirmar
                   nacionalidade de um parceiro que ainda não está integrado é
@@ -181,14 +187,16 @@ function Onboarding({ familia, onDone }) {
               <small>Simples de usar, com retirada em reais pelo Pix</small></span>
           </button>
           <button className={'btn-conexao' + (provider === 'Solana' ? ' sel' : '')} onClick={() => setProvider('Solana')}>
-            <span className="ic" aria-hidden="true">📲</span>
+            <span className="ic-conexao" aria-hidden="true"><Icon name="celular" /></span>
             <span><b>Já tenho uma conta digital</b><br />
               <small>Receber o dinheiro no aplicativo que você já usa hoje</small></span>
           </button>
           <div className="conceito" style={{ marginTop: 10 }}>
-            💡 Seu dinheiro fica num <b>cofre digital</b> que ninguém pode desviar — nem a gente.
+            <Icon name="lamp" /> Seu dinheiro fica num <b>cofre digital</b> que ninguém pode desviar, nem a gente.
           </div>
-          <button className="acao bloco" disabled={!provider} onClick={avancar}>Missão cumprida → 🌟</button>
+          <button className="acao bloco" disabled={!provider} onClick={avancar}>
+            Missão cumprida <Icon name="estrela" />
+          </button>
         </div>
       )}
 
@@ -198,29 +206,37 @@ function Onboarding({ familia, onDone }) {
           e a explicar como funciona a recuperação. */}
       {!pronto && missao === 1 && (
         <div className="card">
-          <Mascote fala="Seu PIN de 4 números já está guardado neste celular. É ele que protege sua conta — igual à senha do cartão." />
+          <Mascote fala="Seu PIN de 4 números já está guardado neste celular. É ele que protege sua conta, igual à senha do cartão." />
           <div className="passo-a-passo">
-            <div><span>🔒</span><span>Só este celular conhece o seu PIN.</span></div>
-            <div><span>🙈</span><span>Ninguém do projeto consegue ver qual é — nem para te ajudar.</span></div>
-            <div><span>🤝</span><span>Se esquecer, o agente do Instituto Vivá destrava pessoalmente e você escolhe outro.</span></div>
+            <div><span><Icon name="lock" /></span><span>Só este celular conhece o seu PIN.</span></div>
+            <div><span><Icon name="sem-olho" /></span><span>Ninguém do projeto consegue ver qual é, nem para te ajudar.</span></div>
+            <div><span><Icon name="maos" /></span><span>Se esquecer, o agente do Instituto Vivá destrava pessoalmente e você escolhe outro.</span></div>
           </div>
           <div className="conceito" style={{ marginTop: 10 }}>
-            💡 Nada de senhas complicadas de 12 palavras para decorar.
+            <Icon name="lamp" /> Nada de senhas complicadas de 12 palavras para decorar.
           </div>
-          <button className="acao bloco" onClick={avancar}>Entendi, meu PIN está pronto → 🌟</button>
+          <button className="acao bloco" onClick={avancar}>
+            Entendi, meu PIN está pronto <Icon name="estrela" />
+          </button>
         </div>
       )}
 
       {!pronto && missao === 2 && (
         <div className="card">
-          <Mascote fala="Esses são os compromissos da sua família. Cada um cumprido vira um bônus a mais na conta — e a renda do seu trabalho continua garantida, sempre." />
+          <Mascote fala="Esses são os compromissos da sua família. Cada um cumprido vira um bônus a mais na conta, e a renda do seu trabalho continua garantida, sempre." />
           <ul className="lista-compromissos">
             {familia.condicoes.map(c => (
-              <li key={c.id}>📌 <b>{c.tipo}</b> — bônus de {fmt(BONUS_POR_CRIANCA * familia.criancas)} em {c.mes}</li>
+              <li key={c.id}>
+                <Icon name="tag" /> <b>{c.tipo}</b>: bônus de {fmt(BONUS_POR_CRIANCA * familia.criancas)} em {c.mes}
+              </li>
             ))}
-            <li className="destaque-item">💡 Não deu para comprovar? O bônus fica <b>guardado para você</b> — não some.</li>
+            <li className="destaque-item">
+              <Icon name="lamp" /> Não deu para comprovar? O bônus fica <b>guardado para você</b>, não some.
+            </li>
           </ul>
-          <button className="acao bloco" onClick={avancar}>Entendi! → 🌟</button>
+          <button className="acao bloco" onClick={avancar}>
+            Entendi! <Icon name="estrela" />
+          </button>
         </div>
       )}
 
@@ -228,20 +244,25 @@ function Onboarding({ familia, onDone }) {
         <div className="card">
           <Mascote fala="Última missão: retirar dinheiro é rapidinho. Olha só:" />
           <div className="passo-a-passo">
-            <div><span>1</span> Aperte <b>💸 Retirar dinheiro</b></div>
+            <div><span>1</span> Aperte <b>Retirar dinheiro</b></div>
             <div><span>2</span> Escolha o valor</div>
             <div><span>3</span> O dinheiro cai na sua conta pelo <b>Pix</b>, em reais</div>
           </div>
-          <button className="acao bloco" onClick={concluir}>Criar minha conta 🎉</button>
+          <button className="acao bloco" onClick={concluir}>Criar minha conta</button>
         </div>
       )}
 
       {pronto && (
         <div className="card centro">
           <div className="badge-final">
-            <div className="badge-medalha" aria-hidden="true">🏅</div>
+            <div className="badge-medalha" aria-hidden="true"><Icon name="medalha" /></div>
             <b>Família Raízes do Futuro</b>
-            <span>todas as 4 missões cumpridas ⭐⭐⭐⭐</span>
+            <span className="badge-estrelas">
+              todas as 4 missões cumpridas
+              <span aria-hidden="true">
+                <Icon name="estrela" /><Icon name="estrela" /><Icon name="estrela" /><Icon name="estrela" />
+              </span>
+            </span>
           </div>
           <Mascote fala="Conta criada! A partir de agora, cada bônus aprovado cai direto aqui. Vamos ver como ficou?" />
           <button className="acao bloco" onClick={onDone}>Abrir minha conta</button>
@@ -261,7 +282,7 @@ function Saque({ familia, onFechar }) {
 
   const confirmar = () => {
     dispatch({ type: 'SACAR_PIX', id: familia.id, valor: v });
-    toast(`Pix de ${fmt(v)} enviado 💸`);
+    toast(`Pix de ${fmt(v)} enviado`);
     celebrar();
     setFeito(v);
   };
@@ -276,7 +297,7 @@ function Saque({ familia, onFechar }) {
    */
   const guardarComprovante = async () => {
     const texto = [
-      'COMPROVANTE — Raízes do Futuro',
+      'COMPROVANTE, Raízes do Futuro',
       `Valor: ${fmt(feito)}`,
       `Para: ${familia.resp}`,
       `Quando: ${new Date().toLocaleString('pt-BR')}`,
@@ -289,7 +310,7 @@ function Saque({ familia, onFechar }) {
         return;
       }
       await navigator.clipboard.writeText(texto);
-      toast('Comprovante copiado — cole onde quiser guardar 📋', 'info', 5000);
+      toast('Comprovante copiado: cole onde quiser guardar', 'info', 5000);
     } catch {
       /* a pessoa cancelou o compartilhamento: não é erro, e avisar seria ruído */
     }
@@ -297,7 +318,7 @@ function Saque({ familia, onFechar }) {
 
   if (feito > 0) return (
     <div className="card recibo">
-      <div className="recibo-check" aria-hidden="true">✅</div>
+      <div className="recibo-check" aria-hidden="true"><Icon name="check" /></div>
       <h3 className="fam-h3" style={{ margin: '4px 0' }}>Pix enviado!</h3>
       <div className="recibo-valor">{fmt(feito)}</div>
       <QrFake semente={Math.round(feito)} />
@@ -305,15 +326,15 @@ function Saque({ familia, onFechar }) {
         <tbody>
           <tr><td>Para</td><td><b>{familia.resp}</b></td></tr>
           <tr><td>Quando</td><td>{new Date().toLocaleString('pt-BR')}</td></tr>
-          <tr><td>Taxa</td><td>R$ 0,00 — sem custo para a família</td></tr>
+          <tr><td>Taxa</td><td>R$ 0,00 (sem custo para a família)</td></tr>
         </tbody>
       </table>
       {/* O comprovante tem de ser DELA: aparecia na tela e desaparecia. Quem
-          recebe dinheiro digital precisa poder guardar e mostrar a prova —
+          recebe dinheiro digital precisa poder guardar e mostrar a prova:
           é o que troca desconfiança por tranquilidade. */}
       <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
         <button className="acao" style={{ flex: 1 }} onClick={guardarComprovante}>
-          📤 Guardar comprovante
+          <Icon name="partilhar" /> Guardar comprovante
         </button>
         <button className="acao sec" style={{ flex: 1 }} onClick={onFechar}>Voltar</button>
       </div>
@@ -388,11 +409,13 @@ function Contestar({ familia, tipo, alvoId, alvoDesc }) {
     return (
       <div className={'contest-aviso ' + existente.status}>
         {existente.status === 'aberta' ? (
-          <>🕐 <b>Você avisou que isso está errado.</b> O Instituto Vivá vai olhar e responder aqui.</>
+          <><Icon name="relogio" /> <b>Você avisou que isso está errado.</b> O Instituto Vivá vai olhar e responder aqui.</>
         ) : (
           <>
-            💬 <b>Resposta do Instituto Vivá:</b> {existente.resposta}
-            {existente.status === 'resolvida' && <div className="mini">✅ marcado como resolvido</div>}
+            <Icon name="conversa" /> <b>Resposta do Instituto Vivá:</b> {existente.resposta}
+            {existente.status === 'resolvida' && (
+              <div className="mini"><Icon name="check" /> marcado como resolvido</div>
+            )}
           </>
         )}
       </div>
@@ -434,7 +457,7 @@ function Contestar({ familia, tipo, alvoId, alvoDesc }) {
               motivo: MOTIVOS[tipo].find(([id]) => id === motivo)[1],
               detalhe,
             });
-            toast('Avisamos o Instituto Vivá 📨 — eles respondem aqui mesmo', 'info', 6000);
+            toast('Avisamos o Instituto Vivá: eles respondem aqui mesmo', 'info', 6000);
             setAberto(false);
           }}>
           Avisar o Instituto Vivá
@@ -471,7 +494,7 @@ function SuasEntregas({ familia }) {
       <h3 className="fam-h3">Suas entregas</h3>
       <div className="card">
         {minhas.length === 0 && (
-          <EstadoVazio icone="🧹" titulo="Nenhuma entrega registrada no seu nome"
+          <EstadoVazio titulo="Nenhuma entrega registrada no seu nome"
             dica="Quando você entregar material, ele aparece aqui com o peso que foi anotado. Se entregou e não apareceu, avise o Instituto Vivá." />
         )}
         {minhas.length > 0 && (
@@ -490,7 +513,7 @@ function SuasEntregas({ familia }) {
                     </div>
                   </div>
                   <Badge tom={c.status === 'validada' ? 'ok' : 'pend'}>
-                    {c.status === 'validada' ? 'conferido ✔' : 'em conferência'}
+                    {c.status === 'validada' ? 'conferido' : 'em conferência'}
                   </Badge>
                 </div>
                 <Contestar familia={familia} tipo="coleta" alvoId={c.id}
@@ -499,7 +522,7 @@ function SuasEntregas({ familia }) {
             ))}
             <p className="mini" style={{ marginTop: 10 }}>
               Confira o peso. Se algum número não bate com o que você entregou, toque
-              em <b>"Isso está errado?"</b> — alguém do Instituto Vivá responde aqui.
+              em <b>"Isso está errado?"</b>, alguém do Instituto Vivá responde aqui.
             </p>
           </>
         )}
@@ -538,7 +561,7 @@ function Meta({ familia }) {
     const valor = Number(form.valor);
     if (!form.nome.trim() || !(valor > 0)) { toast('Escreva para o que é e quanto', 'alerta'); return; }
     dispatch({ type: 'DEFINIR_META', familiaId: familia.id, nome: form.nome.trim(), valor });
-    toast('Meta guardada 🎯', 'info');
+    toast('Meta guardada', 'info');
     setAbrindo(false);
     setForm({ nome: '', valor: '' });
   };
@@ -551,7 +574,7 @@ function Meta({ familia }) {
   if (!p && !abrindo) {
     return (
       <button className="meta-convite" onClick={() => setAbrindo(true)}>
-        🎯 <span>Quer guardar para alguma coisa? <b>Criar uma meta</b></span>
+        <Icon name="alvo" /> <span>Quer guardar para alguma coisa? <b>Criar uma meta</b></span>
       </button>
     );
   }
@@ -559,9 +582,9 @@ function Meta({ familia }) {
   if (abrindo) {
     return (
       <div className="card meta-card" style={{ marginTop: 11 }}>
-        <b style={{ fontSize: 15 }}>🎯 Sua meta</b>
+        <b style={{ fontSize: 15 }}><Icon name="alvo" /> Sua meta</b>
         <p className="mini" style={{ marginTop: 2 }}>
-          Você escolhe para o que é e quanto. Isso <b>não bloqueia</b> seu dinheiro —
+          Você escolhe para o que é e quanto. Isso <b>não bloqueia</b> seu dinheiro:
           você retira quando quiser, com meta ou sem meta.
         </p>
         <label htmlFor="meta-nome">Guardar para</label>
@@ -584,7 +607,7 @@ function Meta({ familia }) {
       {p.alcancada && festejou && <Confete />}
       <div className="meta-topo">
         <div>
-          <b>🎯 {p.nome}</b>
+          <b><Icon name="alvo" /> {p.nome}</b>
           <div className="mini">meta de {fmt(p.alvo)}</div>
         </div>
         <button className="meta-apagar" onClick={remover} title="Apagar a meta">apagar</button>
@@ -616,26 +639,26 @@ function AjudaZap({ familia, onFechar }) {
   const alternarAviso = () => {
     dispatch({ type: 'AVISO_WHATSAPP', familiaId: familia.id, ligar: !avisar });
     toast(avisar
-      ? 'Aviso desligado — você continua vendo tudo aqui no app'
-      : 'Pronto! Você recebe uma mensagem quando o bônus cair 💬', 'info', 5000);
+      ? 'Aviso desligado: você continua vendo tudo aqui no app'
+      : 'Pronto! Você recebe uma mensagem quando o bônus cair', 'info', 5000);
   };
 
   return (
     <div className="card" style={{ marginTop: 10 }}>
-      <b>💬 Instituto Vivá — atendimento pelo WhatsApp</b>
+      <b><Icon name="conversa" /> Instituto Vivá, atendimento pelo WhatsApp</b>
       <div className="zap" style={{ marginTop: 8 }}>
         <div className="zap-msg familia">Oi! Como faço para enviar o comprovante da escola?</div>
         {!digitou
           ? <div className="zap-msg agente digitando"><span /><span /><span /></div>
-          : <div className="zap-msg agente">Oi! É só tocar em "📎 Enviar foto do comprovante" no compromisso da matrícula e fotografar a declaração. Qualquer coisa eu passo aí na comunidade para ajudar 🌱</div>}
+          : <div className="zap-msg agente">Oi! É só tocar em "Enviar foto do comprovante" no compromisso da matrícula e fotografar a declaração. Qualquer coisa eu passo aí na comunidade para ajudar.</div>}
       </div>
 
       {/* Aviso quando o dinheiro chega. Antes, a família só descobria abrindo o
           app "por acaso" — e ninguém abre um app todo dia para ver se caiu algo.
           O canal é WhatsApp porque é o que ela já usa; opt-in porque mensagem
           não pedida sobre dinheiro assusta. */}
-      <label className="opcao-aviso">
-        <input type="checkbox" checked={avisar} onChange={alternarAviso} />
+      <label className="opcao-aviso" htmlFor="avisar-zap">
+        <input id="avisar-zap" type="checkbox" checked={avisar} onChange={alternarAviso} />
         <span>
           <b>Me avisar no WhatsApp quando o bônus cair</b>
           <small>Só sobre o seu dinheiro. Nada de propaganda, e você desliga quando quiser.</small>
@@ -643,14 +666,14 @@ function AjudaZap({ familia, onFechar }) {
       </label>
       {avisar && (
         <p className="mini so-sim" style={{ marginTop: 6 }}>
-          (na demonstração a mensagem não é enviada de verdade — o registro da
+          (na demonstração a mensagem não é enviada de verdade, o registro da
           escolha fica gravado)
         </p>
       )}
 
       {/* Ligar, não só escrever: quem tem dificuldade com texto liga. */}
       <a className="acao bloco centro" href={`tel:${TEL_AGENTE}`} style={{ textDecoration: 'none' }}>
-        📞 Ligar para o agente
+        <Icon name="ligar" /> Ligar para o agente
       </a>
       <button className="acao sec bloco" onClick={onFechar}>Fechar conversa</button>
     </div>
@@ -732,7 +755,7 @@ export default function PaginaFamilia({ standalone = false }) {
       const hash = await hashPin(pin, sal);
       if (!hash) { setErroPin('Este navegador não permite guardar o PIN com segurança.'); return; }
       dispatch({ type: 'DEFINIR_PIN', familiaId: escolhida.id, hash, sal });
-      toast('PIN criado 🔒 — ele fica só neste celular');
+      toast('PIN criado: ele fica só neste celular');
       setPin(''); setPin2(''); setEntrou(true);
       return;
     }
@@ -743,7 +766,7 @@ export default function PaginaFamilia({ standalone = false }) {
       dispatch({ type: 'PIN_ERRADO', familiaId: escolhida.id });
       setPin('');
       setErroPin(restantes <= 1
-        ? 'PIN errado. Este celular foi travado — procure o agente.'
+        ? 'PIN errado. Este celular foi travado: procure o agente.'
         : 'PIN errado. Confira e tente de novo.');
     }
   };
@@ -751,7 +774,7 @@ export default function PaginaFamilia({ standalone = false }) {
   const enviar = c => {
     if (rodando) {
       dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
-      toast('Foto do comprovante enviada 📎');
+      toast('Foto do comprovante enviada');
       return;
     }
     setCondAlvo(c.id);
@@ -764,7 +787,7 @@ export default function PaginaFamilia({ standalone = false }) {
     try {
       const hash = await sha256Arquivo(arq);
       dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: condAlvo, evidHash: hash, arquivo: arq.name });
-      toast(`Comprovante protegido e enviado 📎 (código ${trunc(hash, 6, 6)})`);
+      toast(`Comprovante protegido e enviado (código ${trunc(hash, 6, 6)})`);
     } catch (err) {
       toast('Não foi possível ler a foto', 'alerta');
     }
@@ -800,7 +823,7 @@ export default function PaginaFamilia({ standalone = false }) {
           disso — e não saber, com dinheiro, é insegurança. */}
       {!online && (
         <div className="fam-offline">
-          📴 <b>Sem internet agora.</b> Seu saldo está guardado neste celular e continua certo.
+          <Icon name="sem-sinal" /> <b>Sem internet agora.</b> Seu saldo está guardado neste celular e continua certo.
           O que você fizer agora é enviado sozinho quando o sinal voltar.
         </div>
       )}
@@ -812,20 +835,20 @@ export default function PaginaFamilia({ standalone = false }) {
             <img className="fam-logo-entrada" src="./imagens/logo.png" alt="Raízes do Futuro" />
             <Mascote fala={
               !escolhida ? 'Oi! Escolha sua família para começar.'
-                : bloqueada ? 'Este celular está travado. Procure o agente do Instituto Vivá — ele destrava sem ver seu PIN.'
+                : bloqueada ? 'Este celular está travado. Procure o agente do Instituto Vivá, ele destrava sem ver seu PIN.'
                   : primeiraVez ? 'Primeira vez aqui! Escolha um PIN de 4 números só seu. Ele fica guardado neste celular.'
                     : 'Bem-vinda de volta! Digite seu PIN para entrar.'} />
             <div className="card">
-              <label>Quem é você?<span className="so-sim"> (simulação)</span></label>
-              <select value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); setOnbFam(null); setPin(''); setPin2(''); setErroPin(''); }}>
+              <label htmlFor="fam-quem">Quem é você?<span className="so-sim"> (simulação)</span></label>
+              <select id="fam-quem" value={famId} onChange={e => { setFamId(e.target.value); setOnboardOk(false); setOnbFam(null); setPin(''); setPin2(''); setErroPin(''); }}>
                 <option value="">Escolha a família…</option>
                 {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp}</option>)}
               </select>
 
               {bloqueada ? (
                 <p className="conceito" style={{ marginTop: 14 }}>
-                  🔒 Depois de {MAX_TENTATIVAS_PIN} tentativas erradas, este celular travou
-                  para proteger sua conta. O agente destrava presencialmente — e você escolhe
+                  <Icon name="lock" /> Depois de {MAX_TENTATIVAS_PIN} tentativas erradas, este celular travou
+                  para proteger sua conta. O agente destrava presencialmente, e você escolhe
                   um PIN novo, que ninguém mais vê.
                 </p>
               ) : (
@@ -884,7 +907,7 @@ export default function PaginaFamilia({ standalone = false }) {
                   celular, e a tela passaria a dizer "do seu aplicativo" para uma
                   conta que a operação criou. Invertido, qualquer provedor
                   custodial cai no rótulo certo — hoje e no próximo. */}
-              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Solana' ? 'do seu aplicativo 📲' : `${PROVIDER_CARTEIRA} ☕`}</span>
+              <span className="saldo-sub">disponível para retirar agora · conta {f.carteira.provider === 'Solana' ? 'do seu aplicativo' : PROVIDER_CARTEIRA}</span>
 
               {/* De onde vem o dinheiro — a parte que o app escondia.
                   A renda do trabalho é INCONDICIONAL e é o princípio nº 1 do
@@ -902,13 +925,13 @@ export default function PaginaFamilia({ standalone = false }) {
               </div>
               <div className={focoSaque}>
                 <button className="acao grande" disabled={f.saldo <= 0} onClick={() => setSacando(true)}>
-                  💸 Retirar dinheiro
+                  <Icon name="dinheiro" /> Retirar dinheiro
                 </button>
               </div>
               {state.propostas.some(p => p.status === 'reservada' && p.familiaId === f.id) && (
                 <div className="saldo-guardado">
-                  🔒 Você tem {fmt(state.propostas.filter(p => p.status === 'reservada' && p.familiaId === f.id).reduce((a, p) => a + p.valor, 0))} guardado
-                  esperando você concluir um compromisso — esse valor não some.
+                  <Icon name="lock" /> Você tem {fmt(state.propostas.filter(p => p.status === 'reservada' && p.familiaId === f.id).reduce((a, p) => a + p.valor, 0))} guardado
+                  esperando você concluir um compromisso, esse valor não some.
                 </div>
               )}
             </div>
@@ -921,7 +944,7 @@ export default function PaginaFamilia({ standalone = false }) {
 
             <h3 className={'fam-h3 ancora' + focoComp}>Compromissos do mês</h3>
             <div className={'fam-cards' + focoComp}>
-              {f.condicoes.length === 0 && <EstadoVazio icone="📋" titulo="Nenhum compromisso este mês" />}
+              {f.condicoes.length === 0 && <EstadoVazio titulo="Nenhum compromisso este mês" />}
               {f.condicoes.map(c => {
                 const [tom, rot] = STATUS[c.status] || ['info', c.status];
                 return (
@@ -933,14 +956,16 @@ export default function PaginaFamilia({ standalone = false }) {
                     <div className="compromisso-valor">+{fmt(BONUS_POR_CRIANCA * f.criancas)}</div>
                     <Badge tom={tom}>{rot}</Badge>
                     {c.status === 'pendente' && (
-                      <button className="acao bloco" onClick={() => enviar(c)}>📎 Enviar foto do comprovante</button>
+                      <button className="acao bloco" onClick={() => enviar(c)}>
+                        <Icon name="clipe" /> Enviar foto do comprovante
+                      </button>
                     )}
                     {c.evidHash && (
-                      <p className="mini" title="A foto fica no seu aparelho — só este código vai ao registro">
-                        🔐 comprovante protegido · código {trunc(c.evidHash, 6, 6)}
+                      <p className="mini" title="A foto fica no seu aparelho: só este código vai ao registro">
+                        <Icon name="lock" /> comprovante protegido · código {trunc(c.evidHash, 6, 6)}
                       </p>
                     )}
-                    <p className="mini">A renda do seu trabalho não depende disso — aqui é só o bônus a mais.</p>
+                    <p className="mini">A renda do seu trabalho não depende disso, aqui é só o bônus a mais.</p>
                     <Contestar familia={f} tipo="compromisso" alvoId={c.id} alvoDesc={`${c.tipo} (${c.mes})`} />
                   </div>
                 );
@@ -951,7 +976,7 @@ export default function PaginaFamilia({ standalone = false }) {
 
             <h3 className="fam-h3">Extrato</h3>
             <div className="card">
-              {f.extrato.length === 0 && <EstadoVazio icone="🧾" titulo="Nada por aqui ainda" dica="Sua renda, seus bônus e suas retiradas vão aparecer nesta lista." />}
+              {f.extrato.length === 0 && <EstadoVazio titulo="Nada por aqui ainda" dica="Sua renda, seus bônus e suas retiradas vão aparecer nesta lista." />}
               {[...f.extrato].reverse().map((e, i) => (
                 <div key={i} className="extrato-linha">
                   <div>
@@ -975,7 +1000,9 @@ export default function PaginaFamilia({ standalone = false }) {
       </div>
 
       {logado && f?.carteira && (
-        <button className="fab-ajuda" onClick={() => setAjuda(a => !a)}>💬 Falar com o Instituto Vivá</button>
+        <button className="fab-ajuda" onClick={() => setAjuda(a => !a)}>
+          <Icon name="conversa" /> Falar com o Instituto Vivá
+        </button>
       )}
 
       {/* input escondido: câmera/galeria para o comprovante */}
@@ -986,14 +1013,16 @@ export default function PaginaFamilia({ standalone = false }) {
 
   if (standalone) return <div className="fam-tela standalone">{conteudo}</div>;
 
+  /* Dentro do painel a tela vira maquete: cabeçalho de etapa em volta e a
+     moldura de celular no meio. Sozinha, em `#/familia`, ela é o app de
+     verdade e não leva nada disso à frente. */
   return (
-    <>
-      <h2>App da Família — como a família vê no celular</h2>
-      <p className="mini so-sim">
+    <div className="pn-screen">
+      <TelaCabecalho etapa={9} total={9} area="Família" titulo="App da Família, como a família vê no celular">
         Zero jargão técnico: aqui é "conta da família", "dinheiro" e "cofre digital".
         Esta tela também abre sozinha, em modo celular, no endereço <b>{location.origin + location.pathname}#/familia</b>.
-      </p>
+      </TelaCabecalho>
       <div className="moldura-celular">{conteudo}</div>
-    </>
+    </div>
   );
 }

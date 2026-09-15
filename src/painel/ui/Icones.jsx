@@ -56,6 +56,29 @@ export function SpriteIcones() {
         <symbol id="i-building" viewBox="0 0 16 16"><path d="M2.6 13.4V4.2a1 1 0 0 1 1-1h5.2a1 1 0 0 1 1 1v9.2" /><path d="M9.8 6.8h2.8a1 1 0 0 1 1 1v5.6" /><path d="M1.6 13.4h12.8M5 6h2M5 8.6h2M5 11.2h2" /></symbol>
         <symbol id="i-tag" viewBox="0 0 16 16"><path d="M2.6 8.2V3.4a.8.8 0 0 1 .8-.8h4.8l5.2 5.2a1.1 1.1 0 0 1 0 1.6l-4 4a1.1 1.1 0 0 1-1.6 0L2.6 8.2Z" /><path d="M5.6 5.6v.01" strokeWidth="1.8" /></symbol>
         <symbol id="i-split" viewBox="0 0 16 16"><path d="M2.4 8h3.2l2.2-3.4h5.8M13.6 4.6l-1.8-1.6M13.6 4.6l-1.8 1.6" /><path d="M5.6 8l2.2 3.4h5.8M13.6 11.4l-1.8-1.6M13.6 11.4l-1.8 1.6" /></symbol>
+
+        {/* App da Família. Cada um destes substitui um emoji que estava no
+            lugar: o desenho passa a herdar a cor do texto, a ficar igual em
+            todo aparelho, e a não ser lido em voz alta com um nome de catálogo
+            no meio de um saldo. */}
+        <symbol id="i-caranguejo" viewBox="0 0 20 20"><path d="M6 11.2a4 4 0 0 1 8 0" /><path d="M6.6 8.2 5.2 6.4M13.4 8.2l1.4-1.8M8.4 7.4V5.8M11.6 7.4V5.8" /><path d="M6.1 11.6H4.3l-1.6 1.5M13.9 11.6h1.8l1.6 1.5M6.4 12.6l-2 1.8M13.6 12.6l2 1.8M8.4 12.8l-.8 2.4M11.6 12.8l.8 2.4" /></symbol>
+        <symbol id="i-estrela" viewBox="0 0 16 16"><path d="m8 2.4 1.7 3.5 3.9.5-2.8 2.7.7 3.8L8 11.1l-3.5 1.8.7-3.8L2.4 6.4l3.9-.5L8 2.4Z" /></symbol>
+        <symbol id="i-medalha" viewBox="0 0 16 16"><circle cx="8" cy="10.2" r="3.4" /><path d="M6 7.1 4.2 2.4M10 7.1l1.8-4.7M6.6 2.4h2.8" /></symbol>
+        <symbol id="i-alvo" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" /><circle cx="8" cy="8" r="2.4" /><path d="M8 8h.01" strokeWidth="1.8" /></symbol>
+        <symbol id="i-clipe" viewBox="0 0 16 16"><path d="M12.4 7.4 7.7 12a2.9 2.9 0 0 1-4.1-4.1l5.2-5.2a1.9 1.9 0 0 1 2.7 2.7L6.2 10.7a.9.9 0 0 1-1.3-1.3l4.6-4.6" /></symbol>
+        <symbol id="i-lista" viewBox="0 0 16 16"><rect x="3.4" y="2.8" width="9.2" height="10.4" rx="1.4" /><path d="M6 2.8V2a.8.8 0 0 1 .8-.8h2.4A.8.8 0 0 1 10 2v.8" /><path d="M5.8 7h4.4M5.8 9.8h3" /></symbol>
+        <symbol id="i-celular" viewBox="0 0 16 16"><rect x="4.4" y="1.8" width="7.2" height="12.4" rx="1.6" /><path d="M7 3.6h2M7.2 12.2h1.6" /></symbol>
+        <symbol id="i-conversa" viewBox="0 0 16 16"><path d="M13.4 8.6a4.9 4.9 0 0 1-5.3 4.8L3 14.2l.9-3.6A4.9 4.9 0 1 1 13.4 8.6Z" /><path d="M6 8h4" /></symbol>
+        <symbol id="i-ligar" viewBox="0 0 16 16"><path d="M5.2 2.6 6.9 6l-1.5 1.5a8.7 8.7 0 0 0 3.1 3.1L10 9.1l3.4 1.7v2a1.2 1.2 0 0 1-1.3 1.2A11 11 0 0 1 2 3.9a1.2 1.2 0 0 1 1.2-1.3h2Z" /></symbol>
+        <symbol id="i-relogio" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.7" /><path d="M8 4.7V8l2.2 1.6" /></symbol>
+        <symbol id="i-dinheiro" viewBox="0 0 16 16"><rect x="1.8" y="4.2" width="12.4" height="7.6" rx="1.4" /><circle cx="8" cy="8" r="1.8" /><path d="M4.3 8h.01M11.7 8h.01" strokeWidth="1.8" /></symbol>
+        <symbol id="i-copo" viewBox="0 0 16 16"><path d="M3.2 4.4h8v4.4a4 4 0 0 1-8 0V4.4Z" /><path d="M11.2 5.6h1.4a1.6 1.6 0 0 1 0 3.2h-1.4M2.8 13.6h8.8" /></symbol>
+        <symbol id="i-teclado" viewBox="0 0 16 16"><rect x="2.4" y="2.4" width="11.2" height="11.2" rx="1.6" /><path d="M6 2.4v11.2M10 2.4v11.2M2.4 6h11.2M2.4 10h11.2" /></symbol>
+        <symbol id="i-sem-olho" viewBox="0 0 16 16"><path d="M6.3 4.1A6.6 6.6 0 0 1 8 3.9c3.3 0 5.6 2.6 6.3 4.1a8.7 8.7 0 0 1-1.9 2.4M3.6 5.6A8.8 8.8 0 0 0 1.7 8c.7 1.5 3 4.1 6.3 4.1a6.5 6.5 0 0 0 2.2-.4" /><path d="m2.4 2.4 11.2 11.2" /><path d="M6.6 6.7a2 2 0 0 0 2.8 2.7" /></symbol>
+        <symbol id="i-maos" viewBox="0 0 16 16"><path d="M1.8 7.4 4.4 5l2.4 1.8 1.6-.8 3.8 2.8a1.1 1.1 0 0 1-1.3 1.8L9 9.2" /><path d="m14.2 7.4-2.3-2.2M6.2 10.4l1.8 1.4a1.1 1.1 0 0 0 1.5-.2M8.6 12.6l1.2.9a1 1 0 0 0 1.4-.2" /></symbol>
+        <symbol id="i-partilhar" viewBox="0 0 16 16"><path d="M8 10.6V2.6M5.4 5.2 8 2.6l2.6 2.6" /><path d="M3.4 9.6v2.8a1.4 1.4 0 0 0 1.4 1.4h6.4a1.4 1.4 0 0 0 1.4-1.4V9.6" /></symbol>
+        <symbol id="i-sem-sinal" viewBox="0 0 16 16"><path d="M2.2 6.2a9 9 0 0 1 3.4-2M13.8 6.2a9 9 0 0 0-2.6-1.7M4.7 8.7a5.6 5.6 0 0 1 1.7-1M11.3 8.7a5.6 5.6 0 0 0-1.3-.9" /><path d="M8 12.4h.01" strokeWidth="1.9" /><path d="m2.4 2.4 11.2 11.2" /></symbol>
+        <symbol id="i-sem-som" viewBox="0 0 16 16"><path d="M7.6 3.2 4.8 5.6H2.6v4.8h2.2l2.8 2.4V3.2Z" /><path d="m10.4 6.6 3 2.8M13.4 6.6l-3 2.8" /></symbol>
       </defs>
     </svg>
   );
