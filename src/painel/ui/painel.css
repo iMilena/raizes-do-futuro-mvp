@@ -562,6 +562,100 @@ textarea.pn-inp { min-height: 90px; resize: vertical; line-height: 1.5; }
 .pn-snav.next .d { justify-content: flex-end; }
 .pn-snav:disabled { opacity: 0.35; cursor: not-allowed; }
 
+/* ------------------------------------------------- numeros e rotulos --- */
+/* Moravam na folha do Dashboard. Sao usados por quase toda tela, e cada tela
+   carrega so o proprio CSS: quem abrisse o Cofre direto pelo link ficava sem
+   eles. Estavam no lugar errado ate aqui. */
+.pn-kpi { display: grid; gap: 2px; }
+.pn-kpi .v {
+  display: block;
+  font-family: var(--fu);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--t1);
+}
+.pn-kpi .l {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t4);
+  line-height: 1.4;
+}
+.pn-kpi .m { font-size: 11px; color: var(--t3); margin-top: 2px; }
+.pn-kpi .m.alerta { color: var(--warn); }
+
+/* Chave curta em caixa alta, com o tom semantico do estado. */
+.pn-fk {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.pn-fk.ok { color: var(--ok); }
+.pn-fk.warn { color: var(--warn); }
+.pn-fk.crit { color: var(--crit); }
+.pn-fk.wait { color: var(--t3); }
+
+/* Hash e comando longos: o chip ocupa a linha inteira e o texto trunca dentro
+   dele, em vez de esticar o dialogo. */
+.pn-chip-largo { width: 100%; }
+
+.pn-acoes-linha {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Item de lista dentro de card: conteudo a esquerda, numero ou acao a direita.
+   Sem `min-width: 0` no filho flexivel, um hash comprido empurra a pagina. */
+.pn-linha-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pn-linha-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.pn-linha-item > * { min-width: 0; }
+.pn-linha-det {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Texto que veio de dado, e nao de rotulo: pode ser longo e pode nao ter
+   espaco nenhum onde quebrar. */
+.pn-bloco-texto {
+  margin: 0;
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+/* Rotulo que existe so para o leitor de tela: o campo ao lado se explica pelo
+   desenho, mas um campo sem rotulo nao existe para quem nao ve. */
+.pn-so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* --------------------------------------------------------- responsivo --- */
 @media (max-width: 1080px) {
   .pn-g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

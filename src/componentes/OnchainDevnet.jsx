@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { trunc } from '../estado/store.jsx';
+import {
+  Card, CardNota, Fig, Grade, Ledger, LedgerLinha, LinkAuditoria, Nota, Pill,
+} from '../painel/ui/primitivos.jsx';
 
 /* ---------------------------------------------------------------------------
    Painel do cofre REAL na Solana devnet.
@@ -38,48 +41,49 @@ export default function OnchainDevnet() {
       .catch(() => setErroRpc(true));
   }, [dados]);
 
-  if (!dados) return null; // sem implantação → app segue 100% simulado
+  if (!dados) return null; // sem implantação, o app segue 100% simulado
 
-  const fmt = v => (v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-  const Linha = ({ rot, valor, link }) => (
-    <div className="onchain-linha">
-      <span>{rot}</span>
-      <a href={link} target="_blank" rel="noreferrer" className="hash" title="Abrir no Solana Explorer (devnet)">
-        {trunc(valor, 6, 6)} ↗
-      </a>
-    </div>
-  );
+  const fmt = v => (v == null ? 'sem leitura' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+  const lerSaldo = (aoVivo, deArquivo) => (saldos ? fmt(aoVivo) : erroRpc ? fmt(deArquivo) : '…');
+
+  const ENDERECOS = [
+    ['Cofre multisig (2-de-3)', dados.multisig.endereco, dados.links.multisig],
+    ['Token cRED (mint)', dados.mint, dados.links.mint],
+    ['Depósito do fundo (tx)', dados.transacoes.depositoFundo, dados.links.depositoFundo],
+    ['Liberação assinada 2-de-3 (tx)', dados.transacoes.liberacaoBonusMultisig, dados.links.liberacaoBonusMultisig],
+  ];
 
   return (
-    <div className="card onchain">
-      <div className="onchain-topo">
-        <span className="onchain-badge">🟢 COFRE REAL · SOLANA DEVNET</span>
-        <span className="mini">programas oficiais SPL Token · multisig nativo {dados.multisig.limiar}</span>
+    <Card className="pn-onchain">
+      <div className="pn-onchain-topo">
+        <Pill tom="ok">Cofre real · Solana devnet</Pill>
+        <CardNota>
+          Programas oficiais SPL Token · multisig nativo {dados.multisig.limiar}
+        </CardNota>
       </div>
 
-      <div className="onchain-saldos">
-        <div>
-          <span className="mini">saldo do cofre (ao vivo da rede)</span>
-          <b>{saldos ? fmt(saldos.cofre) : erroRpc ? fmt(dados.saldos?.cofre) : '…'}</b>
-        </div>
-        <div>
-          <span className="mini">conta da família Maria</span>
-          <b>{saldos ? fmt(saldos.maria) : erroRpc ? fmt(dados.saldos?.familiaMaria) : '…'}</b>
-        </div>
-      </div>
+      <Grade colunas={2} style={{ marginTop: 20, gap: 22 }}>
+        <Fig rotulo="Saldo do cofre (ao vivo da rede)" valor={lerSaldo(saldos?.cofre, dados.saldos?.cofre)} />
+        <Fig rotulo="Conta da família Maria" valor={lerSaldo(saldos?.maria, dados.saldos?.familiaMaria)} />
+      </Grade>
 
-      <div className="onchain-grade">
-        <Linha rot="Cofre multisig (2-de-3)" valor={dados.multisig.endereco} link={dados.links.multisig} />
-        <Linha rot="Token cRED (mint)" valor={dados.mint} link={dados.links.mint} />
-        <Linha rot="Depósito do fundo (tx)" valor={dados.transacoes.depositoFundo} link={dados.links.depositoFundo} />
-        <Linha rot="Liberação assinada 2-de-3 (tx)" valor={dados.transacoes.liberacaoBonusMultisig} link={dados.links.liberacaoBonusMultisig} />
-      </div>
+      <Ledger style={{ marginTop: 20 }}>
+        {ENDERECOS.map(([rot, valor, link]) => (
+          <LedgerLinha
+            key={rot}
+            chave={rot}
+            valor={<LinkAuditoria href={link}>{trunc(valor, 6, 6)}</LinkAuditoria>}
+          />
+        ))}
+      </Ledger>
 
-      <p className="mini" style={{ marginBottom: 0 }}>
-        ✍️ A liberação acima foi <b>assinada de verdade</b> por Instituto Vivá + DeTrash e executada pelo programa
-        SPL Token — clique nos links para auditar no Solana Explorer. As telas abaixo demonstram a jornada
-        operacional completa da plataforma.
-      </p>
-    </div>
+      <div style={{ marginTop: 16 }}>
+        <Nota tipo="i" icone="check">
+          A liberação acima foi <b>assinada de verdade</b> por Instituto Vivá e DeTrash, e
+          executada pelo programa SPL Token. Os links abrem no Solana Explorer para auditoria.
+          As telas seguintes demonstram a jornada operacional completa.
+        </Nota>
+      </div>
+    </Card>
   );
 }

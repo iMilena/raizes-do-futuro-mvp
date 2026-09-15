@@ -35,10 +35,6 @@
 .pn-relatorio-cab strong { color: var(--foam); font-size: 14px; }
 .pn-ancoragem { margin-top: 0; }
 
-/* Hash e comando longos: o chip ocupa a linha inteira e o texto trunca dentro
-   dele, em vez de esticar o diálogo. */
-.pn-chip-largo { width: 100%; }
-
 /* --------------------------------------------------------- contestações --- */
 .pn-contest {
   padding: 14px 0;
@@ -77,9 +73,3 @@
 }
 .pn-corrigir-peso .pn-inp { width: 110px; }
 
-.pn-acoes-linha {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}

@@ -1,0 +1,281 @@
+/* ----------------------------------------------------------------------------
+   Etapa 6: Cofre Multisig.
+
+   Duas coisas mandam no desenho desta tela. A primeira é que a proposta precisa
+   dizer, sem ninguém explicar, quantas assinaturas faltam: daí o medidor, os
+   três signatários sempre visíveis (inclusive os que não assinaram) e o botão
+   só na linha de quem pode assinar. A segunda é que o explorador tem 13 tipos
+   de transação e mora num painel de 390px: os filtros rolam no próprio trilho,
+   nunca a página.
+---------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------- devnet ----- */
+.pn-onchain-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pn-onchain-topo .pn-card-n { margin: 0; }
+
+/* ------------------------------------------------------------ regras ------ */
+/* As quatro regras do cofre, numeradas. É a mesma nota do resto do painel, com o
+   número no lugar do ícone: aqui a ordem é conteúdo, não decoração. */
+.pn-regras { display: grid; gap: 8px; }
+.pn-regras .ni {
+  font-family: var(--fm);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------- proposta ----- */
+.pn-proposta { margin-bottom: 14px; }
+.pn-proposta:last-child { margin-bottom: 0; }
+
+/* O verde da marca não entra aqui: a execução é um estado, e estado tem tom
+   semântico próprio. O que marca o momento é o contorno, por 2,6s. */
+.pn-proposta.executando {
+  border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+  box-shadow: inset 2px 0 0 var(--ok);
+}
+
+.pn-proposta-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pn-proposta-topo > * { min-width: 0; }
+.pn-proposta-nome {
+  font-family: var(--fu);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--foam);
+  margin: 8px 0 4px;
+}
+.pn-proposta-valor {
+  font-family: var(--fm);
+  font-size: 19px;
+  color: var(--t1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------- assinaturas ------ */
+.pn-assinaturas { margin: 16px 0 14px; }
+.pn-assinaturas-txt {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--t3);
+  margin-bottom: 7px;
+}
+.pn-assinaturas-txt span:first-child { color: var(--t2); }
+
+.pn-signatarios {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  overflow: hidden;
+}
+.pn-signatario {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 13px;
+  background: var(--deep);
+}
+.pn-signatario.assinou { background: var(--tide); }
+
+/* Iniciais enquanto não assinou, traço de confirmação depois: a mudança é de
+   desenho, não só de cor, e continua legível em preto e branco. */
+.pn-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--line-2);
+  background: var(--reef);
+  color: var(--t2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.pn-signatario.assinou .pn-avatar {
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--line-2));
+  background: color-mix(in srgb, var(--ok) 13%, transparent);
+  color: var(--ok);
+}
+
+.pn-signatario-info { min-width: 0; display: grid; gap: 1px; }
+.pn-signatario-info b {
+  font-size: 13px;
+  color: var(--foam);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pn-signatario-info .pn-mono { font-size: 11px; }
+
+/* ---------------------------------------------------------- explorador ---- */
+.pn-explorador-barra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 260px);
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* O trilho dos filtros rola sozinho. `min-width: 0` no item da grade é o que
+   impede que os 13 tipos estiquem a coluna e, com ela, a página inteira. */
+.pn-filtros {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.pn-filtro {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--tide);
+  color: var(--t2);
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pn-filtro:hover { color: var(--t1); border-color: var(--line-3); }
+.pn-filtro.on {
+  background: var(--reef);
+  border-color: var(--line-3);
+  color: var(--foam);
+  font-weight: 600;
+}
+
+.pn-busca-tx {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.pn-busca-tx .ic {
+  position: absolute;
+  left: 11px;
+  color: var(--t4);
+  pointer-events: none;
+}
+.pn-busca-tx .pn-inp { padding-left: 33px; }
+
+/* ------------------------------------------------------------ transação --- */
+.pn-tx-lista {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  overflow: hidden;
+}
+.pn-tx {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  background: var(--deep);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.pn-tx:hover { background: var(--tide); }
+.pn-tx.ok { box-shadow: inset 2px 0 0 var(--ok); }
+.pn-tx.warn { box-shadow: inset 2px 0 0 var(--warn); }
+.pn-tx.crit { box-shadow: inset 2px 0 0 var(--crit); }
+.pn-tx.wait { box-shadow: inset 2px 0 0 var(--line-3); }
+
+.pn-tx-slot { display: grid; gap: 1px; text-align: center; }
+.pn-tx-slot b {
+  font-family: var(--fm);
+  font-size: 12px;
+  color: var(--t1);
+  font-variant-numeric: tabular-nums;
+}
+.pn-tx-slot span {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+
+.pn-tx-meio { display: grid; gap: 3px; min-width: 0; }
+.pn-tx-desc {
+  font-size: 13px;
+  color: var(--t1);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pn-tx-meio .pn-mono { font-size: 10.5px; }
+
+.pn-tx-dir { display: grid; gap: 2px; justify-items: end; text-align: right; }
+.pn-tx-dir b {
+  font-family: var(--fm);
+  font-size: 12.5px;
+  color: var(--t1);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.pn-tx-dir > span { font-family: var(--fm); font-size: 10.5px; color: var(--t4); }
+.pn-tx-abrir {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--fu);
+  font-size: 10.5px;
+  color: var(--t3);
+}
+.pn-tx:hover .pn-tx-abrir { color: var(--accent-ink); }
+
+/* ------------------------------------------------------------ ficha ------- */
+/* Detalhe da transação no diálogo: rótulo micro em cima, dado embaixo. Não usa
+   `<label>` porque não há campo do outro lado, e um rótulo que não leva o foco
+   a lugar nenhum só atrapalha quem navega por teclado. */
+.pn-bloco-det { margin-top: 14px; display: grid; gap: 5px; }
+.pn-bloco-det > span {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+
+/* Pílula solta abrindo um card, com a nota logo abaixo. */
+.pn-card > .pn-pill + .pn-card-n { margin-top: 11px; }
+
+/* -------------------------------------------------------------- estreito -- */
+@media (max-width: 860px) {
+  .pn-explorador-barra { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .pn-proposta-valor { font-size: 17px; }
+  .pn-signatario { grid-template-columns: auto minmax(0, 1fr); }
+  /* O botão de assinar desce para a linha de baixo, alinhado com o nome, em vez
+     de espremer o nome até virar reticências. */
+  .pn-signatario > :last-child { grid-column: 2; justify-self: start; }
+  .pn-tx { grid-template-columns: 44px minmax(0, 1fr); }
+  .pn-tx-dir { grid-column: 2; justify-items: start; text-align: left; }
+}
