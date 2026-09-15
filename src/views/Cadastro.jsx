@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA, VERSAO_TERMO, TEXTO_TERMO, hashTermo,
   VALIDADE_MESES, consentimentoAtivo, situacaoConsentimento, venceEm, temPin,
 } from '../estado/store.jsx';
-import { useToast, Badge, EstadoVazio } from '../componentes/ui.jsx';
+import { useToast } from '../componentes/ui.jsx';
+import {
+  Card, CardNota, Campo, Caixa, Botao, Grade, Nota, Pill, Vazio,
+  Secao, RotuloSecao, Tabela, Mono, HashChip,
+} from '../painel/ui/primitivos.jsx';
+import { TelaCabecalho } from '../painel/ui/TelaCabecalho.jsx';
 import * as auth from '../lib/auth.js';
+import './cadastro.css';
 
 /* ---------------------------------------------------------------------------
-   Cadastro de famílias — o que faltava para o piloto crescer de dentro do app.
+   Cadastro de famílias: o que faltava para o piloto crescer de dentro do app.
 
    As famílias existiam só na seed: não havia como o Instituto Vivá incluir a
    décima quinta família sem editar código. Esta tela fecha isso.
@@ -23,7 +29,7 @@ import * as auth from '../lib/auth.js';
        lê o termo, não numa visita seguinte.
 
    O nome do responsável fica NESTE APARELHO. Para a base compartilhada vai só o
-   código (BOI-014) — ver LGPD no SUPABASE.md.
+   código (BOI-014), ver LGPD no SUPABASE.md.
 --------------------------------------------------------------------------- */
 
 const COMPROMISSOS = [
@@ -38,13 +44,13 @@ const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
 
 /* ------------------------------------------- compromissos de cada mês ----- */
 /**
- * Abre o mês seguinte — a tarefa mais repetida do piloto.
+ * Abre o mês seguinte, a tarefa mais repetida do piloto.
  *
  * Antes, compromisso só nascia junto com o cadastro da família: dava para rodar
  * um mês e depois o ciclo travava. Como todo mês repete quase a mesma lista para
  * quase todas as famílias, isto é em LOTE, com a opção de escolher quem.
  *
- * O que já existe não é duplicado, e o que já foi comprovado não é apagável —
+ * O que já existe não é duplicado, e o que já foi comprovado não é apagável:
  * ver ABRIR_MES e REMOVER_COMPROMISSO no store.
  */
 function AbrirMes() {
@@ -80,78 +86,101 @@ function AbrirMes() {
     dispatch({ type: 'ABRIR_MES', mes, tipos, familiaIds: quem.length ? quem : null });
     toast(previa.novos > 0
       ? `${mes}: ${previa.novos} compromisso(s) criados${previa.repetidos ? ` · ${previa.repetidos} já existiam` : ''}`
-      : `Nada a criar — esses compromissos de ${mes} já existem`, 'info', 6000);
+      : `Nada a criar: esses compromissos de ${mes} já existem`, 'info', 6000);
   };
 
   return (
     <>
-      <h3>Compromissos de cada mês</h3>
-      <div className="card destaque">
-        <p className="mini" style={{ marginTop: 0 }}>
-          O ciclo é mensal: todo mês a operação define o que cada família vai comprovar.
-          Faça em lote e ajuste caso a caso na tabela abaixo. <b>A renda do trabalho de
-          coleta não depende disto</b> — aqui só se define o bônus.
-        </p>
+      <Secao>
+        <RotuloSecao>Compromissos de cada mês</RotuloSecao>
+        <Card>
+          <CardNota>
+            O ciclo é mensal: todo mês a operação define o que cada família vai comprovar.
+            Faça em lote e ajuste caso a caso na tabela abaixo. <b>A renda do trabalho de
+            coleta não depende disto</b>, aqui só se define o bônus.
+          </CardNota>
 
-        <div className="grid g2" style={{ marginTop: 4 }}>
-          <div>
-            <label htmlFor="mes-abrir">Mês</label>
-            <select id="mes-abrir" value={mes} onChange={e => setMes(e.target.value)}>
-              {MESES.map(m => <option key={m}>{m}</option>)}
-            </select>
+          <Grade colunas={2} style={{ marginTop: 18 }}>
+            <div>
+              <Campo id="mes-abrir" rotulo="Mês">
+                <select
+                  id="mes-abrir"
+                  className="pn-inp"
+                  value={mes}
+                  onChange={e => setMes(e.target.value)}
+                >
+                  {MESES.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </Campo>
 
-            <label style={{ marginTop: 14 }}>Compromissos deste mês</label>
-            {COMPROMISSOS.map(c => (
-              <label key={c} className="opcao-aviso" style={{ marginTop: 6 }}>
-                <input type="checkbox" checked={tipos.includes(c)}
-                  onChange={() => alternar(tipos, setTipos, c)} />
-                <span><b>{c}</b></span>
-              </label>
-            ))}
-          </div>
-
-          <div>
-            <label>Para quem</label>
-            <p className="mini" style={{ margin: '0 0 6px' }}>
-              Sem marcar ninguém, vale para <b>todas as {comConsentimento.length} famílias
-              com consentimento vigente</b>.
-              {semConsentimento > 0 && (
-                <> {semConsentimento} família(s) ficam de fora por não ter consentimento vigente.</>
-              )}
-            </p>
-            <div className="lista-quem">
-              {comConsentimento.map(f => (
-                <label key={f.id} className={'chip-familia' + (quem.includes(f.id) ? ' on' : '')}>
-                  <input type="checkbox" checked={quem.includes(f.id)}
-                    onChange={() => alternar(quem, setQuem, f.id)} />
-                  {f.resp.split(' ')[0]} <small>{f.codigo}</small>
-                </label>
-              ))}
-              {comConsentimento.length === 0 && (
-                <p className="mini">Nenhuma família com consentimento vigente ainda.</p>
-              )}
+              <fieldset className="pn-fs">
+                <legend>Compromissos deste mês</legend>
+                {COMPROMISSOS.map(c => (
+                  <Caixa
+                    key={c}
+                    id={'lote-' + c}
+                    checked={tipos.includes(c)}
+                    onChange={() => alternar(tipos, setTipos, c)}
+                  >
+                    <b>{c}</b>
+                  </Caixa>
+                ))}
+              </fieldset>
             </div>
-          </div>
-        </div>
 
-        <div className="aviso" style={{ marginTop: 12 }}>
-          <b>Vai criar {previa.novos} compromisso(s)</b> em {mes}, para {alvo.length} família(s)
-          {previa.repetidos > 0 && <> · <b>{previa.repetidos}</b> já existem e serão pulados (não duplica bônus)</>}
-          {previa.novos > 0 && <> · bônus potencial total de {fmt(alvo.reduce((a, f) => a + BONUS_POR_CRIANCA * f.criancas * tipos.filter(base => {
-            const tipo = f.criancas > 1 ? `${base} (${f.criancas} crianças)` : base;
-            return !(f.condicoes || []).some(c => c.mes === mes && c.tipo === tipo);
-          }).length, 0))}</>}
-        </div>
+            <fieldset className="pn-fs">
+              <legend>Para quem</legend>
+              <p className="pn-hint" style={{ marginBottom: 4 }}>
+                Sem marcar ninguém, vale para <b>todas as {comConsentimento.length} famílias
+                com consentimento vigente</b>.
+                {semConsentimento > 0 && (
+                  <> {semConsentimento} família(s) ficam de fora por não ter consentimento vigente.</>
+                )}
+              </p>
+              {/* Os nomes viram fichas que quebram em linhas: com 14 famílias, uma
+                  lista vertical empurraria o botão de abrir o mês para fora da tela. */}
+              <div className="pn-fichas">
+                {comConsentimento.map(f => (
+                  <label
+                    key={f.id}
+                    className={'pn-ficha' + (quem.includes(f.id) ? ' on' : '')}
+                    htmlFor={'quem-' + f.id}
+                  >
+                    <input
+                      id={'quem-' + f.id}
+                      type="checkbox"
+                      checked={quem.includes(f.id)}
+                      onChange={() => alternar(quem, setQuem, f.id)}
+                    />
+                    {f.resp.split(' ')[0]} <Mono>{f.codigo}</Mono>
+                  </label>
+                ))}
+                {comConsentimento.length === 0 && (
+                  <p className="pn-hint">Nenhuma família com consentimento vigente ainda.</p>
+                )}
+              </div>
+            </fieldset>
+          </Grade>
 
-        <button className="acao" disabled={previa.novos === 0} onClick={abrir}>
-          Abrir {mes} para {alvo.length} família(s)
-        </button>
-      </div>
+          <Nota tipo="i" icone="lamp">
+            <b>Vai criar {previa.novos} compromisso(s)</b> em {mes}, para {alvo.length} família(s)
+            {previa.repetidos > 0 && <> · <b>{previa.repetidos}</b> já existem e serão pulados (não duplica bônus)</>}
+            {previa.novos > 0 && <> · bônus potencial total de {fmt(alvo.reduce((a, f) => a + BONUS_POR_CRIANCA * f.criancas * tipos.filter(base => {
+              const tipo = f.criancas > 1 ? `${base} (${f.criancas} crianças)` : base;
+              return !(f.condicoes || []).some(c => c.mes === mes && c.tipo === tipo);
+            }).length, 0))}</>}
+          </Nota>
 
-      <h3>Compromissos já definidos</h3>
-      <div className="card">
+          <Botao style={{ marginTop: 14 }} disabled={previa.novos === 0} onClick={abrir}>
+            Abrir {mes} para {alvo.length} família(s)
+          </Botao>
+        </Card>
+      </Secao>
+
+      <Secao>
+        <RotuloSecao>Compromissos já definidos</RotuloSecao>
         <ListaCompromissos />
-      </div>
+      </Secao>
     </>
   );
 }
@@ -164,50 +193,54 @@ function ListaCompromissos() {
   const linhas = state.familias.flatMap(f =>
     (f.condicoes || []).map(c => ({ ...c, familia: f })));
   if (linhas.length === 0) {
-    return <EstadoVazio icone="📋" titulo="Nenhum compromisso definido"
-      dica="Use o bloco acima para abrir um mês." />;
+    return (
+      <Vazio titulo="Nenhum compromisso definido" dica="Use o bloco acima para abrir um mês." />
+    );
   }
 
   const porMes = [...new Set(linhas.map(l => l.mes))];
 
   return (
-    <>
+    <Card>
       {porMes.map(m => (
-        <div key={m} style={{ marginBottom: 14 }}>
-          <b style={{ fontSize: 13.5 }}>{m}</b>
-          <table style={{ marginTop: 6 }}>
+        <div key={m} className="pn-mes">
+          <b className="pn-mes-nome">{m}</b>
+          <Tabela>
             <thead><tr><th>Família</th><th>Compromisso</th><th>Situação</th><th /></tr></thead>
             <tbody>
               {linhas.filter(l => l.mes === m).map(l => (
                 <tr key={l.id}>
-                  <td>{l.familia.resp}</td>
+                  <td><strong>{l.familia.resp}</strong></td>
                   <td>{l.tipo}</td>
                   <td>
-                    <Badge tom={l.status === 'liberada' ? 'ok' : l.status === 'pendente' ? 'pend' : 'info'}>
+                    <Pill tom={l.status === 'liberada' ? 'ok' : l.status === 'pendente' ? 'warn' : 'wait'}>
                       {l.status.replace(/-/g, ' ')}
-                    </Badge>
+                    </Pill>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     {l.status === 'pendente' ? (
-                      <button className="meta-apagar" onClick={() => {
+                      <Botao tom="ghost" pequeno onClick={() => {
                         dispatch({ type: 'REMOVER_COMPROMISSO', condicaoId: l.id });
                         toast('Compromisso removido');
-                      }}>remover</button>
+                      }}>remover</Botao>
                     ) : (
                       /* comprovado, validado ou liberado é histórico: apagar removeria
                          a prova que a família enviou, ou contradiria um repasse feito */
-                      <span className="mini" title="Já comprovado ou repassado — faz parte do histórico">
-                        —
+                      <span
+                        className="pn-hint"
+                        title="Já comprovado ou repassado: faz parte do histórico"
+                      >
+                        histórico
                       </span>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Tabela>
         </div>
       ))}
-    </>
+    </Card>
   );
 }
 
@@ -255,7 +288,7 @@ export default function Cadastro() {
       versaoTermo: VERSAO_TERMO,
       coletadoPor: auth.atual()?.usuario?.id || null,
     });
-    toast(`Família ${proximoCodigo} cadastrada com consentimento ✍️`, 'info', 6000);
+    toast(`Família ${proximoCodigo} cadastrada com consentimento`, 'info', 6000);
     setCriada({ codigo: proximoCodigo, nome: form.resp.trim(), criancas: Number(form.criancas) });
     setForm({ resp: '', criancas: 1, celular: '', mes: form.mes });
     setCompromissos(['Vacinação em dia']);
@@ -263,128 +296,184 @@ export default function Cadastro() {
   };
 
   return (
-    <>
-      <h2>Cadastro de famílias</h2>
-      <p className="mini" style={{ maxWidth: 620 }}>
+    <div className="pn-screen">
+      <TelaCabecalho etapa={7} total={9} area="Operação" titulo="Cadastro de famílias">
         Inclui uma família no piloto. O <b>nome fica só neste aparelho</b>; para a base
         compartilhada vai apenas o código ({proximoCodigo}). O consentimento é parte
-        deste formulário porque é na frente da família que o termo é lido — e porque
+        deste formulário porque é na frente da família que o termo é lido, e porque
         sem ele o banco recusa o cadastro.
-      </p>
+      </TelaCabecalho>
 
       {criada && (
-        <div className="card" style={{ borderLeft: '3px solid var(--verde)', marginBottom: 14 }}>
-          <b>✅ {criada.nome} cadastrada como {criada.codigo}</b>
-          <p className="mini" style={{ margin: '4px 0 0' }}>
+        <Nota tipo="i" icone="check">
+          <b>{criada.nome} cadastrada como {criada.codigo}</b>
+          <p style={{ margin: '4px 0 0' }}>
             Bônus potencial de {fmt(BONUS_POR_CRIANCA * criada.criancas)}/mês
             ({criada.criancas} criança{criada.criancas > 1 ? 's' : ''}). Próximo passo: a família
             abre a conta dela no <b>App da Família</b> e escolhe o PIN.
           </p>
-        </div>
+        </Nota>
       )}
 
-      <div className="grid g2">
-        <div className="card destaque">
-          <h3 style={{ marginTop: 0 }}>1. Quem é a família</h3>
+      <Grade colunas={2}>
+        <Card>
+          <h3 className="pn-passo">1. Quem é a família</h3>
 
-          <label htmlFor="cad-resp">Nome do responsável <span className="mini">(fica neste aparelho)</span></label>
-          <input id="cad-resp" value={form.resp} autoComplete="off"
-            onChange={e => setForm({ ...form, resp: e.target.value })}
-            placeholder="ex.: Maria de Lourdes" />
-          {form.resp && !nomeOk && <p className="mini alerta-txt">Nome muito curto.</p>}
+          <Campo
+            id="cad-resp"
+            rotulo="Nome do responsável (fica neste aparelho)"
+            dica={form.resp && !nomeOk ? 'Nome muito curto.' : undefined}
+          >
+            <input
+              id="cad-resp"
+              className="pn-inp"
+              value={form.resp}
+              autoComplete="off"
+              onChange={e => setForm({ ...form, resp: e.target.value })}
+              placeholder="ex.: Maria de Lourdes"
+            />
+          </Campo>
 
-          <label htmlFor="cad-criancas">Quantas crianças</label>
-          <input id="cad-criancas" type="number" min="1" max="12" value={form.criancas}
-            onChange={e => setForm({ ...form, criancas: e.target.value })} />
-          <p className="mini">
-            Bônus de {fmt(BONUS_POR_CRIANCA)} por criança/mês ={' '}
-            <b>{fmt(BONUS_POR_CRIANCA * (Number(form.criancas) || 0))}</b> por mês com as condições em dia.
-          </p>
+          <Campo id="cad-criancas" rotulo="Quantas crianças">
+            <input
+              id="cad-criancas"
+              className="pn-inp"
+              type="number"
+              min="1"
+              max="12"
+              value={form.criancas}
+              onChange={e => setForm({ ...form, criancas: e.target.value })}
+            />
+            <p className="pn-hint">
+              Bônus de {fmt(BONUS_POR_CRIANCA)} por criança/mês ={' '}
+              <b>{fmt(BONUS_POR_CRIANCA * (Number(form.criancas) || 0))}</b> por mês com as condições em dia.
+            </p>
+          </Campo>
 
-          <label htmlFor="cad-celular">Celular de contato <span className="mini">(opcional)</span></label>
-          <input id="cad-celular" value={form.celular} inputMode="tel"
-            onChange={e => setForm({ ...form, celular: e.target.value })}
-            placeholder="(75) 9 ....-...." />
+          <Campo id="cad-celular" rotulo="Celular de contato (opcional)">
+            <input
+              id="cad-celular"
+              className="pn-inp"
+              value={form.celular}
+              inputMode="tel"
+              onChange={e => setForm({ ...form, celular: e.target.value })}
+              placeholder="(75) 9 ....-...."
+            />
+          </Campo>
 
-          <div className="meta-carteira">
-            <span className="mini" style={{ margin: 0 }}>código na base compartilhada</span>
-            <div className="hash sel" style={{ fontSize: 14, fontWeight: 700 }}>{proximoCodigo}</div>
+          <div className="pn-codigo">
+            <span className="l">código na base compartilhada</span>
+            <HashChip texto={proximoCodigo} rotulo="Copiar código" />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="pn-passo">2. Compromissos do mês</h3>
+
+          <Campo id="cad-mes" rotulo="Mês de referência">
+            <select
+              id="cad-mes"
+              className="pn-inp"
+              value={form.mes}
+              onChange={e => setForm({ ...form, mes: e.target.value })}
+            >
+              {MESES.map(m => <option key={m}>{m}</option>)}
+            </select>
+          </Campo>
+
+          <fieldset className="pn-fs">
+            <legend>O que a família vai comprovar</legend>
+            <p className="pn-hint" style={{ marginBottom: 4 }}>
+              Marque o que a família vai comprovar neste mês. Pode ficar sem nenhum: a
+              <b> renda do trabalho de coleta não depende disto</b>.
+            </p>
+            {COMPROMISSOS.map(c => (
+              <Caixa
+                key={c}
+                id={'cad-' + c}
+                checked={compromissos.includes(c)}
+                onChange={() => alternarCompromisso(c)}
+              >
+                <b>{c}</b>
+              </Caixa>
+            ))}
+          </fieldset>
+        </Card>
+      </Grade>
+
+      <Card>
+        <h3 className="pn-passo">3. Consentimento do responsável</h3>
+
+        <div className="pn-bloco-det">
+          <span>Termo apresentado ({VERSAO_TERMO})</span>
+          {/* O termo é o texto que vira hash: rola dentro da própria caixa em vez
+              de encolher, porque encolher texto de consentimento é o começo de
+              ninguém ler. `tabIndex` porque região rolável precisa chegar pelo
+              teclado. */}
+          <pre
+            className="pn-termo"
+            tabIndex={0}
+            role="region"
+            aria-label={`Termo de consentimento ${VERSAO_TERMO}`}
+          >{TEXTO_TERMO}</pre>
+        </div>
+        <div className="pn-bloco-det">
+          <span>SHA-256 do termo</span>
+          <div>
+            {hash
+              ? <HashChip texto={trunc(hash, 16, 16)} copia={hash} rotulo="Copiar hash do termo" />
+              : <Mono>calculando…</Mono>}
           </div>
         </div>
 
-        <div className="card destaque">
-          <h3 style={{ marginTop: 0 }}>2. Compromissos do mês</h3>
-          <label htmlFor="cad-mes">Mês de referência</label>
-          <select id="cad-mes" value={form.mes} onChange={e => setForm({ ...form, mes: e.target.value })}>
-            {MESES.map(m => <option key={m}>{m}</option>)}
+        <Campo id="cad-forma" rotulo="Como o consentimento foi colhido">
+          <select
+            id="cad-forma"
+            className="pn-inp"
+            value={forma}
+            onChange={e => setForma(e.target.value)}
+          >
+            <option value="presencial-assinado">Presencial, com assinatura no papel</option>
+            <option value="presencial-verbal">Presencial, verbal com testemunha</option>
+            <option value="whatsapp">Por WhatsApp, com confirmação escrita</option>
+            <option value="formulario">Formulário preenchido pela família</option>
           </select>
+        </Campo>
 
-          <p className="mini" style={{ marginTop: 12 }}>
-            Marque o que a família vai comprovar neste mês. Pode ficar sem nenhum: a
-            <b> renda do trabalho de coleta não depende disto</b>.
-          </p>
-          {COMPROMISSOS.map(c => (
-            <label key={c} className="opcao-aviso" style={{ marginTop: 8 }}>
-              <input type="checkbox" checked={compromissos.includes(c)}
-                onChange={() => alternarCompromisso(c)} />
-              <span><b>{c}</b></span>
-            </label>
-          ))}
-        </div>
-      </div>
+        {/* id próprio: é a confirmação que libera o cadastro, e alvo posicional
+            ("o último checkbox da tela") quebra assim que a tela cresce */}
+        <Caixa id="cad-aceito" checked={aceito} onChange={e => setAceito(e.target.checked)}>
+          <b>Confirmo que li o termo acima para o responsável e que ele autorizou.</b>
+          <small>
+            Validade de {VALIDADE_MESES} meses, renovável em visita. O sistema guarda a
+            forma e o hash do termo, nunca foto de documento nem assinatura digitalizada.
+          </small>
+        </Caixa>
 
-      <div className="card destaque" style={{ marginTop: 14 }}>
-        <h3 style={{ marginTop: 0 }}>3. Consentimento do responsável</h3>
-        <label>Termo apresentado ({VERSAO_TERMO})</label>
-        <pre className="termo">{TEXTO_TERMO}</pre>
-        <div className="hash">SHA-256 do termo: {hash ? trunc(hash, 16, 16) : 'calculando…'}</div>
-
-        <label htmlFor="cad-forma">Como o consentimento foi colhido</label>
-        <select id="cad-forma" value={forma} onChange={e => setForma(e.target.value)}>
-          <option value="presencial-assinado">Presencial, com assinatura no papel</option>
-          <option value="presencial-verbal">Presencial, verbal com testemunha</option>
-          <option value="whatsapp">Por WhatsApp, com confirmação escrita</option>
-          <option value="formulario">Formulário preenchido pela família</option>
-        </select>
-
-        <label className="opcao-aviso" style={{ marginTop: 12 }}>
-          {/* id próprio: é a confirmação que libera o cadastro, e alvo posicional
-              ("o último checkbox da tela") quebra assim que a tela cresce */}
-          <input id="cad-aceito" type="checkbox" checked={aceito}
-            onChange={e => setAceito(e.target.checked)} />
-          <span>
-            <b>Confirmo que li o termo acima para o responsável e que ele autorizou.</b>
-            <small>
-              Validade de {VALIDADE_MESES} meses, renovável em visita. O sistema guarda a
-              forma e o hash do termo — nunca foto de documento nem assinatura digitalizada.
-            </small>
-          </span>
-        </label>
-
-        <button className="acao grande" disabled={!podeSalvar} onClick={salvar}>
+        <Botao style={{ marginTop: 16 }} disabled={!podeSalvar} onClick={salvar}>
           Cadastrar família
-        </button>
+        </Botao>
         {!podeSalvar && (
-          <p className="mini centro">
+          <p className="pn-hint" style={{ marginTop: 8 }}>
             {!nomeOk ? 'Informe o nome do responsável.' : !aceito ? 'Marque a confirmação do consentimento.' : 'Calculando o hash do termo…'}
           </p>
         )}
-      </div>
+      </Card>
 
       <AbrirMes />
 
-      <h3>Famílias no piloto ({state.familias.length})</h3>
-      <div className="card">
-        {state.familias.length === 0 && (
-          <EstadoVazio icone="👨‍👩‍👧" titulo="Nenhuma família ainda"
-            dica="Use o formulário acima para incluir a primeira." />
-        )}
-        {state.familias.length > 0 && (
-          <table>
+      <Secao>
+        <RotuloSecao>Famílias no piloto ({state.familias.length})</RotuloSecao>
+        {state.familias.length === 0 ? (
+          <Vazio titulo="Nenhuma família ainda" dica="Use o formulário acima para incluir a primeira." />
+        ) : (
+          <Tabela>
             <thead>
               <tr>
-                <th>Código</th><th>Responsável</th><th>Crianças</th>
-                <th>Consentimento</th><th>Conta</th><th>Saldo</th>
+                <th>Código</th><th>Responsável</th>
+                <th style={{ textAlign: 'right' }}>Crianças</th>
+                <th>Consentimento</th><th>Conta</th>
+                <th style={{ textAlign: 'right' }}>Saldo</th>
               </tr>
             </thead>
             <tbody>
@@ -392,30 +481,30 @@ export default function Cadastro() {
                 const c = consentimentoAtivo(f);
                 const sit = c ? situacaoConsentimento(c) : 'ausente';
                 return (
-                  <tr key={f.id}>
-                    <td className="mono">{f.codigo || '—'}</td>
-                    <td>{f.resp}</td>
-                    <td>{f.criancas}</td>
+                  <tr key={f.id} className={c ? '' : 'needs'}>
+                    <td className="num">{f.codigo || 'sem código'}</td>
+                    <td><strong>{f.resp}</strong></td>
+                    <td className="num">{f.criancas}</td>
                     <td>
                       {c
-                        ? <Badge tom={sit === 'vencendo' ? 'pend' : 'ok'}>
+                        ? <Pill tom={sit === 'vencendo' ? 'warn' : 'ok'}>
                           {sit === 'vencendo' ? 'vence em breve' : `até ${venceEm(c).toLocaleDateString('pt-BR')}`}
-                        </Badge>
-                        : <Badge tom="pend">sem consentimento</Badge>}
+                        </Pill>
+                        : <Pill tom="warn">sem consentimento</Pill>}
                     </td>
                     <td>
                       {f.carteira
-                        ? <Badge tom="ok">{temPin(f) ? 'conta + PIN' : 'conta criada'}</Badge>
-                        : <Badge tom="info">a família abre</Badge>}
+                        ? <Pill tom="ok">{temPin(f) ? 'conta + PIN' : 'conta criada'}</Pill>
+                        : <Pill tom="wait">a família abre</Pill>}
                     </td>
-                    <td>{fmt(f.saldo)}</td>
+                    <td className="num">{fmt(f.saldo)}</td>
                   </tr>
                 );
               })}
             </tbody>
-          </table>
+          </Tabela>
         )}
-      </div>
-    </>
+      </Secao>
+    </div>
   );
 }

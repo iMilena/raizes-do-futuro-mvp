@@ -404,6 +404,38 @@
   text-transform: uppercase;
   color: var(--t4);
 }
+/* Ficha: rotulo micro em cima, dado embaixo. Nao usa `<label>` porque nao ha
+   campo do outro lado, e rotulo que nao leva o foco a lugar nenhum so atrapalha
+   quem navega por teclado. */
+.pn-bloco-det { margin-top: 14px; display: grid; gap: 5px; }
+.pn-bloco-det > span {
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+
+/* Grupo de caixas de selecao. Um `<label>` solto em cima de varias caixas nao
+   aponta para nenhuma delas: quem usa leitor de tela ouve o rotulo do grupo
+   como se fosse de um campo so. `fieldset` e `legend` dizem a coisa certa, e o
+   reset tira a moldura que o navegador desenha por conta propria. */
+.pn-fs {
+  border: 0;
+  padding: 0;
+  margin: 0 0 14px;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.pn-fs > legend {
+  padding: 0;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-fs > .pn-check + .pn-check { margin-top: -2px; }
+
 .pn-inp {
   width: 100%;
   background: var(--tide);

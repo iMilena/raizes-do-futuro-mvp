@@ -251,18 +251,6 @@
 }
 .pn-tx:hover .pn-tx-abrir { color: var(--accent-ink); }
 
-/* ------------------------------------------------------------ ficha ------- */
-/* Detalhe da transação no diálogo: rótulo micro em cima, dado embaixo. Não usa
-   `<label>` porque não há campo do outro lado, e um rótulo que não leva o foco
-   a lugar nenhum só atrapalha quem navega por teclado. */
-.pn-bloco-det { margin-top: 14px; display: grid; gap: 5px; }
-.pn-bloco-det > span {
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--t4);
-}
-
 /* Pílula solta abrindo um card, com a nota logo abaixo. */
 .pn-card > .pn-pill + .pn-card-n { margin-top: 11px; }
 

@@ -83,6 +83,11 @@ export default [
          a regra e não cobrá-la. */
       ...a11y.flatConfigs.recommended.rules,
       'jsx-a11y/label-has-associated-control': ['error', { assert: 'either' }],
+      /* Região que rola precisa chegar pelo teclado (WCAG 2.1.1): sem
+         `tabIndex`, quem navega sem mouse não consegue rolar o termo de
+         consentimento. `region` entra na lista de papéis que podem receber
+         foco justamente para esse caso. */
+      'jsx-a11y/no-noninteractive-tabindex': ['error', { roles: ['region', 'tabpanel'] }],
     },
   },
 
