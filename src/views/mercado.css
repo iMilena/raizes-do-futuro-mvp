@@ -1,0 +1,168 @@
+/* ----------------------------------------------------------------------------
+   Etapa 5: Mercado.
+---------------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------- produtos --- */
+.pn-prod {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pn-prod:last-child { border-bottom: 0; padding-bottom: 0; }
+
+/* O ícone fica atrás e a foto por cima: quando a foto do produto existir, ela
+   cobre; quando faltar (e falta, o diretório é um LEIA-ME), o ícone sustenta o
+   lugar em vez de deixar um quadrado vazio. */
+.pn-thumb {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--rs);
+  background: var(--tide);
+  border: 1px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: var(--t3);
+  overflow: hidden;
+}
+.pn-thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pn-prod-nome { font-size: 13.5px; font-weight: 600; color: var(--foam); line-height: 1.3; }
+.pn-prod-meta { font-size: 11.5px; color: var(--t3); margin-top: 3px; }
+.pn-prod-preco { text-align: right; }
+.pn-prod-preco .pn-mono { font-size: 13px; color: var(--t1); white-space: nowrap; }
+
+/* Link dentro de texto corrido: sublinhado discreto, e não botão, porque a
+   ação é "ver mais sobre isto", não uma decisão. */
+.pn-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--t1);
+  cursor: pointer;
+  border-bottom: 1px solid var(--line-3);
+}
+.pn-link:hover { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
+
+/* -------------------------------------------------------------- rastreio -- */
+.pn-rastreio-qr { display: grid; place-items: center; gap: 8px; }
+.pn-etiqueta {
+  font-family: var(--fm);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--t2);
+  background: var(--tide);
+  border: 1px solid var(--line);
+  border-radius: var(--rs);
+  padding: 4px 10px;
+}
+.pn-sem-etiqueta {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 22px 16px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--rm);
+  background: var(--empty-bg);
+  color: var(--t3);
+  font-size: 12px;
+}
+
+.pn-rastreio-passos {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  overflow: hidden;
+}
+.pn-rastreio-passos li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  background: var(--deep);
+}
+.pn-rastreio-passos .n {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--tide);
+  color: var(--t3);
+  font-family: var(--fm);
+  font-size: 10.5px;
+  display: grid;
+  place-items: center;
+}
+.pn-rastreio-passos b { font-size: 13px; color: var(--foam); display: block; }
+.pn-rastreio-passos small { font-size: 11.5px; color: var(--t3); display: block; margin-top: 2px; line-height: 1.45; }
+
+/* ----------------------------------------------------------- split vivo --- */
+.pn-split-origem {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.pn-split-total {
+  font-family: var(--fu);
+  font-size: clamp(26px, 3.6vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--foam);
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0;
+}
+.pn-split-barras { display: grid; gap: 14px; }
+.pn-split-linha {
+  display: grid;
+  grid-template-columns: minmax(0, 170px) minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+.pn-split-rot b { font-size: 12.5px; color: var(--t1); display: block; }
+.pn-split-trilha {
+  height: 12px;
+  background: var(--reef);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pn-split-fill {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 2px;
+  display: block;
+}
+.pn-split-fill.d1 { background: var(--d1); }
+.pn-split-fill.d2 { background: var(--d2); }
+.pn-split-fill.d3 { background: var(--d3); }
+.pn-split-valor {
+  font-family: var(--fm);
+  font-size: 13px;
+  color: var(--t1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .pn-split-linha { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pn-split-valor { text-align: right; }
+  .pn-prod { grid-template-columns: auto minmax(0, 1fr); }
+  .pn-prod-preco { grid-column: 2; text-align: left; }
+}

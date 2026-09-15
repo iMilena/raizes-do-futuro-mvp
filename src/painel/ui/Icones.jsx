@@ -46,6 +46,16 @@ export function SpriteIcones() {
         <symbol id="i-bell" viewBox="0 0 16 16"><path d="M8 2a3.6 3.6 0 0 0-3.6 3.6v2.1L3.2 10h9.6l-1.2-2.3V5.6A3.6 3.6 0 0 0 8 2Z" /><path d="M6.4 12a1.6 1.6 0 0 0 3.2 0" /></symbol>
         <symbol id="i-menu" viewBox="0 0 16 16"><path d="M2.6 4.4h10.8M2.6 8h10.8M2.6 11.6h10.8" /></symbol>
         <symbol id="i-play" viewBox="0 0 16 16"><path d="M4.6 3.2 12.4 8l-7.8 4.8V3.2Z" /></symbol>
+
+        {/* Produtos do turismo responsável. Caixa 20 porque vêm da referência
+            com essa proporção; o traço é o mesmo. */}
+        <symbol id="i-lamp" viewBox="0 0 20 20"><path d="M7 3h6l1.4 5.2a4.6 4.6 0 0 1-8.8 0L7 3Z" /><path d="M10 13v4M7.6 17h4.8" /></symbol>
+        <symbol id="i-bag" viewBox="0 0 20 20"><path d="M4.5 7h11l-1 9.5h-9L4.5 7Z" /><path d="M7.5 7V5.4a2.5 2.5 0 0 1 5 0V7" /></symbol>
+        <symbol id="i-pot" viewBox="0 0 20 20"><path d="M5.5 9h9l-1.1 7.5h-6.8L5.5 9Z" /><path d="M10 9c0-2.4 1.6-4.2 4-4.6M10 9c0-1.9-1.3-3.3-3.4-3.6" /></symbol>
+        <symbol id="i-key" viewBox="0 0 20 20"><circle cx="7.5" cy="7.5" r="3.4" /><path d="M10.2 10.2 16 16M13.4 13.4l1.6-1.6" /></symbol>
+        <symbol id="i-building" viewBox="0 0 16 16"><path d="M2.6 13.4V4.2a1 1 0 0 1 1-1h5.2a1 1 0 0 1 1 1v9.2" /><path d="M9.8 6.8h2.8a1 1 0 0 1 1 1v5.6" /><path d="M1.6 13.4h12.8M5 6h2M5 8.6h2M5 11.2h2" /></symbol>
+        <symbol id="i-tag" viewBox="0 0 16 16"><path d="M2.6 8.2V3.4a.8.8 0 0 1 .8-.8h4.8l5.2 5.2a1.1 1.1 0 0 1 0 1.6l-4 4a1.1 1.1 0 0 1-1.6 0L2.6 8.2Z" /><path d="M5.6 5.6v.01" strokeWidth="1.8" /></symbol>
+        <symbol id="i-split" viewBox="0 0 16 16"><path d="M2.4 8h3.2l2.2-3.4h5.8M13.6 4.6l-1.8-1.6M13.6 4.6l-1.8 1.6" /><path d="M5.6 8l2.2 3.4h5.8M13.6 11.4l-1.8-1.6M13.6 11.4l-1.8 1.6" /></symbol>
       </defs>
     </svg>
   );
