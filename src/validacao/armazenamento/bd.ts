@@ -42,6 +42,15 @@ export interface RegistroGuardado {
   /** Para ordenar e buscar os recentes na hora de rodar as detecções. */
   timestamp: string;
   registro: RegistroEvidencia;
+  /**
+   * Registro plantado para demonstração, e não coletado por alguém.
+   *
+   * Fica no ENVELOPE, e nunca dentro de `registro.conteudo`: o conteúdo é o que
+   * entra no hash e no que a auditoria confere, e um campo "isto é de mentira"
+   * lá dentro seria a primeira coisa que alguém aprenderia a forjar. Aqui, ele
+   * serve para a tela avisar e para a limpeza saber o que remover.
+   */
+  demonstracao?: boolean;
 }
 
 export interface FotoGuardada {
@@ -130,10 +139,16 @@ export class BancoLocal {
   async salvarRegistro(
     guardado: RegistroGuardado,
     foto?: Blob,
+    opcoes: { enfileirar?: boolean } = {},
   ): Promise<void> {
-    const depositos = foto
-      ? [DEPOSITOS.registros, DEPOSITOS.fotos, DEPOSITOS.fila]
-      : [DEPOSITOS.registros, DEPOSITOS.fila];
+    /* `enfileirar: false` existe para os dados de demonstração: eles precisam
+       aparecer na tela de conferência e NÃO podem subir para lugar nenhum. Sem
+       entrar na fila, não há caminho pelo qual o sincronizador os alcance, o que
+       é mais seguro que filtrá-los na hora do envio e lembrar disso para sempre. */
+    const enfileirar = opcoes.enfileirar ?? true;
+    const depositos: string[] = [DEPOSITOS.registros];
+    if (foto) depositos.push(DEPOSITOS.fotos);
+    if (enfileirar) depositos.push(DEPOSITOS.fila);
     const transacao = this.banco.transaction(depositos, 'readwrite');
 
     transacao.objectStore(DEPOSITOS.registros).put(guardado);
@@ -142,10 +157,12 @@ export class BancoLocal {
         id: guardado.id, arquivo: foto, criadoEm: guardado.timestamp,
       } satisfies FotoGuardada);
     }
-    transacao.objectStore(DEPOSITOS.fila).put({
-      id: guardado.id, situacao: 'pendente', tentativas: 0,
-      ultimoErro: null, atualizadoEm: new Date().toISOString(),
-    } satisfies ItemFila);
+    if (enfileirar) {
+      transacao.objectStore(DEPOSITOS.fila).put({
+        id: guardado.id, situacao: 'pendente', tentativas: 0,
+        ultimoErro: null, atualizadoEm: new Date().toISOString(),
+      } satisfies ItemFila);
+    }
 
     await aoFim(transacao);
   }
@@ -154,6 +171,16 @@ export class BancoLocal {
   async atualizarRegistro(guardado: RegistroGuardado): Promise<void> {
     const transacao = this.banco.transaction([DEPOSITOS.registros], 'readwrite');
     transacao.objectStore(DEPOSITOS.registros).put(guardado);
+    await aoFim(transacao);
+  }
+
+  /** Apaga registro, foto e item de fila de uma vez. */
+  async apagarRegistro(id: string): Promise<void> {
+    const transacao = this.banco.transaction(
+      [DEPOSITOS.registros, DEPOSITOS.fotos, DEPOSITOS.fila], 'readwrite');
+    transacao.objectStore(DEPOSITOS.registros).delete(id);
+    transacao.objectStore(DEPOSITOS.fotos).delete(id);
+    transacao.objectStore(DEPOSITOS.fila).delete(id);
     await aoFim(transacao);
   }
 

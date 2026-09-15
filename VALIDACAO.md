@@ -25,14 +25,14 @@ A divisão de papéis é simples e não se sobrepõe:
 | Evidência e Merkle | [`src/validacao/dominio/`](src/validacao/dominio/), [`src/validacao/ancoragem/`](src/validacao/ancoragem/) | esquema, keccak256, árvore, prova de inclusão, ancoradora |
 | Fila offline | [`src/validacao/armazenamento/`](src/validacao/armazenamento/), [`src/validacao/sincronizacao/`](src/validacao/sincronizacao/) | IndexedDB e sincronização idempotente |
 | Painel de revisão | aba **Conferência** do painel, e [`revisao.html`](revisao.html) | a tela da coordenação, nos dois lugares |
-| Testes | [`testes/validacao/`](testes/validacao/), [`modelo/testes/`](modelo/testes/) | 184 em TypeScript, 19 em Python |
+| Testes | [`testes/validacao/`](testes/validacao/), [`modelo/testes/`](modelo/testes/) | 203 em TypeScript, 19 em Python, mais fumaça de tela |
 
 ## Como rodar
 
 ```bash
 npm install
 npm run dev              # painel (/), app de campo (/campo.html), revisão (/revisao.html)
-npm run test:validacao   # 184 testes de lógica, em Node, sem navegador
+npm run test:validacao   # 203 testes de lógica, em Node, sem navegador
 npm run checar-tipos     # TypeScript, sem emitir nada
 npm test                 # suíte antiga do MVP, intacta
 
@@ -57,12 +57,38 @@ A mesma tela vive em dois lugares, e o componente é um só
   painel em volta.
 
 Dentro do painel ela entra por `lazy()`, como as outras telas, então quem não
-abre a aba não baixa os 10 kB dela. O CSS é todo escopado sob `.revisao`,
-inclusive as variáveis de cor, e tem um reset de fronteira explícito: o
-`styles.css` do painel estiliza `h2`, `h3`, `table`, `input` e `label` por
-elemento, e é carregado em toda rota. Sem esse reset, o título chega com a régua
-do painel e o campo "quem está revisando" vira um rótulo cinza de 10px em caixa
-alta. A fumaça (`npm run fumaca:telas`) mede exatamente isso, em pixel.
+abre a aba não baixa os 10 kB dela.
+
+O CSS é todo escopado sob `.revisao`, inclusive as variáveis de cor, e tem um
+reset de fronteira explícito: o `styles.css` do painel estiliza `h2`, `h3`,
+`table`, `input` e `label` por elemento, e é carregado em toda rota. Sem esse
+reset, os títulos chegam com a régua do painel e o campo "quem está revisando"
+vira um rótulo cinza de 10px em caixa alta. A tela também carrega fundo próprio:
+a área clara do painel tem altura de uma tela, e esta aqui passa de três mil
+pixels com o exemplo carregado. A fumaça (`npm run fumaca:telas`) mede as três
+coisas, em pixel.
+
+### Mostrar o módulo sem ter ido a campo
+
+A tela lê o banco do aparelho. Numa máquina de demonstração esse banco está
+vazio, e o módulo apareceria como "nada esperando conferência", que é o pior
+jeito possível de mostrar justamente a parte que faz o projeto escalar. Por isso
+a tela oferece **Carregar um dia de exemplo**: sete coletas em Boipeba, três
+normais e quatro que disparam checagens diferentes.
+
+O que separa isso de encenação: **as sinalizações não são escritas em lugar
+nenhum**. Os registros são montados como coletas de verdade, assinados pela chave
+do aparelho, e passam por `analisar()`, o mesmo detector que roda no celular do
+catador. O texto que aparece no telão é o que o código produz. Se alguém mexer
+num limiar, a tela muda junto, e
+[testes/validacao/demonstracao.test.ts](testes/validacao/demonstracao.test.ts)
+falha antes da apresentação em vez de durante.
+
+O exemplo não se confunde com dado real: vem marcado no envelope (nunca dentro do
+conteúdo assinado), o ponto de coleta é `ponto-demonstracao`, uma faixa verde
+avisa na tela, e **ele não entra na fila de sincronização**, então não existe
+caminho pelo qual suba para a base compartilhada. Um botão o remove inteiro, sem
+tocar no que veio de campo.
 
 ## O fluxo, do começo ao fim
 

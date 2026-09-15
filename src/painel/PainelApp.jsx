@@ -505,7 +505,7 @@ function Painel({ tab, setTab }) {
             {tab === 'dashboard' && <Dashboard />}
             {tab === 'coleta' && <Coleta />}
             {tab === 'validacao' && <Validacao />}
-            {tab === 'conferencia' && <Conferencia />}
+            {tab === 'conferencia' && <Conferencia embutido />}
             {tab === 'mercado' && <Mercado />}
             {tab === 'fundo' && <Fundo />}
             {tab === 'cadastro' && <Cadastro />}

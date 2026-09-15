@@ -4,7 +4,7 @@
      npm run dev            (em outro terminal)
      npm run fumaca:telas
 
-   Os 184 testes em Vitest cobrem a lógica: evidência, antifraude, Merkle, fila,
+   Os testes em Vitest cobrem a lógica: evidência, antifraude, Merkle, fila,
    revisão. Não cobrem "a tela abre". Este script cobre, e é rápido: sobe o Edge
    headless (o mesmo caminho da suíte antiga, em testes/navegador.mjs), abre as
    duas páginas e confere o que precisa estar lá.
@@ -158,6 +158,38 @@ try {
   ok(await ev(`return !!document.querySelector('.revisao-lotes table')`),
     'tabela de lotes diários presente');
 
+  /* O caso que importa para a apresentação: numa máquina onde ninguém registrou
+     coleta, a tela precisa oferecer um exemplo em vez de mostrar "nada aqui". */
+  const exemplo = await ev(`
+    const botao = [...document.querySelectorAll('button')]
+      .find(b => b.textContent.includes('Carregar um dia de exemplo'));
+    if (!botao) return { erro: 'o convite para carregar o exemplo não apareceu' };
+    botao.click();
+    await new Promise(r => setTimeout(r, 2500));
+    return {
+      cartoes: document.querySelectorAll('.cartao').length,
+      faixa: !!document.querySelector('.revisao-exemplo'),
+      motivos: [...document.querySelectorAll('.sinal b')].map(b => b.textContent),
+      lotes: document.querySelectorAll('.revisao-lotes tbody tr').length,
+    };
+  `);
+  ok(!exemplo.erro && exemplo.cartoes > 0,
+    `o exemplo enche a fila de conferência (${exemplo.erro ?? exemplo.cartoes + ' cartões'})`);
+  ok(exemplo.faixa === true, 'a faixa avisa que é demonstração');
+  ok((exemplo.motivos ?? []).every(m => m && m.length > 20 && !/undefined|NaN/.test(m)),
+    'cada sinalização traz motivo legível, vindo do detector');
+  ok((exemplo.lotes ?? 0) > 0, 'o lote do dia aparece com raiz de Merkle');
+
+  const removeu = await ev(`
+    const botao = [...document.querySelectorAll('button')]
+      .find(b => b.textContent.includes('remover exemplo'));
+    if (!botao) return 'botão de remover não apareceu';
+    botao.click();
+    await new Promise(r => setTimeout(r, 1500));
+    return document.querySelector('.revisao-exemplo') ? 'a faixa continuou' : 'ok';
+  `);
+  ok(removeu === 'ok', `o exemplo sai inteiro quando removido (${removeu})`);
+
   console.log('\n--- a mesma tela, dentro do painel da operação ---');
   await cdp('Page.navigate', { url: `${ALVO}/#/painel` });
   await espera(3500);
@@ -176,10 +208,14 @@ try {
      é carregado em toda rota. Estas duas medidas são o que denuncia o vazamento:
      o título encolhendo para o tamanho do painel, e o campo de autor virando
      rótulo de 10px em caixa alta. */
+  ok(await ev(`return !document.querySelector('.revisao-topo h1')`),
+    'o título não se repete: o painel já escreve "Conferência" na barra de cima');
+  /* O painel define h3 em 15px. O cartão daqui pede 1.2rem, quase 20px. Se o
+     reset de fronteira cair, esta medida cai junto. */
   ok(await ev(`
-    const h1 = document.querySelector('.revisao-topo h1');
-    return h1 && parseFloat(getComputedStyle(h1).fontSize) > 22;
-  `), 'o título da tela não encolheu para a régua do painel');
+    const titulo = document.querySelector('.cartao h3') || document.querySelector('.revisao-lotes h2');
+    return titulo && parseFloat(getComputedStyle(titulo).fontSize) > 17;
+  `), 'os títulos internos não encolheram para a régua do painel');
   ok(await ev(`
     const campo = document.querySelector('.revisao-autor input');
     return campo && parseFloat(getComputedStyle(campo).fontSize) >= 15

@@ -32,6 +32,13 @@
   max-width: 1040px;
   margin: 0 auto;
   padding: 24px 20px 60px;
+  /* Fundo próprio, e não herdado. Dentro do painel, a área clara do hospedeiro
+     tem altura de uma tela; esta aqui passa de três mil pixels com o exemplo
+     carregado, e da tabela de lotes para baixo o texto caía sobre o fundo
+     escuro da página. Componente montado em dois lugares não pode depender do
+     fundo de quem o hospeda. */
+  background: var(--areia);
+  border-radius: 14px;
   color: var(--tinta);
   font-family: "Manrope Variable", "Manrope", system-ui, sans-serif;
   font-size: 16px;
@@ -119,11 +126,24 @@
 
 /* ------------------------------------------------------------ os cartões --- */
 
+/* A faixa do exemplo. Verde e não laranja de propósito: não é um problema, é um
+   aviso de contexto. Laranja aqui competiria com as sinalizações de verdade, que
+   são o que a tela precisa destacar. */
+.revisao .revisao-exemplo {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 14px 16px; margin-bottom: 16px; border-radius: 12px;
+  background: #eaf4ed; border: 2px solid var(--verde); font-size: 0.92rem; line-height: 1.5;
+}
+.revisao .revisao-exemplo ul { margin: 8px 0 8px; padding-left: 18px; color: var(--suave); }
+.revisao .revisao-exemplo button { flex-shrink: 0; }
+
 .revisao .revisao-lista { display: flex; flex-direction: column; gap: 16px; }
 .revisao .vazio {
   color: var(--suave); padding: 28px; text-align: center;
-  background: var(--branco); border-radius: 14px;
+  background: var(--branco); border-radius: 14px; border: 2px solid var(--borda);
 }
+.revisao .vazio p { margin: 0 0 14px; }
+.revisao .vazio b { color: var(--tinta); }
 
 .revisao .cartao {
   background: var(--branco); border: 2px solid var(--borda);
