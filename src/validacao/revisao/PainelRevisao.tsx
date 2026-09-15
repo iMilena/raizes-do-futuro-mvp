@@ -24,8 +24,12 @@ import { salConfigurado } from '../identidade/pseudonimo.js';
 import { montarLotes } from '../ancoragem/lote-diario.js';
 import { AncoradoraMock } from '../ancoragem/ancoradora-mock.js';
 import { decidir, ErroDecisao, montarFilaRevisao, resumoRevisao } from './decisoes.js';
+import {
+  limparDemonstracao, O_QUE_O_EXEMPLO_MOSTRA, semearDemonstracao, temDemonstracao,
+} from './dados-de-demonstracao.js';
 import type { FiltroRevisao, ItemRevisao } from './decisoes.js';
 import { ROTULOS_MATERIAL } from '../campo/material.js';
+import { TelaCabecalho } from '../../painel/ui/TelaCabecalho.jsx';
 import type { RegistroEvidencia } from '../dominio/tipos.js';
 
 const AUTOR_PADRAO = 'coordenacao';
@@ -36,13 +40,25 @@ function horaCurta(iso: string): string {
   });
 }
 
-export default function PainelRevisao() {
+export interface PropsPainelRevisao {
+  /**
+   * Montado dentro do painel da operação?
+   *
+   * O painel já escreve "Conferência" na barra de cima, e repetir um título logo
+   * abaixo gasta a primeira dobra da tela com redundância. Na página própria
+   * (revisao.html) não há barra nenhuma, e aí o título é necessário.
+   */
+  embutido?: boolean;
+}
+
+export default function PainelRevisao({ embutido = false }: PropsPainelRevisao) {
   const [banco, setBanco] = useState<BancoLocal | null>(null);
   const [guardados, setGuardados] = useState<RegistroGuardado[]>([]);
   const [filtro, setFiltro] = useState<FiltroRevisao>('pendentes');
   const [autor, setAutor] = useState(AUTOR_PADRAO);
   const [assinaturas, setAssinaturas] = useState<Map<string, boolean>>(new Map());
   const [erro, setErro] = useState<string | null>(null);
+  const [mexendoNoExemplo, setMexendoNoExemplo] = useState(false);
 
   const ancoradora = useMemo(() => new AncoradoraMock({ rede: 'devnet (simulada)' }), []);
   const [ancoragens, setAncoragens] = useState<Map<string, string>>(new Map());
@@ -97,6 +113,36 @@ export default function PainelRevisao() {
     }
   }, [banco, autor, guardados, recarregar]);
 
+  /* ------------------------------------------------------- exemplo ---------
+     A tela le o banco do aparelho, que numa maquina de demonstracao esta vazio.
+     Sem isto, o modulo aparece como "nada esperando conferencia" justamente na
+     hora de mostra-lo. O exemplo passa pelos detectores de verdade, entao o que
+     aparece na tela e o que o codigo produz. */
+
+  const temExemplo = useMemo(() => temDemonstracao(guardados), [guardados]);
+
+  const carregarExemplo = useCallback(async () => {
+    if (!banco) return;
+    setMexendoNoExemplo(true);
+    try {
+      await semearDemonstracao(banco);
+      await recarregar(banco);
+    } finally {
+      setMexendoNoExemplo(false);
+    }
+  }, [banco, recarregar]);
+
+  const removerExemplo = useCallback(async () => {
+    if (!banco) return;
+    setMexendoNoExemplo(true);
+    try {
+      await limparDemonstracao(banco);
+      await recarregar(banco);
+    } finally {
+      setMexendoNoExemplo(false);
+    }
+  }, [banco, recarregar]);
+
   const ancorar = useCallback(async (dataLote: string) => {
     const lote = lotes.find(l => l.dataLote === dataLote);
     if (!lote) return;
@@ -106,10 +152,20 @@ export default function PainelRevisao() {
 
   return (
     <div className="revisao">
+      {/* Dentro do painel, esta e a etapa 4 da jornada, e usa o mesmo cabecalho
+          das outras oito. Na pagina autonoma (revisao.html) o publico chega
+          direto pelo link, sem jornada em volta, e ai vale o titulo simples. */}
+      {embutido && (
+        <TelaCabecalho etapa={4} total={9} area="Operação" titulo="Conferência da coleta sinalizada">
+          O que a IA apontou e o que uma pessoa precisa decidir. <b>Toda sinalização vira pedido
+          de conferência humana, nunca rejeição automática.</b>
+        </TelaCabecalho>
+      )}
+
       <header className="revisao-topo">
         <div>
-          <h1>Validação de Coleta</h1>
-          <p>Registros que pediram conferência humana</p>
+          {!embutido && <h1>Validação de Coleta</h1>}
+          {!embutido && <p>Registros que pediram conferência humana</p>}
         </div>
         <label className="revisao-autor">
           quem está revisando
@@ -122,6 +178,25 @@ export default function PainelRevisao() {
           O sal de pseudonimização está no valor de demonstração. Antes de operar com dados
           reais, defina <code>VITE_SAL_PSEUDONIMO</code>: sem isso, o pseudônimo do coletor
           pode ser revertido por quem tiver a lista de famílias.
+        </div>
+      )}
+
+      {temExemplo && (
+        <div className="revisao-exemplo">
+          <div>
+            <b>Você está vendo um exemplo.</b> Um dia de coleta em Boipeba, plantado para
+            demonstração. As sinalizações abaixo não foram escritas à mão: os registros
+            passaram pelos mesmos detectores que rodam no celular do catador.
+            <ul>
+              {O_QUE_O_EXEMPLO_MOSTRA.filter(t => !t.startsWith('coleta normal')).map(t => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+            Nada disso entra na fila de sincronização, então não sobe para lugar nenhum.
+          </div>
+          <button className="botao-pequeno" disabled={mexendoNoExemplo} onClick={() => void removerExemplo()}>
+            {mexendoNoExemplo ? 'removendo…' : 'remover exemplo'}
+          </button>
         </div>
       )}
 
@@ -155,7 +230,22 @@ export default function PainelRevisao() {
       {erro && <div className="revisao-alerta">{erro}</div>}
 
       <main className="revisao-lista">
-        {fila.length === 0 && (
+        {fila.length === 0 && guardados.length === 0 && (
+          <div className="vazio">
+            <p>
+              <b>Nenhuma coleta neste aparelho ainda.</b><br />
+              Os registros chegam do app de campo (<code>campo.html</code>), que o catador usa
+              na praia, sem internet.
+            </p>
+            <button className="botao-pequeno" disabled={mexendoNoExemplo} onClick={() => void carregarExemplo()}>
+              {mexendoNoExemplo ? 'carregando…' : 'Carregar um dia de exemplo'}
+            </button>
+            <p className="campo-dica" style={{ marginTop: 10 }}>
+              O exemplo fica marcado como demonstração e pode ser removido a qualquer momento.
+            </p>
+          </div>
+        )}
+        {fila.length === 0 && guardados.length > 0 && (
           <p className="vazio">
             {filtro === 'pendentes'
               ? 'Nada esperando conferência. Todas as coletas passaram nas checagens.'

@@ -16,22 +16,37 @@
 --------------------------------------------------------------------------- */
 
 .revisao {
-  --verde: #2e5a3e;
-  --verde-escuro: #1f3f2b;
-  --acento: #7fd99a;
-  --areia: #f7f4ec;
-  --branco: #ffffff;
-  --tinta: #12211a;
-  --suave: #5b6b62;
-  --borda: #d7dfd8;
-  --atencao: #b35309;
-  --atencao-fundo: #fff4e5;
-  --alerta: #a02020;
-  --alerta-fundo: #fdeaea;
+  /* A paleta deste modulo agora e um APELIDO dos tokens do painel, e nao uma
+     segunda paleta. Os doze nomes continuam iguais, entao nenhuma das 227
+     regras abaixo precisou mudar; o que mudou e de onde a cor vem. Antes eram
+     doze hex fixos, e a tela ficava clara no tema escuro, como uma folha branca
+     colada dentro do painel.
+
+     Os dois arquivos que carregam isto (revisao.html e o painel) trazem
+     src/styles/tokens.css, entao os tokens existem nos dois lugares. */
+  --verde: var(--accent);
+  --verde-escuro: var(--accent-h);
+  --acento: var(--accent-ink);
+  --areia: var(--tide);
+  --branco: var(--deep);
+  --tinta: var(--t1);
+  --suave: var(--t3);
+  --borda: var(--line);
+  --atencao: var(--warn);
+  --atencao-fundo: color-mix(in srgb, var(--warn) 12%, transparent);
+  --alerta: var(--crit);
+  --alerta-fundo: color-mix(in srgb, var(--crit) 12%, transparent);
 
   max-width: 1040px;
   margin: 0 auto;
   padding: 24px 20px 60px;
+  /* Fundo próprio, e não herdado. Dentro do painel, a área clara do hospedeiro
+     tem altura de uma tela; esta aqui passa de três mil pixels com o exemplo
+     carregado, e da tabela de lotes para baixo o texto caía sobre o fundo
+     escuro da página. Componente montado em dois lugares não pode depender do
+     fundo de quem o hospeda. */
+  background: var(--areia);
+  border-radius: 14px;
   color: var(--tinta);
   font-family: "Manrope Variable", "Manrope", system-ui, sans-serif;
   font-size: 16px;
@@ -119,11 +134,24 @@
 
 /* ------------------------------------------------------------ os cartões --- */
 
+/* A faixa do exemplo. Verde e não laranja de propósito: não é um problema, é um
+   aviso de contexto. Laranja aqui competiria com as sinalizações de verdade, que
+   são o que a tela precisa destacar. */
+.revisao .revisao-exemplo {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 14px 16px; margin-bottom: 16px; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-ink) 10%, transparent); border: 2px solid var(--verde); font-size: 0.92rem; line-height: 1.5;
+}
+.revisao .revisao-exemplo ul { margin: 8px 0 8px; padding-left: 18px; color: var(--suave); }
+.revisao .revisao-exemplo button { flex-shrink: 0; }
+
 .revisao .revisao-lista { display: flex; flex-direction: column; gap: 16px; }
 .revisao .vazio {
   color: var(--suave); padding: 28px; text-align: center;
-  background: var(--branco); border-radius: 14px;
+  background: var(--branco); border-radius: 14px; border: 2px solid var(--borda);
 }
+.revisao .vazio p { margin: 0 0 14px; }
+.revisao .vazio b { color: var(--tinta); }
 
 .revisao .cartao {
   background: var(--branco); border: 2px solid var(--borda);
@@ -162,7 +190,7 @@
 
 .revisao .decisao-anterior {
   margin-top: 14px; padding: 10px 12px; border-radius: 10px;
-  background: #eef3ef; font-size: 0.9rem;
+  background: var(--reef); font-size: 0.9rem;
 }
 
 .revisao .cartao footer { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -191,7 +219,7 @@
   padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--borda); font-size: 0.9rem;
 }
 .revisao .revisao-lotes th {
-  background: #eef3ef; font-size: 0.75rem; text-transform: uppercase;
+  background: var(--reef); font-size: 0.75rem; text-transform: uppercase;
   letter-spacing: 0.03em; color: var(--suave); font-weight: 700;
 }
 .revisao .botao-pequeno {
