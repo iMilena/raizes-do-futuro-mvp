@@ -32,13 +32,13 @@ export const TIPOS_TX = {
   'PROPOSTA': { rot: 'Proposta de transferência criada no cofre', cor: '#8a5cf6' },
   'ASSINATURA': { rot: 'Assinatura de signatário do cofre', cor: '#b3541e' },
   'LIBERAÇÃO': { rot: 'Bônus executado pelo cofre (limiar atingido)', cor: '#1b7a43' },
-  'RESERVA': { rot: 'Bônus reservado — nunca perdido', cor: '#f2c14e' },
+  'RESERVA': { rot: 'Bônus reservado, nunca perdido', cor: '#f2c14e' },
   'CARTEIRA': { rot: 'Conta da família conectada', cor: '#1cabe2' },
   'SAQUE': { rot: 'Conversão para reais via Pix', cor: '#b3541e' },
   'ANCORAGEM': { rot: 'Relatório ancorado na Solana devnet (registro real)', cor: '#0f7a6c' },
   'CONSENTIMENTO': { rot: 'Consentimento do responsável registrado ou revogado', cor: '#6d4de8' },
   'RENDA': { rot: 'Renda incondicional da coleta, direto para a família', cor: '#0b7ba8' },
-  'CONTESTACAO': { rot: 'Família contestou um registro — e foi respondida', cor: '#b3541e' },
+  'CONTESTACAO': { rot: 'Família contestou um registro, e foi respondida', cor: '#b3541e' },
 };
 export const tipoTx = t => TIPOS_TX[t] || { rot: t, cor: '#6b7a70' };
 
@@ -277,7 +277,7 @@ function aplicarSplit(state, venda) {
   state.caixas.operacao += venda.valor * SPLIT.operacao;
   // vendaId liga esta transação à peça vendida: é o que a página de rastreio usa
   // para mostrar ao turista em qual registro a compra dele entrou
-  pushTx(state, 'RECEITA', `${venda.descricao} — ${venda.comprador} (${fmt(venda.valor)}) → split 60/25/15`, venda.valor, { vendaId: venda.id });
+  pushTx(state, 'RECEITA', `${venda.descricao}, ${venda.comprador} (${fmt(venda.valor)}), split 60/25/15`, venda.valor, { vendaId: venda.id });
   creditarRenda(state, venda);
 }
 
@@ -336,12 +336,12 @@ function creditarRenda(state, venda) {
       ts: Date.now(),
       tipo: 'renda',
       desc: daOrigem.length
-        ? `Renda da sua coleta — ${c.kg} kg de ${String(c.material).toLowerCase()}`
-        : `Renda da sua coleta — sua parte em "${venda.descricao}"`,
+        ? `Renda da sua coleta, ${c.kg} kg de ${String(c.material).toLowerCase()}`
+        : `Renda da sua coleta, sua parte em "${venda.descricao}"`,
       valor: parte,
     });
     pushTx(state, 'RENDA',
-      `Renda incondicional de ${fmt(parte)} para ${f.resp} — ${c.kg} kg na venda "${venda.descricao}"`,
+      `Renda incondicional de ${fmt(parte)} para ${f.resp}, ${c.kg} kg na venda "${venda.descricao}"`,
       parte, { familiaId: f.id, vendaId: venda.id, coletaId: c.id });
   });
 }
@@ -411,7 +411,7 @@ function executarProposta(state, p) {
     p.status = 'reservada';
     if (c) c.status = 'validada-aguardando';
     pushTx(state, 'RESERVA',
-      `Proposta #${p.id} atingiu o limiar mas não executou — ${fmt(p.valor)} reservado para ${f.resp} (${!f.carteira ? 'sem conta conectada' : 'cofre sem saldo'}); liberação retroativa garantida`,
+      `Proposta #${p.id} atingiu o limiar mas não executou, ${fmt(p.valor)} reservado para ${f.resp} (${!f.carteira ? 'sem conta conectada' : 'cofre sem saldo'}); liberação retroativa garantida`,
       0, { propostaId: p.id });
     return;
   }
@@ -422,13 +422,13 @@ function executarProposta(state, p) {
   // extrato é lido pela família: linguagem do dia a dia, sem jargão do programa
   f.extrato.push({
     ts: Date.now(),
-    desc: c ? `Bônus de ${c.mes.toLowerCase()} — ${simplificar(c.tipo)}` : 'Bônus por compromisso cumprido',
+    desc: c ? `Bônus de ${c.mes.toLowerCase()}, ${simplificar(c.tipo)}` : 'Bônus por compromisso cumprido',
     valor: p.valor,
   });
   if (c) c.status = 'liberada';
   p.status = 'executada';
   const tx = pushTx(state, 'LIBERAÇÃO',
-    `Cofre executou proposta #${p.id}: ${fmt(p.valor)} → conta ${PROVIDER_CARTEIRA} de ${f.resp} (${trunc(f.carteira?.end, 4, 4)})`,
+    `Cofre executou proposta #${p.id}: ${fmt(p.valor)} para a conta ${PROVIDER_CARTEIRA} de ${f.resp} (${trunc(f.carteira?.end, 4, 4)})`,
     p.valor, { propostaId: p.id });
   p.signature = tx.signature;
 }
@@ -455,11 +455,11 @@ function seed() {
       { id: 3, coletor: 'Grupo Jovem Moreré', material: 'Plástico misto', kg: 38, local: 'Praia de Moreré', data: '2026-07-22', status: 'pendente', signature: null },
     ],
     relatorios: [
-      { id: 1, periodo: 'Julho 2026 — quinzena 1', kg: 105, acoes: 2, signature: solSig('rel-1'), data: '2026-07-15' },
+      { id: 1, periodo: 'Julho 2026, quinzena 1', kg: 105, acoes: 2, signature: solSig('rel-1'), data: '2026-07-15' },
     ],
     vendas: [
       { id: 1, tipo: 'produto', descricao: 'Luminária de vidro reaproveitado', comprador: 'Turista (Pousada Mar Azul)', valor: 80, data: '2026-07-16', materiais: ['Vidro'], rastreio: codigoRastreio('rastreio-1-luminaria'), origem: [2] },
-      { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
+      { id: 2, tipo: 'esg', descricao: 'Relatório de Circularidade, Julho Q1', comprador: 'Empresa Costa Verde Ltda.', valor: 2500, data: '2026-07-18' },
     ],
     caixas: { renda: 0, fundo: 0, operacao: 0, fundoLiberado: 0 },
     ciclos: [],   // fechamentos de ciclo (regra 4: residual → ações coletivas)
@@ -501,12 +501,12 @@ function seed() {
   };
 
   /* história registrada na cadeia (na ordem em que aconteceu) */
-  pushTx(state, 'GÊNESE', `Cofre multisig do Fundo Infância implantado na ${REDE} — limiar 2 de 3 (Instituto Vivá, DeTrash, Representante Comunitário)`, 0);
-  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de Maria de Lourdes — sem dados pessoais on-chain`, 0);
-  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de José Raimundo — sem dados pessoais on-chain`, 0);
-  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 45 kg de Plástico PET — Praia de Cueira', 0);
-  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 60 kg de Vidro — Velha Boipeba', 0);
-  pushTx(state, 'CIRCULARIDADE', 'Relatório de Circularidade emitido: 105 kg validados (Julho 2026 — quinzena 1)', 0);
+  pushTx(state, 'GÊNESE', `Cofre multisig do Fundo Infância implantado na ${REDE}, limiar 2 de 3 (Instituto Vivá, DeTrash, Representante Comunitário)`, 0);
+  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de Maria de Lourdes, sem dados pessoais on-chain`, 0);
+  pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de José Raimundo, sem dados pessoais on-chain`, 0);
+  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 45 kg de Plástico PET, Praia de Cueira', 0);
+  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 60 kg de Vidro, Velha Boipeba', 0);
+  pushTx(state, 'CIRCULARIDADE', 'Relatório de Circularidade emitido: 105 kg validados (Julho 2026, quinzena 1)', 0);
   for (const v of state.vendas) aplicarSplit(state, v);
 
   // bônus de vacinação da Maria já executado pelo cofre (2 assinaturas colhidas antes)
@@ -514,12 +514,12 @@ function seed() {
   state.caixas.fundo -= bonusMaria;
   state.caixas.fundoLiberado += bonusMaria;
   state.familias[0].saldo += bonusMaria;
-  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho — vacinação em dia', valor: bonusMaria });
-  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} → conta Decaf de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
+  state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho, vacinação em dia', valor: bonusMaria });
+  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} para a conta Decaf de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
 
-  pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo — Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
+  pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo, Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
   pushTx(state, 'ASSINATURA', 'Instituto Vivá assinou a proposta #1 (1 de 2 necessárias)', 0, { propostaId: 1, signatario: 'viva' });
-  pushTx(state, 'RESERVA', `Comprovação de Ana Cláudia validada — ${fmt(BONUS_POR_CRIANCA)} reservado (família ainda sem conta ${PROVIDER_CARTEIRA}); liberação retroativa garantida`, 0, { propostaId: 2 });
+  pushTx(state, 'RESERVA', `Comprovação de Ana Cláudia validada, ${fmt(BONUS_POR_CRIANCA)} reservado (família ainda sem conta ${PROVIDER_CARTEIRA}); liberação retroativa garantida`, 0, { propostaId: 2 });
 
   return state;
 }
@@ -542,7 +542,7 @@ function reducer(state, action) {
       const c = s.coletas.find(c => c.id === action.id);
       if (c && c.status === 'pendente') {
         c.status = 'validada';
-        const tx = pushTx(s, 'VALIDAÇÃO', `Coleta validada (DeTrash): ${c.kg} kg de ${c.material} — ${c.local}`, 0);
+        const tx = pushTx(s, 'VALIDAÇÃO', `Coleta validada (DeTrash): ${c.kg} kg de ${c.material}, ${c.local}`, 0);
         c.signature = tx.signature;
       }
       return s;
@@ -561,7 +561,7 @@ function reducer(state, action) {
           em: Date.now(),
         };
         pushTx(s, 'ANCORAGEM',
-          `Relatório "${rel.periodo}" ancorado na Solana devnet: ${rel.kg} kg — SHA-256 ${String(action.hash).slice(0, 16)}…`,
+          `Relatório "${rel.periodo}" ancorado na Solana devnet: ${rel.kg} kg, SHA-256 ${String(action.hash).slice(0, 16)}…`,
           0, { relatorioId: rel.id, real: true, txExterna: action.txId, urlExterna: rel.ancoragem.url });
       }
       return s;
@@ -603,7 +603,7 @@ function reducer(state, action) {
         };
         const f = s.familias.find(f => f.id === p.familiaId);
         pushTx(s, 'LIBERAÇÃO',
-          `Liberação de ${fmt(p.valor)}${f ? ` para ${f.resp}` : ''} executada NA REDE pelo cofre 2-de-3 — registro real`,
+          `Liberação de ${fmt(p.valor)}${f ? ` para ${f.resp}` : ''} executada NA REDE pelo cofre 2-de-3, registro real`,
           0, { propostaId: p.id, familiaId: p.familiaId, real: true });
       }
       return s;
@@ -630,7 +630,7 @@ function reducer(state, action) {
         }];
         s.caixas.fundo = Number((s.caixas.fundo - valor).toFixed(2));
         pushTx(s, 'RESERVA',
-          `Fechamento de ciclo: ${fmt(valor)} do saldo residual destinado a "${action.acao}" — decidido em ${action.comoFoiDecidido || 'assembleia comunitária'}`,
+          `Fechamento de ciclo: ${fmt(valor)} do saldo residual destinado a "${action.acao}", decidido em ${action.comoFoiDecidido || 'assembleia comunitária'}`,
           valor, { cicloId: s.ciclos[s.ciclos.length - 1].id });
       }
       return s;
@@ -646,7 +646,7 @@ function reducer(state, action) {
           url: `https://explorer.solana.com/tx/${action.txId}?cluster=devnet`,
         };
         pushTx(s, 'ANCORAGEM',
-          `Decisão coletiva do ciclo ${c.ciclo} ancorada na Solana devnet — prova pública de "${c.acao}"`,
+          `Decisão coletiva do ciclo ${c.ciclo} ancorada na Solana devnet, prova pública de "${c.acao}"`,
           0, { cicloId: c.id, real: true });
       }
       return s;
@@ -697,7 +697,7 @@ function reducer(state, action) {
       if (f) {
         f.pin = null;
         pushTx(s, 'CONSENTIMENTO',
-          `PIN da família de ${f.resp} destravado pelo agente de campo — a família define um novo no próximo acesso`,
+          `PIN da família de ${f.resp} destravado pelo agente de campo, a família define um novo no próximo acesso`,
           0, { familiaId: f.id });
       }
       return s;
@@ -984,7 +984,7 @@ function reducer(state, action) {
         }];
         const renovacao = anterior ? 'renovado' : 'registrado';
         pushTx(s, 'CONSENTIMENTO',
-          `Consentimento ${renovacao} para a família de ${f.resp} (${action.forma || 'presencial-assinado'}) — termo ${action.versaoTermo || VERSAO_TERMO}, válido por ${validade} meses`,
+          `Consentimento ${renovacao} para a família de ${f.resp} (${action.forma || 'presencial-assinado'}), termo ${action.versaoTermo || VERSAO_TERMO}, válido por ${validade} meses`,
           0, { familiaId: f.id });
       }
       return s;
@@ -999,7 +999,7 @@ function reducer(state, action) {
         c.revogadoEm = new Date().toISOString();
         c.revogadoMotivo = action.motivo || '';
         pushTx(s, 'CONSENTIMENTO',
-          `Consentimento REVOGADO pela família de ${f.resp} — dados deixam de ser compartilhados`,
+          `Consentimento REVOGADO pela família de ${f.resp}, dados deixam de ser compartilhados`,
           0, { familiaId: f.id });
       }
       return s;
@@ -1010,14 +1010,14 @@ function reducer(state, action) {
       if (f && !f.carteira) {
         const provider = action.provider || PROVIDER_CARTEIRA;
         f.carteira = { end: solAddr('familia-' + f.id + '-' + Date.now()), provider, rede: REDE, criadaEm: new Date().toISOString().slice(0, 10), celular: action.celular || '' };
-        pushTx(s, 'CARTEIRA', `Carteira ${provider} (${REDE}) conectada para família de ${f.resp} — sem dados pessoais on-chain`, 0);
+        pushTx(s, 'CARTEIRA', `Carteira ${provider} (${REDE}) conectada para família de ${f.resp}, sem dados pessoais on-chain`, 0);
         // liberação retroativa: propostas reservadas desta família voltam à fila de assinatura
         for (const p of s.propostas.filter(p => p.status === 'reservada' && p.familiaId === f.id)) {
           if (disponivelCofre(s) >= p.valor) {
             p.status = 'aguardando';
             const c = f.condicoes.find(c => c.id === p.condicaoId);
             if (c) c.status = 'aguardando-assinaturas';
-            pushTx(s, 'PROPOSTA', `Proposta #${p.id} reativada (retroativa): ${fmt(p.valor)} para ${f.resp} — conta conectada`, 0, { propostaId: p.id });
+            pushTx(s, 'PROPOSTA', `Proposta #${p.id} reativada (retroativa): ${fmt(p.valor)} para ${f.resp}, conta conectada`, 0, { propostaId: p.id });
           }
         }
       }
@@ -1044,12 +1044,12 @@ function reducer(state, action) {
           c.status = 'aguardando-assinaturas';
           s.propostas.push(p);
           const evid = c.evidHash ? `evidência sha256:${c.evidHash.slice(0, 12)}…` : 'hash off-chain';
-          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp} — ${c.tipo} validada pelo Instituto Vivá (${evid})`, 0, { propostaId: p.id });
+          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp}, ${c.tipo} validada pelo Instituto Vivá (${evid})`, 0, { propostaId: p.id });
         } else {
           c.status = 'validada-aguardando';
           p.status = 'reservada';
           s.propostas.push(p);
-          pushTx(s, 'RESERVA', `Comprovação de ${f.resp} validada — ${fmt(valor)} reservado (${!f.carteira ? `sem conta ${PROVIDER_CARTEIRA}` : 'cofre sem saldo livre'}); liberação retroativa garantida`, 0, { propostaId: p.id });
+          pushTx(s, 'RESERVA', `Comprovação de ${f.resp} validada, ${fmt(valor)} reservado (${!f.carteira ? `sem conta ${PROVIDER_CARTEIRA}` : 'cofre sem saldo livre'}); liberação retroativa garantida`, 0, { propostaId: p.id });
         }
       }
       return s;
@@ -1072,7 +1072,7 @@ function reducer(state, action) {
       if (f && v > 0) {
         f.saldo -= v;
         f.extrato.push({ ts: Date.now(), desc: 'Retirada pelo Pix', valor: -v });
-        pushTx(s, 'SAQUE', `Conversão ${MOEDA}→BRL via Pix — ${fmt(v)} para a família de ${f.resp} (ponte ${PROVIDER_CARTEIRA})`, v);
+        pushTx(s, 'SAQUE', `Conversão de ${MOEDA} para BRL via Pix, ${fmt(v)} para a família de ${f.resp} (ponte ${PROVIDER_CARTEIRA})`, v);
       }
       return s;
     }

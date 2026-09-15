@@ -150,7 +150,7 @@ ok(s.transacoes[s.transacoes.length - 1].tipo === 'LIBERAÇÃO', 'tx tipo LIBERA
 ok(pExec.signature?.length === 88, 'proposta executada guarda a signature da transferência');
 
 const ext = s.familias[0].extrato[s.familias[0].extrato.length - 1];
-ok(/^Bônus de \w+ — /.test(ext.desc) && !/on-chain|token|hash|blockchain|multisig|Fundo Infância/i.test(ext.desc),
+ok(/^Bônus de \w+, /.test(ext.desc) && !/on-chain|token|hash|blockchain|multisig|Fundo Infância/i.test(ext.desc),
   `extrato em linguagem simples: "${ext.desc}"`);
 
 /* ---------- 5. proposta da seed ---------- */
