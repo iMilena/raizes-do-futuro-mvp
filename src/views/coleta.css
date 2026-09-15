@@ -1,0 +1,61 @@
+/* ----------------------------------------------------------------------------
+   Etapa 2: Coletor.
+---------------------------------------------------------------------------- */
+
+/* O input de arquivo fica dentro da área pontilhada, e não solto embaixo dela:
+   o alvo de toque é a área inteira, que é o que uma pessoa espera ao ver um
+   retângulo tracejado. */
+.pn-arquivo {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--t3);
+}
+.pn-arquivo::file-selector-button {
+  font: inherit;
+  font-weight: 600;
+  margin-right: 10px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--deep);
+  color: var(--t1);
+  cursor: pointer;
+}
+.pn-arquivo::file-selector-button:hover { border-color: var(--line-3); }
+
+.pn-foto-previa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  align-items: start;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+  background: var(--tide);
+}
+.pn-foto-previa img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--rs);
+  border: 1px solid var(--line-2);
+  display: block;
+}
+.pn-foto-previa b { font-size: 13px; color: var(--foam); display: block; }
+.pn-foto-previa .pn-mono { display: block; margin-top: 3px; color: var(--t3); }
+.pn-foto-previa .pn-hint { margin-top: 5px; }
+
+/* Segunda linha dentro de uma célula: hash, geo, assinatura. */
+.pn-sub {
+  display: block;
+  margin-top: 5px;
+  color: var(--t4);
+  font-size: 11px;
+}
+
+/* A coluna de situação já carrega pílula, hash e geolocalização; dar um piso
+   maior à tabela aqui só faria a rolagem começar antes. */
+.pn-tabela-coletas table { min-width: 460px; }

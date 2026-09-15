@@ -1,8 +1,16 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useStore, trunc } from '../estado/store.jsx';
-import { useToast, Badge, EstadoVazio } from '../componentes/ui.jsx';
+import { useToast } from '../componentes/ui.jsx';
+import { Icon } from '../painel/ui/Icones.jsx';
+import {
+  Card, CardCabecalho, CardNota, Campo, Botao, Grade, Nota, Pill, Tabela, Vazio, FigRow, Fig,
+} from '../painel/ui/primitivos.jsx';
+import { TelaCabecalho } from '../painel/ui/TelaCabecalho.jsx';
 import { useDestaque } from '../componentes/demo.jsx';
 import { sha256Arquivo, pegarGeo } from '../lib/evidencia.js';
+import './coleta.css';
+
+const MATERIAIS = ['Plástico PET', 'Plástico misto', 'Vidro', 'Alumínio', 'Papel/Papelão', 'Rejeito de praia'];
 
 export default function Coleta() {
   const { state, dispatch } = useStore();
@@ -22,8 +30,8 @@ export default function Coleta() {
     try {
       const hash = await sha256Arquivo(arq);
       setFoto({ nome: arq.name, hash, url: URL.createObjectURL(arq) });
-      toast(`Evidência protegida — sha256 ${trunc(hash, 8, 8)} 🔐`, 'info');
-    } catch (err) {
+      toast(`Evidência protegida: sha256 ${trunc(hash, 8, 8)}`, 'info');
+    } catch {
       toast('Não foi possível ler a foto', 'alerta');
     }
     setCalculando(false);
@@ -38,91 +46,202 @@ export default function Coleta() {
         ...form, kg: Number(form.kg),
         /* SEM ESTE VINCULO a renda de 60% nao chega a conta de ninguem e a familia
            nao pode conferir a propria entrega. Opcional de proposito: coletor
-           pode nao ser de familia participante -- e o painel mostra a diferenca. */
+           pode nao ser de familia participante, e o painel mostra a diferenca. */
         familiaId: form.familiaId ? Number(form.familiaId) : null,
         data: new Date().toISOString().slice(0, 10),
         evidHash: foto?.hash || null, fotoNome: foto?.nome || null, geo,
       },
     });
-    toast(`Coleta de ${form.kg} kg enviada ✔${geo ? ' · 📍 localização registrada' : ''}`);
+    toast(`Coleta de ${form.kg} kg enviada${geo ? ', com localização registrada' : ''}`);
     setForm({ coletor: '', material: 'Plástico PET', kg: '', local: '', familiaId: '' });
     setFoto(null);
     if (arqRef.current) arqRef.current.value = '';
     setEnviando(false);
   };
 
-  return (
-    <>
-      <h2>Registro de Coleta — visão do coletor</h2>
-      <div className="grid g2">
-        <div className={'card destaque' + foco}>
-          <h3>Nova ação de coleta</h3>
-          <label>Coletor(a) ou grupo</label>
-          <input value={form.coletor} onChange={e => setForm({ ...form, coletor: e.target.value })} placeholder="Ex.: Dona Nilza" />
-          <label>Material</label>
-          <select value={form.material} onChange={e => setForm({ ...form, material: e.target.value })}>
-            {['Plástico PET', 'Plástico misto', 'Vidro', 'Alumínio', 'Papel/Papelão', 'Rejeito de praia'].map(m => <option key={m}>{m}</option>)}
-          </select>
-          <label>Peso (kg)</label>
-          <input type="number" min="1" value={form.kg} onChange={e => setForm({ ...form, kg: e.target.value })} placeholder="Ex.: 40" />
-          <label>Local</label>
-          <input value={form.local} onChange={e => setForm({ ...form, local: e.target.value })} placeholder="Ex.: Praia de Cueira" />
-          <label htmlFor="col-familia">Família do coletor</label>
-          <select id="col-familia" value={form.familiaId}
-            onChange={e => setForm({ ...form, familiaId: e.target.value })}>
-            <option value="">não é de família cadastrada</option>
-            {state.familias.map(fa => <option key={fa.id} value={fa.id}>{fa.resp} ({fa.codigo})</option>)}
-          </select>
-          <p className="mini">
-            Vincular é o que faz os <b>60% de renda chegarem à conta dela</b> — e o que
-            permite à família conferir esta entrega no app.
-          </p>
-          <label>Evidência fotográfica</label>
-          <input ref={arqRef} type="file" accept="image/*" capture="environment" onChange={aoEscolherFoto} />
-          {calculando && <p className="mini">🔐 calculando o hash da evidência…</p>}
-          {foto && (
-            <div className="foto-previa">
-              <img src={foto.url} alt="Prévia da evidência" />
-              <div>
-                <b>{foto.nome}</b>
-                <span className="hash">sha256: {trunc(foto.hash, 12, 12)}</span>
-                <span className="mini">A foto fica no aparelho — só o hash vai ao registro (LGPD).</span>
-              </div>
-            </div>
-          )}
-          <p className="mini">📷 Foto + localização compõem a evidência da metodologia DeTrash. O hash é calculado no seu aparelho.</p>
-          <button className="acao" disabled={!ok || calculando || enviando} onClick={enviar}>
-            {enviando ? 'Registrando…' : 'Enviar para validação'}
-          </button>
-        </div>
+  const registradas = state.coletas.reduce((a, c) => a + Number(c.kg), 0);
+  const validadas = state.coletas.filter(c => c.status === 'validada');
+  const kgValidados = validadas.reduce((a, c) => a + Number(c.kg), 0);
+  const coletores = new Set(state.coletas.map(c => c.coletor)).size;
+  const pendentes = state.coletas.filter(c => c.status === 'pendente').length;
 
-        <div className="card">
-          <h3>Coletas registradas</h3>
-          {state.coletas.length === 0
-            ? <EstadoVazio icone="🧹" titulo="Nenhuma coleta registrada" dica="Preencha o formulário ao lado para registrar a primeira ação." />
-            : (
-              <table>
-                <thead><tr><th>Data</th><th>Coletor</th><th>Material</th><th>kg</th><th>Status</th></tr></thead>
-                <tbody>
-                  {[...state.coletas].reverse().map(c => (
-                    <tr key={c.id}>
-                      <td>{c.data}</td><td>{c.coletor}</td><td>{c.material}</td><td>{c.kg}</td>
-                      <td>
-                        <Badge tom={c.status === 'validada' ? 'ok' : 'pend'}>{c.status}</Badge>
-                        {c.signature && <div className="hash">{trunc(c.signature, 6, 6)}</div>}
-                        {c.evidHash && <div className="hash" title="SHA-256 real da foto de evidência">📎 {trunc(c.evidHash, 6, 6)}</div>}
-                        {c.geo && <div className="mini" title="Localização registrada">📍 {c.geo.lat}, {c.geo.lng}</div>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+  return (
+    <div className="pn-screen">
+      <TelaCabecalho etapa={2} total={9} area="Operação" titulo="Registro de coleta">
+        O que o coletor faz no celular, na praia, com a sacola ainda na mão: peso, material,
+        local e foto. <b>Menos de um minuto por entrega.</b>
+      </TelaCabecalho>
+
+      <Nota tipo="i" icone="coin">
+        <b>A renda da coleta é incondicional.</b> Os 60% da receita vão direto ao coletor pelo
+        trabalho feito. Não depende de vacina, matrícula nem de qualquer contrapartida.
+      </Nota>
+
+      <Grade colunas="5-8">
+        <Card className={foco}>
+          <CardCabecalho titulo="Nova ação de coleta" />
+          <div style={{ marginTop: 16 }}>
+            <Campo id="col-quem" rotulo="Coletor(a) ou grupo">
+              <input
+                id="col-quem"
+                className="pn-inp"
+                value={form.coletor}
+                onChange={e => setForm({ ...form, coletor: e.target.value })}
+                placeholder="Ex.: Dona Nilza"
+              />
+            </Campo>
+
+            <Grade colunas={2} style={{ gap: 14 }}>
+              <Campo id="col-material" rotulo="Material">
+                <select
+                  id="col-material"
+                  className="pn-inp"
+                  value={form.material}
+                  onChange={e => setForm({ ...form, material: e.target.value })}
+                >
+                  {MATERIAIS.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </Campo>
+              <Campo id="col-kg" rotulo="Peso (kg)">
+                <input
+                  id="col-kg"
+                  className="pn-inp"
+                  type="number"
+                  min="1"
+                  value={form.kg}
+                  onChange={e => setForm({ ...form, kg: e.target.value })}
+                  placeholder="Ex.: 40"
+                />
+              </Campo>
+            </Grade>
+
+            <Campo id="col-local" rotulo="Local">
+              <input
+                id="col-local"
+                className="pn-inp"
+                value={form.local}
+                onChange={e => setForm({ ...form, local: e.target.value })}
+                placeholder="Ex.: Praia de Cueira"
+              />
+            </Campo>
+
+            <Campo
+              id="col-familia"
+              rotulo="Família do coletor"
+              dica={<>Vincular é o que faz os <b>60% da renda chegarem à conta dela</b>, e o que permite à família conferir esta entrega no app.</>}
+            >
+              <select
+                id="col-familia"
+                className="pn-inp"
+                value={form.familiaId}
+                onChange={e => setForm({ ...form, familiaId: e.target.value })}
+              >
+                <option value="">não é de família cadastrada</option>
+                {state.familias.map(fa => (
+                  <option key={fa.id} value={fa.id}>{fa.resp} ({fa.codigo})</option>
+                ))}
+              </select>
+            </Campo>
+
+            <Campo id="col-foto" rotulo="Evidência fotográfica">
+              <div className="pn-drop">
+                <div className="t">Tirar foto ou anexar arquivo</div>
+                <div className="d">
+                  Foto e localização compõem a evidência da metodologia DeTrash. O hash é
+                  calculado no aparelho e a imagem não sai dele.
+                </div>
+                <input
+                  ref={arqRef}
+                  id="col-foto"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={aoEscolherFoto}
+                  className="pn-arquivo"
+                />
+              </div>
+            </Campo>
+
+            {calculando && <p className="pn-hint">Calculando o hash da evidência…</p>}
+            {foto && (
+              <div className="pn-foto-previa">
+                <img src={foto.url} alt="Prévia da evidência" />
+                <div>
+                  <b>{foto.nome}</b>
+                  <span className="pn-mono">sha256: {trunc(foto.hash, 12, 12)}</span>
+                  <span className="pn-hint">
+                    A foto fica no aparelho: só o hash vai ao registro (LGPD).
+                  </span>
+                </div>
+              </div>
             )}
-        </div>
-      </div>
-      <div className="aviso">
-        <b>Renda incondicional:</b> o pagamento pela coleta é feito diretamente ao coletor (60% da receita) e não depende de nenhuma condição.
-      </div>
-    </>
+
+            <Botao
+              style={{ width: '100%', marginTop: 4 }}
+              disabled={!ok || calculando || enviando}
+              onClick={enviar}
+            >
+              {enviando ? 'Registrando…' : 'Enviar para validação'}
+            </Botao>
+          </div>
+        </Card>
+
+        <Card>
+          <CardCabecalho
+            titulo="Coletas registradas"
+            acessorio={pendentes > 0 ? <Pill tom="warn">{pendentes} aguardando</Pill> : <Pill tom="ok">nada pendente</Pill>}
+          />
+          <CardNota>
+            A coleta vale renda a partir da validação. O hash aparece quando a DeTrash confere.
+          </CardNota>
+
+          {state.coletas.length === 0 ? (
+            <Vazio
+              titulo="Nenhuma coleta registrada"
+              dica="Preencha o formulário ao lado para registrar a primeira ação."
+            />
+          ) : (
+            <Tabela className="pn-tabela-coletas">
+              <thead>
+                <tr>
+                  <th>Data</th><th>Coletor</th><th>Material</th>
+                  <th style={{ textAlign: 'right' }}>kg</th><th>Situação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...state.coletas].reverse().map(c => (
+                  <tr key={c.id} className={c.status === 'validada' ? 'done' : 'needs'}>
+                    <td className="pn-mono">{c.data}</td>
+                    <td><strong>{c.coletor}</strong></td>
+                    <td>{c.material}</td>
+                    <td className="num">{c.kg}</td>
+                    <td>
+                      <Pill tom={c.status === 'validada' ? 'ok' : 'warn'}>{c.status}</Pill>
+                      {c.signature && <div className="pn-mono pn-sub">{trunc(c.signature, 6, 6)}</div>}
+                      {c.evidHash && (
+                        <div className="pn-mono pn-sub" title="SHA-256 real da foto de evidência">
+                          <Icon name="shield" className="sm" /> {trunc(c.evidHash, 6, 6)}
+                        </div>
+                      )}
+                      {c.geo && (
+                        <div className="pn-mono pn-sub" title="Localização registrada">
+                          <Icon name="scan" className="sm" /> {c.geo.lat}, {c.geo.lng}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Tabela>
+          )}
+
+          <FigRow colunas={3} style={{ marginTop: 16 }}>
+            <div><Fig valor={`${registradas} kg`} rotulo="registrados" /></div>
+            <div><Fig valor={`${kgValidados} kg`} rotulo="validados" /></div>
+            <div><Fig valor={coletores} rotulo="coletores ativos" /></div>
+          </FigRow>
+        </Card>
+      </Grade>
+    </div>
   );
 }
