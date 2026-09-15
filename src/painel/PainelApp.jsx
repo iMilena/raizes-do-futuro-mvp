@@ -6,8 +6,9 @@ import { IdiomaProvider, useIdioma, TRADUZIDAS } from '../lib/i18n.jsx';
 import { ToastProvider, useToast } from '../componentes/ui.jsx';
 import { DemoProvider, DemoNarrador } from '../componentes/demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from '../componentes/tour.jsx';
-import { SpriteIcones } from './ui/Icones';
+import { Icon, SpriteIcones } from './ui/Icones';
 import { SeletorTema } from './ui/SeletorTema';
+import { NavEtapa } from './ui/TelaCabecalho';
 import '../estilos/styles.css';
 import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo proprio
 /* Os tokens entram DEPOIS da folha antiga, de proposito. As variaveis em si
@@ -16,6 +17,7 @@ import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo pro
    que o styles.css do MVP declara. Quando a folha antiga for podada, no fim da
    migracao, esta linha pode subir para o topo. */
 import '../styles/tokens.css';
+import './ui/shell.css';
 
 /* ---------------------------------------------------------------------------
    O painel da operação e as duas telas públicas que dependem do mesmo estado.
@@ -117,22 +119,22 @@ function BuscaGlobal({ setTab }) {
     const r = [];
     for (const c of state.coletas) {
       if (bate(c.coletor) || bate(c.local) || bate(c.material)) {
-        r.push({ tab: 'coleta', ico: '🧹', tit: `${c.material} · ${c.kg} kg`, sub: `${c.coletor} — ${c.local}` });
+        r.push({ tab: 'coleta', ico: 'scan', tit: `${c.material} · ${c.kg} kg`, sub: `${c.coletor} · ${c.local}` });
       }
     }
     for (const f of state.familias) {
       if (bate(f.resp) || bate(f.codigo) || (f.condicoes || []).some(c => bate(c.tipo))) {
-        r.push({ tab: 'carteira', ico: '👨‍👩‍👧', tit: f.resp, sub: `${f.criancas} criança(s) · saldo ${fmt(f.saldo)}` });
+        r.push({ tab: 'carteira', ico: 'guide', tit: f.resp, sub: `${f.criancas} criança(s) · saldo ${fmt(f.saldo)}` });
       }
     }
     for (const v of state.vendas) {
       if (bate(v.descricao) || bate(v.comprador) || bate(v.rastreio)) {
-        r.push({ tab: 'mercado', ico: '🛒', tit: v.descricao, sub: `${v.comprador} · ${fmt(v.valor)}` });
+        r.push({ tab: 'mercado', ico: 'coin', tit: v.descricao, sub: `${v.comprador} · ${fmt(v.valor)}` });
       }
     }
     for (const tx of [...state.transacoes].reverse()) {
       if (bate(tx.desc) || bate(tx.tipo) || bate(tx.signature)) {
-        r.push({ tab: 'fundo', ico: '🔗', tit: tx.desc, sub: `slot ${tx.slot} · ${trunc(tx.signature, 10)}` });
+        r.push({ tab: 'fundo', ico: 'shield', tit: tx.desc, sub: `slot ${tx.slot} · ${trunc(tx.signature, 10)}` });
       }
     }
     return r.slice(0, 8);
@@ -140,7 +142,7 @@ function BuscaGlobal({ setTab }) {
 
   return (
     <div className="busca-global" ref={caixa}>
-      <span className="busca-ico" aria-hidden="true">🔍</span>
+      <Icon name="search" className="busca-ico" />
       <input
         type="search" className="busca-campo" value={q} placeholder="Buscar coleta, família, peça ou transação…"
         aria-label="Busca global"
@@ -151,9 +153,9 @@ function BuscaGlobal({ setTab }) {
           {achados.length === 0 && <p className="busca-nada">Nada encontrado para “{q.trim()}”.</p>}
           {achados.map((a, i) => (
             <button key={i} className="busca-item" onClick={() => { setTab(a.tab); setAberta(false); setQ(''); }}>
-              <span className="busca-item-ico">{a.ico}</span>
+              <Icon name={a.ico} className="busca-item-ico" />
               <span className="busca-item-txt"><b>{a.tit}</b><small>{a.sub}</small></span>
-              <span className="busca-item-ir">abrir →</span>
+              <span className="busca-item-ir">abrir<Icon name="right" className="sm" /></span>
             </button>
           ))}
         </div>
@@ -183,7 +185,7 @@ function Notificacoes({ setTab }) {
       l.push({
         tab: 'fundo', cor: 'atencao',
         tit: `${recusadas} operação(ões) recusadas pelo servidor`,
-        sub: ultima ? String(ultima.motivo).slice(0, 90) : 'não serão reenviadas — veja Configurações',
+        sub: ultima ? String(ultima.motivo).slice(0, 90) : 'não serão reenviadas, veja Configurações',
       });
     }
     const cts = (state.contestacoes || []).filter(c => c.status === 'aberta');
@@ -201,7 +203,7 @@ function Notificacoes({ setTab }) {
     if (aguardando) l.push({ tab: 'validacao', cor: 'atencao', tit: `${aguardando} condição(ões) validada(s) sem repasse`, sub: 'precisa de proposta no cofre' });
     const props = state.propostas.filter(p => p.status === 'aguardando');
     for (const p of props) {
-      l.push({ tab: 'fundo', cor: 'info', tit: `Proposta #${p.id} com ${p.assinaturas.length}/2 assinaturas`, sub: `${fmt(p.valor)} — falta assinar` });
+      l.push({ tab: 'fundo', cor: 'info', tit: `Proposta #${p.id} com ${p.assinaturas.length}/2 assinaturas`, sub: `${fmt(p.valor)}, falta assinar` });
     }
     const pend = cond.filter(c => c.status === 'pendente').length;
     if (pend) l.push({ tab: 'carteira', cor: 'neutro', tit: `${pend} compromisso(s) sem evidência`, sub: 'agente de campo' });
@@ -211,7 +213,7 @@ function Notificacoes({ setTab }) {
   return (
     <div className="sino-wrap">
       <button className="sino" aria-label={`Notificações (${itens.length})`} onClick={() => setAberto(a => !a)}>
-        🔔{itens.length > 0 && <i className="sino-conta">{itens.length}</i>}
+        <Icon name="bell" />{itens.length > 0 && <i className="sino-conta">{itens.length}</i>}
       </button>
       {aberto && (
         <div className="sino-painel">
@@ -263,7 +265,7 @@ function Perfil() {
       const cfg = await nuvem.configurar();
       if (!cfg) throw new Error('Este aparelho não tem projeto de nuvem configurado (public/supabase.json). O app segue funcionando local.');
       const s = await auth.entrar(cfg, form.email.trim(), form.senha);
-      toast(`Sessão aberta: ${s.papel.nome} (${s.papel.papel}) 🔐`, 'info');
+      toast(`Sessão aberta: ${s.papel.nome} (${s.papel.papel})`, 'info');
       setForm({ email: '', senha: '' });
       setAberto(false);
     } catch (e2) {
@@ -276,19 +278,19 @@ function Perfil() {
 
   const sair = async () => {
     await auth.sair(await nuvem.configurar());
-    toast('Sessão encerrada. O app continua funcionando local. 👋', 'info');
+    toast('Sessão encerrada. O app continua funcionando local.', 'info');
     setAberto(false);
   };
 
   return (
     <div className="perfil-wrap">
       <button className="perfil" onClick={() => setAberto(a => !a)}>
-        <span className={'perfil-av' + (papel ? '' : ' anon')}>{papel ? iniciais : '🔓'}</span>
+        <span className={'perfil-av' + (papel ? '' : ' anon')}>{papel ? iniciais : <Icon name="lock" />}</span>
         <span className="perfil-txt">
           <b>{papel?.nome || 'Modo local'}</b>
           <small>{papel ? `${papel.papel} · ${papel.organizacao || 'operação'}` : 'sem sincronização'}</small>
         </span>
-        <span className="perfil-seta">▾</span>
+        <Icon name="right" className="perfil-seta sm" />
       </button>
       {aberto && (
         <div className="perfil-painel">
@@ -297,7 +299,7 @@ function Perfil() {
               <div className="perfil-linha"><span>Pessoa</span><b>{papel.nome}</b></div>
               <div className="perfil-linha"><span>E-mail</span><b className="hash">{sessao.usuario?.email}</b></div>
               <div className="perfil-linha"><span>Papel</span><b>{papel.papel}</b></div>
-              <div className="perfil-linha"><span>Organização</span><b>{papel.organizacao || '—'}</b></div>
+              <div className="perfil-linha"><span>Organização</span><b>{papel.organizacao || 'não informada'}</b></div>
               <div className="perfil-linha">
                 <span>Assina no cofre</span>
                 <b>{papel.signatario ? `sim, como ${papel.signatario}` : 'não'}</b>
@@ -312,7 +314,7 @@ function Perfil() {
             <>
               <p className="perfil-nota">
                 <b>O app está rodando local.</b> Sem sessão ele não lê nem envia nada
-                para a base compartilhada — e funciona inteiro assim, inclusive offline.
+                para a base compartilhada, e funciona inteiro assim, inclusive offline.
                 Entrar serve para sincronizar entre os aparelhos da operação.
               </p>
               <form onSubmit={submeter}>
@@ -368,26 +370,17 @@ function SeletorIdioma({ tab }) {
   );
 }
 
-/* navegação sequencial da jornada, no rodapé de cada tela */
+/* Navegação sequencial da jornada, no rodapé de cada tela. A ordem das TABS é
+   a ordem do ciclo, então "anterior" e "próxima" são a etapa de fato. */
 function NavJornada({ tab, setTab }) {
   const i = TABS.findIndex(t => t[0] === tab);
-  const ant = TABS[i - 1];
-  const prox = TABS[i + 1];
+  const comoEtapa = e => (e ? { id: e[0], titulo: e[2] } : null);
   return (
-    <div className="nav-jornada">
-      {ant ? (
-        <button className="nav-passo" onClick={() => setTab(ant[0])}>
-          <small>← etapa anterior</small>
-          <b>{ant[1]} {ant[2]}</b>
-        </button>
-      ) : <span />}
-      {prox ? (
-        <button className="nav-passo dir" onClick={() => setTab(prox[0])}>
-          <small>próxima etapa →</small>
-          <b>{prox[1]} {prox[2]}</b>
-        </button>
-      ) : <span />}
-    </div>
+    <NavEtapa
+      anterior={comoEtapa(TABS[i - 1])}
+      proxima={comoEtapa(TABS[i + 1])}
+      aoIr={setTab}
+    />
   );
 }
 
@@ -413,7 +406,7 @@ function Painel({ tab, setTab }) {
   const ligarGravacao = () => {
     setGravando(true);
     setTourAberto(false);
-    toast('Modo gravação ligado 🎥 — controles de simulação ocultos', 'info');
+    toast('Modo gravação ligado: controles de simulação ocultos', 'info');
   };
 
   const fecharTour = persistir => {
@@ -427,7 +420,7 @@ function Painel({ tab, setTab }) {
   const resetar = () => {
     if (confirm('Restaurar dados iniciais da demo?')) {
       dispatch({ type: 'RESET' });
-      toast('Demo restaurada ao estado inicial 🌱', 'info');
+      toast('Demo restaurada ao estado inicial', 'info');
     }
   };
 
@@ -440,7 +433,7 @@ function Painel({ tab, setTab }) {
     a.download = `raizes-do-futuro-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
-    toast('Dados exportados em JSON 📄', 'info');
+    toast('Dados exportados em JSON', 'info');
   };
 
   const grupos = [];
@@ -449,73 +442,110 @@ function Painel({ tab, setTab }) {
     (g || (grupos.push({ nome: t[4], itens: [] }), grupos[grupos.length - 1])).itens.push(t);
   }
   const atual = TABS.find(t => t[0] === tab);
+  const indiceAtual = TABS.findIndex(x => x[0] === tab);
 
   return (
-    <div className={'app-shell painel-raizes' + (menuAberto ? ' menu-aberto' : '')}>
+    <div className={'painel-raizes pn-app' + (menuAberto ? ' menu-aberto' : '')}>
       <SpriteIcones />
-      <aside className="lateral">
-        <div className="lat-marca">
-          <img className="logo-emblema" src="./imagens/emblema.png" alt="Raízes do Futuro" />
+      <aside className="pn-rail">
+        <div className="pn-brand">
+          <span className="pn-seal" aria-hidden="true">
+            <img src="./imagens/emblema.png" alt="" />
+          </span>
           <div>
-            <h1>Raízes do Futuro</h1>
-            <p>{t('Boipeba · Cairu/BA')}</p>
+            <p className="pn-brand-name">Raízes do Futuro</p>
+            <p className="pn-brand-sub">{t('Boipeba · Cairu/BA')}</p>
           </div>
         </div>
 
-        <nav className="tabs">
+        {/* A jornada, e não uma lista de links: número em círculo, espinha
+            ligando as etapas, e as já percorridas com o círculo contornado. */}
+        <nav className="pn-journey" aria-label={t('Etapas do ciclo')}>
           {grupos.map(g => (
             <React.Fragment key={g.nome}>
-              <span className="lat-grupo">{t(g.nome)}</span>
-              {g.itens.map(([id, ico, rot, sub]) => (
-                <button key={id}
-                  className={(tab === id ? 'on' : '') + (alvo === id ? ' tour-alvo' : '')}
-                  onClick={() => setTab(id)}>
-                  <span className="tab-ico">
-                    {id === 'fundo' ? <img src="./logos/SOL-logo.png" alt="Solana" style={{ width: 16, height: 16, objectFit: 'contain' }} /> : ico}
-                  </span>
-                  <span className="tab-txt">
-                    <span className="tab-rot">{t(rot)}</span>
-                    <span className="tab-sub">{TABS.findIndex(x => x[0] === id) + 1} · {t(sub)}</span>
-                  </span>
-                </button>
-              ))}
+              <div className="pn-jgroup">{t(g.nome)}</div>
+              <ul className="pn-jlist">
+                {g.itens.map(([id, , rot, sub]) => {
+                  const n = TABS.findIndex(x => x[0] === id);
+                  return (
+                    <li key={id} className={'pn-jitem' + (n < indiceAtual ? ' done' : '')}>
+                      <button
+                        type="button"
+                        className={'pn-jbtn' + (alvo === id ? ' tour-alvo' : '')}
+                        aria-current={tab === id ? 'true' : undefined}
+                        onClick={() => setTab(id)}
+                      >
+                        <span className="pn-jnum">{n + 1}</span>
+                        <span className="pn-jlabel">{t(rot)}</span>
+                        <span className="pn-jmeta">{t(sub)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </React.Fragment>
           ))}
         </nav>
 
-        <div className="lat-rodape">
-          <div className="lat-rede">
-            <i className="luz ok" />
-            <span>{t('Cofre na Solana devnet')}</span>
+        <div className="pn-netfoot">
+          <div className="pn-netline">
+            <span className="pn-pulse" aria-hidden="true" />
+            {t('Cofre real na Solana devnet')}
           </div>
-          <p className="so-sim">{t('Jornada do app simulada · cofre 2-de-3 real')}</p>
+          <p className="pn-netnote">
+            {t('Multisig 2-de-3 assinando de verdade. A jornada do app é simulada para demonstração.')}
+          </p>
         </div>
       </aside>
 
-      <div className="principal">
-        <header className="top">
-          <button className="menu-hamb" aria-label="Abrir menu" onClick={() => setMenuAberto(a => !a)}>☰</button>
-          <div className="top-titulo">
-            <span className="top-trilha">{t(atual?.[4] || '')}</span>
-            <h2 className="top-h">{atual?.[1]} {t(atual?.[2] || '')}</h2>
+      <div className="pn-main">
+        <header className="pn-topbar">
+          <button
+            type="button"
+            className="menu-hamb pn-menu-btn"
+            aria-label={t('Abrir menu')}
+            onClick={() => setMenuAberto(a => !a)}
+          >
+            <Icon name="menu" />
+          </button>
+          {/* Contexto antes de tudo: em que area estou, e que tela e esta. */}
+          <div className="pn-ctx">
+            <div className="eyebrow">{t(atual?.[4] || '')}</div>
+            <h2 className="now">{t(atual?.[2] || '')}</h2>
           </div>
           <BuscaGlobal setTab={setTab} />
           <div className="top-acoes">
             <SeletorIdioma tab={tab} />
             <SeletorTema />
-            <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>{t('❔ Como funciona')}</button>
+            <button
+              type="button"
+              className="pn-tbtn"
+              onClick={() => { setTourIdx(0); setTourAberto(true); }}
+            >
+              <Icon name="help" />
+              <span className="rotulo-longo">{t('Como funciona')}</span>
+            </button>
             <Notificacoes setTab={setTab} />
             <Perfil />
           </div>
+          {/* Status da rede: ponto pulsante, slot e contagem de transações, tudo
+              lido do estado, e não escrito à mão. */}
+          <div className="pn-netpill">
+            <span className="pn-pulse" aria-hidden="true" />
+            <div>
+              <b>{t('Devnet ativa')}</b>
+              <span>slot {state.slot} · {state.transacoes.length} {t('transações')}</span>
+            </div>
+          </div>
         </header>
 
-        <div className="shell">
+        <div className="pn-stage">
           <Suspense fallback={<Carregando />}>
           <div key={tab} className="vista">
             {tab === 'dashboard' && <Dashboard />}
             {tab === 'coleta' && <Coleta />}
             {tab === 'validacao' && <Validacao />}
-            {tab === 'conferencia' && <Conferencia />}
+            {tab === 'conferencia' && <Conferencia embutido />}
             {tab === 'mercado' && <Mercado />}
             {tab === 'fundo' && <Fundo />}
             {tab === 'cadastro' && <Cadastro />}
@@ -526,11 +556,12 @@ function Painel({ tab, setTab }) {
 
           <NavJornada tab={tab} setTab={setTab} />
 
-          <footer>
-            <span className="rodape-txt">
-              Plataforma Raízes do Futuro · Youth Challenge Blockchain — UNICEF Brasil
-              <small>Cofre multisig real na Solana devnet · jornada do app simulada</small>
-            </span>
+          <footer className="pn-footer">
+            <p>
+              <b>Plataforma Raízes do Futuro</b> · vencedor do Youth Challenge Blockchain (UNICEF Brasil)
+              <br />
+              Cofre multisig real na Solana devnet · jornada do app simulada
+            </p>
             {/* Só quem está de pé.
                 A Rede Recy saiu desta faixa: o FundoInfancia.sol foi escrito no
                 padrão dela e auditado, mas NÃO está implantado (o cabeçalho do
@@ -540,23 +571,29 @@ function Painel({ tab, setTab }) {
                 o proxy existir, o logo volta.
                 Caminhos relativos: o absoluto `/logos/…` quebra se o MVP for
                 publicado sob subcaminho (GitHub Pages). */}
-            <div className="rodape-parceiros">
-              <img src="./logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá — presença territorial e validação social" />
-              <img src="./logos/Detrash.png" alt="DeTrash" title="DeTrash — metodologia de validação ambiental" />
-              <img src="./logos/SOL-logo.png" alt="Solana" title="Solana — cofre multisig 2-de-3 na devnet" />
+            <div className="pn-footer-logos">
+              <img src="./logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá: presença territorial e validação social" />
+              <img src="./logos/Detrash.png" alt="DeTrash" title="DeTrash: metodologia de validação ambiental" />
+              <img src="./logos/SOL-logo.png" alt="Solana" title="Solana: cofre multisig 2-de-3 na devnet" />
             </div>
-            <div className="rodape-acoes">
-              <button className="acao sec" onClick={exportar}>⭳ {t('Exportar dados')}</button>
+            <div className="pn-fbtns">
+              <button type="button" className="pn-tbtn" onClick={exportar}>
+                <Icon name="download" />
+                {t('Exportar dados')}
+              </button>
               <details className="painel-config">
-                <summary>⚙︎ {t('Configurações')}</summary>
+                <summary className="pn-tbtn">
+                  <Icon name="gear" />
+                  {t('Configurações')}
+                </summary>
                 <div className="painel-config-corpo">
                   <p className="mini">Controles de apresentação e de simulação.</p>
                   {recusadasApp > 0 && (
                     <div className="recusadas-lista">
-                      <b>⚠️ {recusadasApp} operação(ões) recusadas</b>
+                      <b>{recusadasApp} operação(ões) recusadas</b>
                       <p className="mini">
-                        O servidor negou em definitivo — não serão reenviadas. Saíram da fila
-                        para não travar o resto do trabalho.
+                        O servidor negou em definitivo, e elas não serão reenviadas. Saíram da
+                        fila para não travar o resto do trabalho.
                       </p>
                       {(listaRecusadasApp?.() || []).slice(-4).reverse().map((r, i) => (
                         <div key={i} className="mini recusada-item">
@@ -565,7 +602,7 @@ function Painel({ tab, setTab }) {
                       ))}
                     </div>
                   )}
-                  <button className="acao sec bloco" onClick={ligarGravacao}>🎥 Modo gravação</button>
+                  <button className="acao sec bloco" onClick={ligarGravacao}>Modo gravação</button>
                   <button className="acao sec bloco" onClick={resetar}>Resetar demo</button>
                 </div>
               </details>
@@ -587,7 +624,7 @@ function Painel({ tab, setTab }) {
       )}
 
       {gravando && (
-        <button className="sair-gravacao" title="Sair do modo gravação" onClick={() => setGravando(false)}>🎥 ✕</button>
+        <button className="sair-gravacao" title="Sair do modo gravação" onClick={() => setGravando(false)}><Icon name="close" /></button>
       )}
 
       <DemoNarrador />
@@ -635,7 +672,7 @@ export default function PainelApp({ rota }) {
                   fim: o link dizia "Voltar ao painel do projeto" e abria a página
                   de apresentação. Agora aponta para onde o painel realmente está.
                   Via hash, para o botão de voltar do navegador continuar servindo. */}
-              <a className="voltar-painel" href="#/painel">← Voltar ao painel do projeto</a>
+              <a className="voltar-painel" href="#/painel">Voltar ao painel do projeto</a>
             </div>
           </DemoProvider>
         </ToastProvider>

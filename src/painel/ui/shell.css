@@ -1,0 +1,373 @@
+/* ============================================================================
+   O shell do painel: lateral, barra do topo, palco e rodapé.
+
+   A lateral não é uma lista de links. As nove telas são uma sequência real do
+   ciclo (resíduo, coleta, validação, conferência, mercado, cofre, cadastro,
+   família, app), e a navegação precisa dizer isso: número em círculo, espinha
+   ligando um ao outro, e as etapas já vistas com o círculo contornado. Quem
+   abre o painel no meio entende onde está sem ler nada.
+   ========================================================================= */
+
+.pn-app {
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* ------------------------------------------------------------- lateral --- */
+.pn-rail {
+  background: var(--rail-bg);
+  border-right: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pn-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.pn-seal {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--seal-bg);
+  border: 1px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.pn-seal img { width: 26px; height: 26px; object-fit: contain; display: block; }
+.pn-brand-name {
+  font-family: var(--fu);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--t1);
+}
+.pn-brand-sub {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--t4);
+  text-transform: uppercase;
+  margin: 3px 0 0;
+}
+
+.pn-journey {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0 10px;
+}
+.pn-jgroup {
+  padding: 0 20px;
+  margin: 14px 0 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-jgroup:first-child { margin-top: 2px; }
+.pn-jlist {
+  position: relative;
+  margin: 0;
+  padding: 0 12px 0 0;
+  list-style: none;
+}
+.pn-jitem { position: relative; }
+
+/* A espinha que liga as etapas. Nasce no meio do primeiro círculo e morre no
+   meio do último, para não ficar um traço solto acima e abaixo do grupo. */
+.pn-jitem::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-2);
+}
+.pn-jitem:first-child::before { top: 50%; }
+.pn-jitem:last-child::before { bottom: 50%; }
+
+.pn-jbtn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  padding: 7px 10px 7px 20px;
+  border-radius: 0 var(--rm) var(--rm) 0;
+  color: var(--t2);
+  font: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+.pn-jbtn:hover { background: var(--tide); color: var(--t1); }
+.pn-jnum {
+  grid-row: 1 / 3;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--deep);
+  font-family: var(--fm);
+  font-size: 10.5px;
+  display: grid;
+  place-items: center;
+  color: var(--t3);
+  position: relative;
+  z-index: 1;
+}
+.pn-jlabel { font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; }
+.pn-jmeta { font-size: 10.5px; color: var(--t4); letter-spacing: 0.01em; }
+
+/* Item ativo: um dos quatro lugares do verde da marca. */
+.pn-jbtn[aria-current="true"] {
+  background: var(--tide);
+  color: var(--foam);
+  box-shadow: inset 2px 0 0 var(--accent-ink);
+}
+.pn-jbtn[aria-current="true"] .pn-jnum {
+  background: var(--accent-ink);
+  color: var(--accent-ink-on);
+  border-color: var(--accent-ink);
+  font-weight: 600;
+}
+.pn-jbtn[aria-current="true"] .pn-jlabel { font-weight: 700; }
+.pn-jbtn[aria-current="true"] .pn-jmeta { color: var(--accent-ink); }
+.pn-jitem.done .pn-jnum { border-color: var(--line-3); color: var(--t2); }
+
+.pn-netfoot { border-top: 1px solid var(--line); padding: 14px 20px 16px; }
+.pn-netline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--foam);
+  font-weight: 600;
+}
+.pn-netnote { font-size: 10.5px; color: var(--t4); margin: 5px 0 0; line-height: 1.45; }
+
+/* Ponto de rede ativa: o quarto e último lugar do verde da marca. */
+.pn-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--accent-ink);
+  animation: pn-pulse 2.6s infinite;
+}
+@keyframes pn-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-ink) 48%, transparent); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ---------------------------------------------------------- barra topo --- */
+.pn-main { min-width: 0; display: flex; flex-direction: column; }
+.pn-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 28px;
+  background: var(--topbar-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.pn-ctx { min-width: 0; }
+.pn-ctx .eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.pn-ctx .now {
+  font-family: var(--fu);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  color: var(--t1);
+}
+
+.pn-search { flex: 1; min-width: 110px; max-width: 360px; position: relative; }
+.pn-search input {
+  width: 100%;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px 8px 34px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--t1);
+  box-shadow: none;
+}
+.pn-search input::placeholder { color: var(--t4); }
+.pn-search input:focus {
+  outline: none;
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 22%, transparent);
+}
+.pn-search > .ic {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+  pointer-events: none;
+}
+
+.pn-tbtn {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  color: var(--t2);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  flex: none;
+}
+.pn-tbtn:hover { border-color: var(--line-3); color: var(--t1); }
+
+.pn-bell { position: relative; }
+.pn-bell .dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--warn);
+  color: var(--abyss);
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-family: var(--fm);
+  border: 2px solid var(--abyss);
+}
+
+.pn-netpill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tide);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 6px 13px;
+  flex: none;
+}
+.pn-netpill b {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--foam);
+  display: block;
+}
+.pn-netpill span { font-size: 10px; color: var(--t4); }
+
+/* O botão de menu só existe quando a lateral vira stepper, abaixo de 900px. */
+.pn-menu-btn { display: none; }
+
+/* -------------------------------------------------------------- palco --- */
+.pn-stage {
+  padding: 26px 28px 8px;
+  max-width: 1180px;
+  width: 100%;
+}
+.pn-screen { display: flex; flex-direction: column; gap: 22px; }
+.pn-screen > * { min-width: 0; }
+
+.pn-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 30px;
+  padding: 20px 28px 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+.pn-footer p { font-size: 11.5px; color: var(--t4); line-height: 1.6; margin: 0; }
+.pn-footer b { color: var(--t2); font-weight: 600; }
+.pn-footer-logos { display: flex; align-items: center; gap: 14px; }
+.pn-footer-logos img {
+  height: 20px;
+  width: auto;
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+.pn-fbtns { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+
+/* ---------------------------------------------------------- responsivo --- */
+@media (max-width: 900px) {
+  .pn-app { grid-template-columns: minmax(0, 1fr); }
+
+  /* A lateral vira um stepper horizontal rolável. O número continua ali, que é
+     o que mantém a leitura de sequência quando a espinha não cabe. */
+  .pn-rail {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .pn-journey {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px 14px;
+    gap: 8px;
+    flex: none;
+  }
+  .pn-jgroup { display: none; }
+  .pn-jlist { display: flex; gap: 8px; padding: 0; }
+  .pn-jitem::before { display: none; }
+  .pn-jbtn {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    grid-template-columns: auto auto;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .pn-jnum { grid-row: 1; }
+  .pn-jmeta { display: none; }
+  .pn-netfoot { display: none; }
+
+  .pn-topbar { padding: 10px 16px; flex-wrap: wrap; }
+  .pn-search { order: 5; max-width: none; flex-basis: 100%; }
+  .pn-stage { padding: 20px 16px 8px; }
+  .pn-footer { padding: 18px 16px 28px; }
+}
+
+@media (max-width: 620px) {
+  .pn-ctx .now { font-size: 16px; }
+  .pn-tbtn .rotulo-longo { display: none; }
+  .pn-netpill { padding: 6px 10px; }
+  .pn-netpill span { display: none; }
+}
