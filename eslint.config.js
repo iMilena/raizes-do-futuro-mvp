@@ -45,6 +45,10 @@ const regrasReact = {
   'react-hooks/static-components': 'warn',
   'react-hooks/immutability': 'warn',
   'react/no-unescaped-entities': 'warn',
+  /* O plugin pede `fetchPriority` em camelCase, que é a convenção do React 19.
+     Este projeto roda o 18, e lá o camelCase não é reconhecido: ele avisa no
+     console a cada foto e não chega ao DOM. Em minúsculas o atributo passa. */
+  'react/no-unknown-property': ['error', { ignore: ['fetchpriority'] }],
   'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 };
 
