@@ -102,14 +102,14 @@ try {
 
   const antesColetas = await contarNuvem('coletas');
 
-  await A.ev('return __t.clicar("nav.tabs button", "Coletor")');
+  await A.ev('return __t.clicar("nav.pn-journey button", "Coletor")');
   await espera(500);
   await A.ev(AJUDANTES + ' return 1;');
-  await A.ev(`return __t.preencher(".card.destaque input", ${JSON.stringify(MARCA)}, 0)`);
-  await A.ev('return __t.preencher(".card.destaque input[type=number]", "77")');
-  await A.ev('return __t.preencher(".card.destaque input", "Praia de Cueira", 2)');
+  await A.ev(`return __t.preencher(".pn-card input", ${JSON.stringify(MARCA)}, 0)`);
+  await A.ev('return __t.preencher(".pn-card input[type=number]", "77")');
+  await A.ev('return __t.preencher(".pn-card input", "Praia de Cueira", 2)');
   await espera(300);
-  ok(await A.ev('return __t.clicar(".card.destaque button.acao", "Enviar para validação") === true'),
+  ok(await A.ev('return __t.clicar(".pn-card .pn-btn", "Enviar para validação") === true'),
     'A consegue registrar coleta mesmo sem rede (local-first)');
   await espera(1200);
   ok(await A.ev(`return __t.tem(${JSON.stringify(MARCA)})`), 'a coleta aparece na tela de A');
@@ -122,16 +122,16 @@ try {
   ok(await contarNuvem('coletas') === antesColetas, 'e nada foi para a nuvem enquanto offline');
 
   secao('3. Aparelho B trabalha normalmente, online');
-  await B.ev('return __t.clicar("nav.tabs button", "Cofre Multisig")');
+  await B.ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
   await espera(700);
   await B.ev(AJUDANTES + ' return 1;');
   const antesAss = await contarNuvem('assinaturas');
-  const temProposta = await B.ev('return __t.conta(".signatario button") > 0');
+  const temProposta = await B.ev('return __t.conta(".pn-signatario button") > 0');
   if (!temProposta) {
     console.log('     (sem proposta aberta na nuvem — B faz uma validação em vez de assinar)');
   }
   const assinou = temProposta
-    ? await B.ev('return __t.clicar(".signatario button", "Assinar como")')
+    ? await B.ev('return __t.clicar(".pn-signatario button", "Assinar como")')
     : false;
   ok(temProposta ? assinou === true : true, temProposta
     ? 'B assina uma proposta no cofre'

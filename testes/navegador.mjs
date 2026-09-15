@@ -109,7 +109,7 @@ window.__t = {
  * escondendo que nada renderizou. Um caso desses só apareceu quando a asserção
  * seguinte procurou texto e falhou.
  */
-async function esperarApp(seletor = '.app-shell, .fam-tela, .rastreio-tela', tentativas = 40) {
+async function esperarApp(seletor = '.pn-app, .fam-tela, .rastreio-tela', tentativas = 40) {
   for (let i = 0; i < tentativas; i++) {
     const n = await ev(`return document.querySelectorAll(${JSON.stringify(seletor)}).length`);
     if (n > 0) return true;
@@ -205,8 +205,8 @@ try {
   for (let n = 0; n < 9; n++) {
     const info = await ev(`
       const t = document.querySelector('.tour');
-      const alvo = document.querySelector('nav.tabs button.tour-alvo');
-      const ativa = document.querySelector('nav.tabs button.on');
+      const alvo = document.querySelector('nav.pn-journey button.tour-alvo');
+      const ativa = document.querySelector('nav.pn-journey button[aria-current="true"]');
       return { titulo: t.querySelector('b').innerText, contador: t.querySelector('.tour-contador').innerText,
                alvo: alvo ? alvo.innerText.trim() : null, ativa: ativa ? ativa.innerText.trim() : null,
                botao: [...t.querySelectorAll('button.acao')].pop().innerText };
@@ -233,7 +233,7 @@ try {
   ok(await ev('return __t.conta(".tour") === 0'), 'não reabre depois de concluído');
 
   const diagTour = await ev(`
-    const b = document.querySelector('.btn-tour');
+    const b = document.querySelector('.pn-tbtn');
     return { existe: !!b, display: b ? getComputedStyle(b).display : null,
              texto: b ? b.innerText : null, largura: window.innerWidth,
              classesBody: document.body.className, hash: location.hash };
@@ -241,7 +241,7 @@ try {
   ok(await ev('return __t.tem("Como funciona")'),
     `botão "❔ Como funciona" no topo${diagTour.existe ? '' : ' — ' + JSON.stringify(diagTour)}`);
   if (!diagTour.existe || diagTour.display === 'none') console.log('    diag: ' + JSON.stringify(diagTour));
-  await ev('return __t.clicar(".btn-tour")');
+  await ev('return __t.clicar(".pn-tbtn")');
   await espera(400);
   ok(await ev('return __t.conta(".tour") === 1 && __t.tem("1 de 9")'), 'reabre pelo botão, do começo');
 
@@ -255,7 +255,7 @@ try {
   await ev('return document.querySelectorAll(".tour-pontos i")[5].click(), 1;');
   await espera(400);
   ok(await ev('return __t.tem("6 de 9")'), 'clicar num ponto salta para o passo');
-  const abaNoPasso6 = await ev('const b = document.querySelector("nav.tabs button.on"); return b.innerText.trim();');
+  const abaNoPasso6 = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=true]"); return b.innerText.trim();');
   ok(/Cofre Multisig/.test(abaNoPasso6), `salto também troca a aba (${abaNoPasso6})`);
 
   // teclado
@@ -293,7 +293,7 @@ try {
   await espera(1200);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.conta(".tour") === 1'), 'tour aberto antes de iniciar a demo');
-  await ev('return __t.clicar(".btn-demo", "Ver o ciclo completo")');
+  await ev('return __t.clicar(".pn-btn", "Ver o ciclo completo")');
   await espera(900);
   ok(await ev('return __t.conta(".tour") === 0'), 'iniciar a demo guiada fecha o tour');
   ok(await ev('return __t.conta(".demo-narrador") === 1'), 'narrador da demo assume a tela');
@@ -312,65 +312,72 @@ try {
   ok(await ev('return __t.tem("Raízes do Futuro")'), 'cabeçalho presente');
   ok(await ev('return __t.tem("Boipeba")'), 'cabeçalho identifica o piloto');
   ok(await ev('return __t.tem("Solana")'), 'menciona Solana');
-  ok(await ev('return __t.conta(".grafico svg") >= 2'), '2 gráficos SVG (barras + donut)');
-  ok(await ev('return __t.conta(".grafico svg rect.barra-anim") >= 2'), 'barras: uma por semana com coleta');
-  ok(await ev('return __t.conta(".donut-legenda li") >= 2'), 'donut com legenda por fonte de receita');
+  /* O donut virou barra horizontal: comparar fatias de pizza é mais difícil
+     do que comparar comprimentos, e a legenda ao lado obrigava a ir e voltar
+     entre cor e nome. O que se afirma continua sendo o mesmo: há um gráfico de
+     quilos por semana e um de receita por fonte, cada um com mais de uma
+     série. */
+  ok(await ev('return __t.conta(".pn-chart") >= 1'), 'gráfico de quilos por semana em SVG');
+  ok(await ev('return __t.conta(".pn-chart .pn-bar") >= 2'), 'barras: uma por semana com coleta');
+  ok(await ev('return __t.conta(".pn-hbar") >= 2'), 'receita por fonte, uma barra por fonte');
   ok(await ev('return __t.tem("Ver o ciclo completo")'), 'botão do modo demo presente');
-  ok(await ev('return __t.conta("nav.tabs button") === 8'), '8 abas (inclui Cadastro e App da Família)');
+  ok(await ev('return __t.conta("nav.pn-journey button") === 9'), '9 etapas (inclui Conferência, Cadastro e App da Família)');
 
   /* ---------- 2. cofre multisig ---------- */
   secao('2. Cofre multisig — assinaturas 2-de-3');
-  ok(await ev('return __t.clicar("nav.tabs button", "Cofre Multisig")'), 'abre a aba do cofre');
+  ok(await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")'), 'abre a aba do cofre');
   await espera(350);
-  ok(await ev('return __t.tem("Fundo Infância — cofre multisig")'), 'título novo do cofre');
+  ok(await ev('return __t.tem("Fundo Infância no cofre multisig")'), 'título novo do cofre');
   ok(await ev('return /proposta #\\d+/.test(__t.txt())'), 'proposta de exemplo da seed aparece');
-  ok(await ev('return __t.conta(".signatario") === 3'), '3 signatários listados');
+  ok(await ev('return __t.conta(".pn-signatario") === 3'), '3 signatários listados');
   ok(await ev('return __t.tem("Instituto Vivá") && __t.tem("DeTrash") && __t.tem("Representante Comunitário")'), 'os 3 nomes corretos');
-  ok(await ev('return __t.conta(".signatario.assinou") === 1'), '1 assinatura já coletada na seed');
-  ok(await ev('return __t.tem("1/2 assinaturas")'), 'contador mostra 1/2');
+  ok(await ev('return __t.conta(".pn-signatario.assinou") === 1'), '1 assinatura já coletada na seed');
+  ok(await ev('return __t.tem("1 de 2 assinaturas")'), 'contador mostra 1 de 2');
   ok(await ev('return __t.tem("Assinar como DeTrash")'), 'botão "Assinar como [nome]" presente');
-  ok(await ev('return __t.conta(".avatar") === 3'), 'os 3 signatários têm avatar/chip');
+  ok(await ev('return __t.conta(".pn-avatar") === 3'), 'os 3 signatários têm avatar/chip');
 
-  await ev('return __t.clicar(".signatario button", "Assinar como DeTrash")');
+  await ev('return __t.clicar(".pn-signatario button", "Assinar como DeTrash")');
   await espera(700);
   ok(await ev('return __t.tem("cofre executou a transferência")'), 'ao atingir 2/3 executa com animação');
-  ok(await ev('return __t.conta(".proposta.executando") === 1'), 'card recebe a classe de execução');
+  ok(await ev('return __t.conta(".pn-proposta.executando") === 1'), 'card recebe a classe de execução');
   ok(await ev('return __t.tem("já liberado às famílias")'), 'KPI de liberado presente');
 
   /* ---------- 3. explorador de transações ---------- */
   secao('3. Explorador de transações estilo Solana');
   ok(await ev('return __t.tem("Explorador de transações")'), 'seção do explorador');
-  ok(await ev('return __t.conta(".tx") > 5'), 'lista de transações renderizada');
+  ok(await ev('return __t.conta(".pn-tx") > 5'), 'lista de transações renderizada');
   ok(await ev('return __t.tem("LIBERAÇÃO") && __t.tem("PROPOSTA") && __t.tem("ASSINATURA")'), 'tipos PROPOSTA/ASSINATURA/LIBERAÇÃO visíveis');
-  ok(await ev('return __t.conta(".tx-slot .slot-num") > 5'), 'cada transação mostra o slot');
+  ok(await ev('return __t.conta(".pn-tx-slot b") > 5'), 'cada transação mostra o slot');
   ok(await ev('return /[1-9A-HJ-NP-Za-km-z]{10}…[1-9A-HJ-NP-Za-km-z]{10}/.test(__t.txt())'), 'signature truncada em base58');
   ok(!(await ev('return /0x[0-9a-f]{16}/.test(__t.txt())')), 'nenhum hash no formato 0x antigo');
 
-  await ev('return __t.clicar(".tx")');
+  await ev('return __t.clicar(".pn-tx")');
   await espera(400);
   ok(await ev('return __t.conta(".modal") === 1'), 'clique abre o modal de detalhes');
   ok(await ev('const t = __t.txt().toLowerCase(); return t.includes("signature") && t.includes("transação anterior")'),
     'modal mostra signature e a anterior (cadeia)');
   ok(await ev('return __t.tem("Taxa") && __t.tem("SOL")'), 'modal mostra a taxa em SOL');
   ok(await ev('return __t.tem("Finalizada")'), 'modal mostra status finalizada');
-  const sigs = await ev('return [...document.querySelectorAll(".bloco-det p.hash")].map(e => e.innerText.trim().length)');
+  /* A signature saiu do parágrafo selecionável e virou chip com botão de
+     copiar. O texto completo continua em tela: é o que esta linha mede. */
+  const sigs = await ev('return [...document.querySelectorAll(".pn-bloco-det .pn-hashchip > span")].map(e => e.innerText.trim().length)');
   ok(sigs.length >= 2 && sigs.every(n => n === 88), `signatures completas com 88 chars (${sigs.join(', ')})`);
   await ev('return __t.clicar(".modal-x")');
   await espera(300);
   ok(await ev('return __t.conta(".modal") === 0'), 'modal fecha');
-  await ev('return __t.clicar(".filtro", "RECEITA")');
+  await ev('return __t.clicar(".pn-filtro", "RECEITA")');
   await espera(300);
-  ok(await ev('return __t.conta(".filtro.on") === 1'), 'filtro por tipo funciona');
+  ok(await ev('return __t.conta(".pn-filtro.on") === 1'), 'filtro por tipo funciona');
 
   /* ---------- 4. mercado e split animado ---------- */
   secao('4. Mercado — animação do split 60/25/15');
-  await ev('return __t.clicar("nav.tabs button", "Mercado")');
+  await ev('return __t.clicar("nav.pn-journey button", "Mercado")');
   await espera(350);
   ok(await ev('return __t.tem("Nenhuma venda nesta sessão")'), 'estado vazio orientado antes da 1ª venda');
-  await ev('return __t.clicar(".produto button", "Comprar")');
+  await ev('return __t.clicar(".pn-prod button", "Comprar")');
   await espera(300);
-  ok(await ev('return __t.conta(".split-anim") === 1'), 'animação do split aparece após a venda');
-  ok(await ev('return __t.conta(".split-linha") === 3'), '3 barras (60/25/15)');
+  ok(await ev('return __t.conta(".pn-split-anim") === 1'), 'animação do split aparece após a venda');
+  ok(await ev('return __t.conta(".pn-split-linha") === 3'), '3 barras (60/25/15)');
   ok(await ev('return __t.tem("Renda direta") && __t.tem("Fundo Infância") && __t.tem("Operação")'), 'os 3 destinos rotulados');
   /* O NÚMERO NÃO PODE DEPENDER DA ANIMAÇÃO.
      requestAnimationFrame não roda em aba de segundo plano, janela encoberta ou
@@ -387,9 +394,9 @@ try {
   await ev('window.__q = 0; requestAnimationFrame(function () { window.__q++; }); return true');
   await espera(200);
   const temQuadros = await ev('return window.__q > 0');
-  const v1 = await ev('return document.querySelectorAll(".split-valor")[0].innerText');
+  const v1 = await ev('return document.querySelectorAll(".pn-split-valor")[0].innerText');
   await espera(900);
-  const v2 = await ev('return document.querySelectorAll(".split-valor")[0].innerText');
+  const v2 = await ev('return document.querySelectorAll(".pn-split-valor")[0].innerText');
   if (temQuadros) {
     ok(v1 !== v2, `contadores animam ("${v1}" → "${v2}")`);
   } else {
@@ -402,7 +409,7 @@ try {
   /* A tela não pode atribuir o split a um contrato: ele é código do app. O que é
      garantido on-chain é a liberação do fundo (2-de-3), na aba Cofre. */
   ok(await ev('return !__t.tem("Divisão executada pelo contrato")'), 'não atribui o split a um contrato inexistente');
-  ok(await ev('return document.querySelectorAll(".split-valor")[0].innerText.includes("48,00")'), '60% de R$ 80 = R$ 48,00');
+  ok(await ev('return document.querySelectorAll(".pn-split-valor")[0].innerText.includes("48,00")'), '60% de R$ 80 = R$ 48,00');
 
   /* O fallback sem rAF é exercido de propósito na seção 16, no fim da suíte:
      provar isso exige uma venda nova, e uma venda a mais aqui mexe na renda que
@@ -411,57 +418,62 @@ try {
 
   /* ---------- 5. coleta e validação ---------- */
   secao('5. Coletor → Instituto Vivá');
-  await ev('return __t.clicar("nav.tabs button", "Coletor")');
+  await ev('return __t.clicar("nav.pn-journey button", "Coletor")');
   await espera(300);
-  await ev('return __t.preencher(".card.destaque input", "Seu Zé", 0)');
-  await ev('return __t.preencher(".card.destaque input[type=number]", "31")');
-  await ev('return __t.preencher(".card.destaque input", "Praia de Moreré", 2)');
+  await ev('return __t.preencher(".pn-card input", "Seu Zé", 0)');
+  await ev('return __t.preencher(".pn-card input[type=number]", "31")');
+  await ev('return __t.preencher(".pn-card input", "Praia de Moreré", 2)');
   await espera(200);
-  ok(await ev('return __t.clicar(".card.destaque button.acao", "Enviar para validação") === true'), 'formulário habilita e envia');
+  ok(await ev('return __t.clicar(".pn-card .pn-btn", "Enviar para validação") === true'), 'formulário habilita e envia');
   await espera(400);
   ok(await ev('return __t.tem("Coleta de 31 kg enviada")'), 'toast "Coleta enviada ✔"');
   ok(await ev('return __t.tem("Seu Zé")'), 'coleta aparece na tabela');
 
-  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
   await espera(350);
   ok(await ev('return __t.tem("31 kg")'), 'coleta pendente listada para validação');
-  await ev('return __t.clicar(".item-validar button", "Validar (critérios DeTrash)")');
+  await ev('return __t.clicar(".pn-item-validar button", "Validar pelos critérios DeTrash")');
   await espera(500);
   ok(await ev('return __t.tem("Transação registrada no slot")'), 'toast global "Transação registrada no slot N"');
-  await ev('return __t.clicar("button.acao.sec", "Consolidar coletas validadas")');
+  await ev('return __t.clicar(".pn-btn", "Consolidar coletas validadas")');
   await espera(450);
   ok(await ev('return __t.tem("Relatório de Circularidade emitido")'), 'relatório emitido com toast');
 
   /* ---------- 6. comprovação → proposta ---------- */
   secao('6. Comprovação da família → proposta no cofre');
   // o seed não deixa nenhuma comprovação pendente de validação: a família envia uma agora
-  await ev('return __t.clicar("nav.tabs button", "Família (operação)")');
+  await ev('return __t.clicar("nav.pn-journey button", "Família (operação)")');
   await espera(400);
-  ok(await ev('return __t.clicar(".card.destaque button.acao.sec", "Enviar comprovação") === true'), 'família envia a comprovação pela visão da operação');
+  ok(await ev('return __t.clicar(".pn-card .pn-btn", "Enviar comprovação") === true'), 'família envia a comprovação pela visão da operação');
   await espera(450);
   ok(await ev('return __t.tem("em validação")'), 'condição passa a "em validação"');
 
-  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
   await espera(400);
   ok(await ev('return /Consulta pediátrica|Frequência escolar/.test(__t.txt())'), 'comprovação aparece para validação no Vivá');
   ok(await ev('return __t.tem("Livre no cofre para novas propostas")'), 'mostra saldo livre do cofre');
-  await ev('return __t.clicar(".item-validar button", "criar proposta no cofre")');
+  await ev('return __t.clicar(".pn-item-validar button", "criar proposta no cofre")');
   await espera(500);
   ok(await ev('return __t.tem("Proposta criada no cofre")'), 'toast: proposta criada');
-  await ev('return __t.clicar("nav.tabs button", "Cofre Multisig")');
+  await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
   await espera(400);
-  ok(await ev('return __t.conta(".proposta") >= 1'), 'nova proposta aparece no cofre');
-  ok(await ev('return __t.tem("0/2 assinaturas")'), 'nasce com 0/2 assinaturas');
+  ok(await ev('return __t.conta(".pn-proposta") >= 1'), 'nova proposta aparece no cofre');
+  ok(await ev('return __t.tem("0 de 2 assinaturas")'), 'nasce com 0 de 2 assinaturas');
 
   /* ---------- 7. app da família ---------- */
   secao('7. App da Família — entrada, saldo, compromissos, extrato');
   // seção autocontida: estado limpo, para a família ainda ter um compromisso pendente
   await irPara(ALVO + '/#/painel');
-  const cliqueAba = await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  const cliqueAba = await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(500);
   ok(cliqueAba === true, 'abre a aba do App da Família');
   ok(await ev('return __t.conta(".moldura-celular") === 1'), 'renderiza numa única moldura de celular');
-  ok(await ev('return __t.conta(".mascote-bicho") >= 1 && __t.txt().includes("🦀")'), 'mascote caranguejo presente');
+  /* O Tuca era um emoji de caranguejo. Virou ícone de traço, então o que se
+     afirma agora é o símbolo do sprite, e não um caractere que muda de desenho
+     conforme o aparelho. */
+  ok(await ev(`return __t.conta(".mascote-bicho") >= 1
+    && !!document.querySelector('.mascote-bicho use[href="#i-caranguejo"]')`),
+  'mascote caranguejo presente');
   ok(await ev('return __t.txt().toLowerCase().includes("escolha sua família")'), 'mascote orienta a entrada');
   ok(await ev('return __t.txt().toLowerCase().includes("quem é você")'), 'seleção de família na entrada');
 
@@ -616,7 +628,7 @@ try {
   ok(await ev('return __t.clicar(".fab-ajuda") === true'), 'botão flutuante abre a conversa');
   await espera(400);
   ok(await ev('return __t.conta(".zap") === 1'), 'conversa simulada aparece');
-  ok(await ev('return __t.tem("Instituto Vivá — atendimento")'), 'identifica o atendimento');
+  ok(await ev('return __t.tem("Instituto Vivá, atendimento")'), 'identifica o atendimento');
   ok(await ev('return __t.conta(".zap-msg.digitando") === 1'), 'mostra o agente digitando');
   await espera(1700);
   ok(await ev('return __t.conta(".zap-msg.digitando") === 0'), 'resposta chega e o "digitando" sai');
@@ -628,7 +640,7 @@ try {
   /* ---------- 10. onboarding gamificado ---------- */
   secao('10. Onboarding gamificado (família sem conta)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(400);
   const semConta = await ev(`
     const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
@@ -723,7 +735,7 @@ try {
   await irPara(ALVO + '/#/familia', false);
   await espera(500);
   ok(await ev('return __t.conta(".fam-tela.standalone") === 1'), 'renderiza em modo standalone');
-  ok(await ev('return __t.conta("nav.tabs") === 0'), 'sem as abas do painel');
+  ok(await ev('return __t.conta("nav.pn-journey") === 0'), 'sem as abas do painel');
   ok(await ev('return __t.conta("header.top") === 0'), 'sem o cabeçalho do painel');
   ok(await ev('return __t.tem("Voltar ao painel")'), 'link de volta ao painel');
   ok(await ev('return __t.conta(".mascote-bicho") >= 1'), 'mascote presente na rota própria');
@@ -735,19 +747,19 @@ try {
      o teste clica no link de verdade, que é o que a família faria. */
   await ev('return __t.clicar(".voltar-painel")');
   await espera(700);
-  ok(await ev('return __t.conta("nav.tabs") === 1'), 'o link "Voltar ao painel" abre o painel, não a landing');
+  ok(await ev('return __t.conta("nav.pn-journey") === 1'), 'o link "Voltar ao painel" abre o painel, não a landing');
   ok(await ev('return location.hash.indexOf("painel") > -1'), 'e deixa a rota do painel na barra de endereço');
 
   /* a raiz agora é a landing — vale afirmar, para a troca não passar em branco */
   await ev('window.location.hash = "#/"; return 1;');
   await espera(600);
-  ok(await ev('return __t.conta("nav.tabs") === 0'), 'a raiz não é mais o painel (virou a landing)');
+  ok(await ev('return __t.conta("nav.pn-journey") === 0'), 'a raiz não é mais o painel (virou a landing)');
 
   /* ---------- 12. modo demo guiado ---------- */
   secao('12. Modo demo guiado (▶ Ver o ciclo completo)');
   await irPara(ALVO + '/#/painel');
   await espera(300);
-  await ev('return __t.clicar(".btn-demo", "Ver o ciclo completo")');
+  await ev('return __t.clicar(".pn-btn", "Ver o ciclo completo")');
   await espera(900);
   ok(await ev('return __t.conta(".demo-narrador") === 1'), 'card narrador aparece');
   ok(await ev('return __t.tem("Passo 1 de 13")'), 'narrador mostra passo atual e total');
@@ -757,7 +769,7 @@ try {
   let terminou = false;
   for (let i = 0; i < 60; i++) {
     await espera(1200);
-    const abaAtiva = await ev('const b = document.querySelector("nav.tabs button.on"); return b ? b.innerText.trim() : "";');
+    const abaAtiva = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=true]"); return b ? b.innerText.trim() : "";');
     const passo = await ev('const b = document.querySelector(".demo-narrador-topo b"); return b ? b.innerText.trim() : "";');
     if (passo && !marcos.some(m => m.passo === passo)) marcos.push({ passo, aba: abaAtiva });
     if (!(await ev('return __t.conta(".demo-narrador") === 1'))) { terminou = true; break; }
@@ -814,38 +826,41 @@ try {
   await espera(2200);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Impacto em tempo real")'), 'estado inválido é descartado e a seed é recriada');
-  ok(await ev('return __t.conta(".grafico svg") >= 2'), 'gráficos voltam a renderizar');
+  ok(await ev('return __t.conta(".pn-chart") >= 1 && __t.conta(".pn-hbar") >= 1'), 'gráficos voltam a renderizar');
 
   /* ---------- 14a. ancoragem do relatório na Solana devnet ---------- */
   secao('14a. Ancoragem do relatório na Solana devnet');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
   await espera(900);
-  ok(await ev('return __t.tem("ainda não ancorado")'), 'relatório da seed aparece como não ancorado');
-  ok(await ev('return /SHA-256 [0-9a-f]{12}…[0-9a-f]{12}/.test(__t.txt())'), 'mostra o SHA-256 real do relatório');
+  ok(await ev('return __t.tem("não ancorado")'), 'relatório da seed aparece como não ancorado');
+  /* O rótulo e o hash deixaram de morar na mesma linha de texto: agora são a
+     chave e o valor de uma linha de ledger. Afirma-se cada um. */
+  ok(await ev('return __t.tem("SHA-256") && /[0-9a-f]{12}…[0-9a-f]{12}/.test(__t.txt())'),
+    'mostra o SHA-256 real do relatório');
 
-  ok(await ev('return __t.clicar(".nao-ancorado .link-rastreio", "ancorar") === true'), 'abre o passo a passo');
+  ok(await ev('return __t.clicar(".pn-ancoragem .pn-btn", "Ancorar na") === true'), 'abre o passo a passo');
   await espera(500);
   ok(await ev('return __t.conta(".modal") === 1'), 'modal de ancoragem abre');
-  ok(await ev('return __t.conta(".linha-copiar") === 2'), 'oferece hash e comando para copiar');
+  ok(await ev('return __t.conta(".modal .pn-hashchip") === 2'), 'oferece hash e comando para copiar');
   ok(await ev('return __t.tem("chave privada não entra no navegador")'), 'explica por que há etapa humana');
-  const cmd = await ev('return document.querySelectorAll(".linha-copiar code")[1].innerText');
+  const cmd = await ev('return document.querySelectorAll(".modal .pn-hashchip > span")[1].innerText');
   ok(/^node ancorar-relatorio\.mjs [0-9a-f]{64} ".+"$/.test(cmd), `comando pronto e correto (${cmd.slice(0, 42)}…)`);
-  const hashApp = await ev('return document.querySelectorAll(".linha-copiar code")[0].innerText.trim()');
+  const hashApp = await ev('return document.querySelectorAll(".modal .pn-hashchip > span")[0].innerText.trim()');
   ok(/^[0-9a-f]{64}$/.test(hashApp), 'hash com 64 hexadecimais');
 
   // assinatura inválida é recusada antes de sujar o estado
   await ev('return __t.preencher(".modal input", "isso-nao-e-assinatura")');
   await espera(300);
   ok(await ev('return __t.tem("não parece uma assinatura Solana")'), 'recusa assinatura mal formada');
-  ok(await ev('return __t.clicar(".modal button.acao.grande", "Registrar") === "desabilitado"'), 'botão bloqueado enquanto inválida');
+  ok(await ev('return __t.clicar(".modal .pn-btn", "Registrar ancoragem") === "desabilitado"'), 'botão bloqueado enquanto inválida');
 
   // a assinatura de verdade, da transação que ancoramos na devnet
   const SIG_REAL = '32236oNENMrvKmfp5e62Asi7Uxf7DabAiJynAeLc5JE6hVDWmEeRUYMJjGspJgt9UadUVKiUVzgKicc1F9LqDN6w';
   await ev(`return __t.preencher(".modal input", ${JSON.stringify(SIG_REAL)})`);
   await espera(400);
   ok(await ev('return __t.tem("conferir no explorer")'), 'oferece conferir antes de registrar');
-  ok(await ev('return __t.clicar(".modal button.acao.grande", "Registrar") === true'), 'registra a ancoragem');
+  ok(await ev('return __t.clicar(".modal .pn-btn", "Registrar ancoragem") === true'), 'registra a ancoragem');
   await espera(700);
 
   ok(await ev('return __t.tem("ancorado na Solana devnet")'), 'selo de ancorado aparece');
@@ -863,23 +878,23 @@ try {
   ok(guardado?.hash === hashApp, 'o hash guardado é o mesmo que o app exibiu');
   ok(guardado?.txs === 1 && guardado.real === true, 'gera transação ANCORAGEM marcada como real');
 
-  await ev('return __t.clicar("nav.tabs button", "Cofre Multisig")');
+  await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
   await espera(600);
   ok(await ev('return __t.tem("ANCORAGEM")'), 'a ancoragem aparece no explorador de transações');
 
   /* ---------- 14b. QR de rastreio do produto ---------- */
   secao('14b. QR de rastreio do produto (jornada da peça)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "Mercado")');
+  await ev('return __t.clicar("nav.pn-journey button", "Mercado")');
   await espera(600);
 
   // a luminária da seed já foi vendida, então tem código e QR de verdade
-  ok(await ev('return __t.clicar(".produto .link-rastreio", "rastrear origem") === true'),
+  ok(await ev('return __t.clicar(".pn-prod .pn-link", "rastrear origem") === true'),
     'abre o rastreio da peça já vendida');
   await espera(600);
-  const codigo = await ev('const e = document.querySelector(".etiqueta-codigo"); return e ? e.innerText.trim() : null;');
+  const codigo = await ev('const e = document.querySelector(".pn-etiqueta"); return e ? e.innerText.trim() : null;');
   ok(/^RF-[2-9A-HJ-NP-Z]{4}$/.test(codigo || ''), `código curto sem caracteres ambíguos (${codigo})`);
-  ok(await ev('return __t.conta(".rastreio svg.qr") === 1'), 'QR renderizado como SVG');
+  ok(await ev('return __t.conta(".pn-rastreio-qr svg.qr") === 1'), 'QR renderizado como SVG');
   ok(await ev('return __t.tem("Este QR é de verdade")'), 'afirma o que o QR realmente faz');
 
   // prova independente: o QR da tela decodifica para a URL pública
@@ -897,7 +912,7 @@ try {
   } else {
     const lido = await ev(`
       return (async () => {
-        const svg = document.querySelector('.rastreio svg.qr');
+        const svg = document.querySelector('.pn-rastreio-qr svg.qr');
         const xml = new XMLSerializer().serializeToString(svg);
         const img = new Image();
         img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
@@ -921,7 +936,7 @@ try {
   await espera(300);
 
   // comprar outra peça gera um código próprio
-  await ev('return __t.clicar(".produto button.acao", "Comprar")');
+  await ev('return __t.clicar(".pn-prod button", "Comprar")');
   await espera(600);
   const codigos = await ev(`
     const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
@@ -936,7 +951,7 @@ try {
   await espera(900);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.conta(".rastreio-tela") === 1'), 'página pública de rastreio abre');
-  ok(await ev('return __t.conta("nav.tabs") === 0'), 'sem painel da operação (é página de turista)');
+  ok(await ev('return __t.conta("nav.pn-journey") === 0'), 'sem painel da operação (é página de turista)');
   ok(await ev(`return __t.tem(${JSON.stringify(codigo)})`), 'mostra o código da peça');
   ok(await ev('return __t.tem("A jornada deste material")'), 'apresenta a jornada');
   ok(await ev('return __t.tem("Verificado pela DeTrash")'), 'diz quem verificou');
@@ -965,7 +980,7 @@ try {
   /* ---------- 14b2. cadastro de família ---------- */
   secao('14b2. Cadastro de família (com consentimento no mesmo formulário)');
   await irPara(ALVO + '/#/painel');
-  ok(await ev('return __t.clicar("nav.tabs button", "Cadastro")'), 'abre a aba de Cadastro');
+  ok(await ev('return __t.clicar("nav.pn-journey button", "Cadastro")'), 'abre a aba de Cadastro');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -977,7 +992,7 @@ try {
 
   /* não deve salvar sem consentimento marcado — a policy do banco recusaria e a
      fila de sincronização travaria atrás dessa linha */
-  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === "desabilitado"'),
+  ok(await ev('return __t.clicar(".pn-btn", "Cadastrar família") === "desabilitado"'),
     'botão bloqueado antes de marcar o consentimento');
 
   await ev('return __t.preencher("#cad-resp", "Joana Teste da Silva")');
@@ -985,7 +1000,7 @@ try {
   await espera(300);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("R$ 90,00")'), 'calcula o bônus potencial (3 × R$ 30)');
-  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === "desabilitado"'),
+  ok(await ev('return __t.clicar(".pn-btn", "Cadastrar família") === "desabilitado"'),
     'ainda bloqueado: falta a confirmação do consentimento');
 
   /* alvo por id, nao posicional: a versao anterior pegava "o ultimo checkbox
@@ -993,7 +1008,7 @@ try {
      acrescentou checkboxes depois dele */
   await ev(`document.querySelector('#cad-aceito').click(); return 1;`);
   await espera(400);
-  ok(await ev('return __t.clicar("button.acao.grande", "Cadastrar família") === true'),
+  ok(await ev('return __t.clicar(".pn-btn", "Cadastrar família") === true'),
     'com o consentimento confirmado, salva');
   await espera(800);
   await ev(HELPERS + ' return 1;');
@@ -1021,9 +1036,15 @@ try {
   /* ---- abrir o mês seguinte (o ciclo era de um mês só) ---- */
   ok(await ev('return __t.tem("Compromissos de cada mês")'), 'bloco para abrir o mês seguinte existe');
   ok(await ev('return __t.conta("#mes-abrir") === 1'), 'com seletor de mês');
-  ok(await ev('return __t.conta(".chip-familia") >= 1'), 'e escolha de quais famílias');
+  ok(await ev('return __t.conta(".pn-ficha") >= 1'), 'e escolha de quais famílias');
 
-  const previaAntes = await ev('return document.querySelector(".card.destaque .aviso")?.innerText || ""');
+  /* A prévia é a nota que começa com "Vai criar". Pegá-la pela posição quebrava
+     assim que outra nota aparecesse antes dela na tela, e é o que acontece
+     depois de cadastrar uma família. */
+  const previaAntes = await ev(`
+    const n = [...document.querySelectorAll('.pn-note')].find(e => e.innerText.includes('Vai criar'));
+    return n ? n.innerText : "";
+  `);
   ok(/Vai criar \d+ compromisso/.test(previaAntes), `mostra a prévia antes de clicar (${previaAntes.slice(0, 60)}…)`);
 
   const antesCond = await ev(`
@@ -1032,7 +1053,7 @@ try {
   `);
   await ev('return __t.preencher("#mes-abrir", "Agosto")');
   await espera(400);
-  ok(await ev('return __t.clicar(".card.destaque button.acao", "Abrir Agosto") === true'), 'abre o mês de Agosto');
+  ok(await ev('return __t.clicar(".pn-card .pn-btn", "Abrir Agosto") === true'), 'abre o mês de Agosto');
   await espera(800);
   await ev(HELPERS + ' return 1;');
 
@@ -1045,22 +1066,22 @@ try {
   ok(depoisCond.pendentes === depoisCond.total, 'todos pendentes, esperando a comprovação da família');
 
   /* clicar de novo não pode dobrar o bônus do mês */
-  await ev('return __t.clicar(".card.destaque button.acao", "Abrir Agosto")');
+  await ev('return __t.clicar(".pn-card .pn-btn", "Abrir Agosto")');
   await espera(700);
   const semDuplicar = await ev(`
     const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
     return s.familias.flatMap(f => f.condicoes).filter(c => c.mes === 'Agosto').length;
   `);
   ok(semDuplicar === depoisCond.total, 'abrir o mesmo mês de novo não duplica (não dobra o bônus)');
-  ok(await ev('return __t.tem("já existem") || __t.conta(".card.destaque button.acao:disabled") >= 1'),
+  ok(await ev('return __t.tem("já existem") || __t.conta(".pn-card .pn-btn:disabled") >= 1'),
     'e a tela avisa/bloqueia em vez de fingir que criou');
 
   ok(await ev('return __t.tem("Compromissos já definidos")'), 'lista os compromissos definidos por mês');
-  ok(await ev('return __t.clicar(".meta-apagar", "remover") === true'), 'compromisso pendente pode ser removido');
+  ok(await ev('return __t.clicar(".pn-btn", "remover") === true'), 'compromisso pendente pode ser removido');
   await espera(500);
 
   /* a família nova tem de aparecer nas outras abas na hora */
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Joana Teste da Silva")'), 'aparece no seletor do App da Família');
@@ -1075,7 +1096,7 @@ try {
   /* ---------- 14b3. meta de poupança ---------- */
   secao('14b3. Meta de poupança (definida pela família, sem tutela)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1153,7 +1174,7 @@ try {
   /* ---------- 14b4. a família confere e contesta ---------- */
   secao('14b4. Suas entregas e "isso está errado"');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1166,17 +1187,17 @@ try {
     const f = s.familias.find(x => x.carteira);
     return { id: f.id, nome: f.resp };
   `);
-  await ev('return __t.clicar("nav.tabs button", "Coletor")');
+  await ev('return __t.clicar("nav.pn-journey button", "Coletor")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
-  await ev('return __t.preencher(".card.destaque input", "Dona Nilza", 0)');
-  await ev('return __t.preencher(".card.destaque input[type=number]", "60")');
-  await ev('return __t.preencher(".card.destaque input", "Praia de Cueira", 2)');
+  await ev('return __t.preencher(".pn-card input", "Dona Nilza", 0)');
+  await ev('return __t.preencher(".pn-card input[type=number]", "60")');
+  await ev('return __t.preencher(".pn-card input", "Praia de Cueira", 2)');
   ok(await ev('return __t.conta("#col-familia") === 1'),
     'o formulário do coletor permite vincular a família (sem isso a renda não chega a ninguém)');
   await ev(`return __t.preencher("#col-familia", ${famAlvoC.id})`);
   await espera(300);
-  await ev('return __t.clicar(".card.destaque button.acao", "Enviar para validação")');
+  await ev('return __t.clicar(".pn-card .pn-btn", "Enviar para validação")');
   await espera(900);
 
   const famC = await ev(`
@@ -1187,7 +1208,7 @@ try {
   famC.nome = famAlvoC.nome;
   ok(famC.coletaId !== null, `a entrega nova ficou vinculada à família (${famC.kg} kg, pendente)`);
 
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
@@ -1233,18 +1254,18 @@ try {
   ok(!ctBase.temResposta, 'e ainda sem resposta');
 
   /* o outro lado do circuito: a operação vê e responde */
-  await ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
   await espera(800);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Contestações das famílias")'), 'a operação vê as contestações');
   ok(await ev('return __t.tem("1 aberta")'), 'com a contagem de abertas');
   ok(await ev(`return __t.tem("${famC.nome}")`), 'identificando a família (no painel da operação, com nome)');
-  ok(await ev('return __t.conta(".corrigir-peso") === 1'),
+  ok(await ev('return __t.conta(".pn-corrigir-peso") === 1'),
     'e oferece corrigir o peso ali mesmo, porque a coleta ainda não foi validada');
 
-  await ev('return __t.preencher(".contest-item input[type=number]", "62")');
+  await ev('return __t.preencher(".pn-contest input[type=number]", "62")');
   await espera(250);
-  ok(await ev('return __t.clicar(".corrigir-peso button.acao", "corrigir") === true'), 'corrige o peso');
+  ok(await ev('return __t.clicar(".pn-corrigir-peso .pn-btn", "corrigir") === true'), 'corrige o peso');
   await espera(600);
   const pesoNovo = await ev(`
     const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
@@ -1253,13 +1274,13 @@ try {
   ok(Number(pesoNovo) === 62, `o peso foi corrigido de verdade (${famC.kg} → ${pesoNovo})`);
 
   await ev(HELPERS + ' return 1;');
-  await ev('return __t.preencher(".contest-item input[type=text], .contest-item input:not([type])", "Conferimos e corrigimos para 62 kg.")');
+  await ev('return __t.preencher(".pn-contest input[type=text], .pn-contest input:not([type])", "Conferimos e corrigimos para 62 kg.")');
   await espera(250);
-  ok(await ev('return __t.clicar(".contest-item button.acao", "Responder e resolver") === true'), 'responde e resolve');
+  ok(await ev('return __t.clicar(".pn-contest .pn-btn", "Responder e resolver") === true'), 'responde e resolve');
   await espera(700);
 
   /* e a família vê a resposta no app dela */
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
@@ -1276,7 +1297,7 @@ try {
   /* ---------- 14c. voz do Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.tabs button", "App da Família")');
+  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1335,7 +1356,7 @@ try {
   ok(await ev('return !__t.tem("Impacto em tempo real")'), 'e o português sai da tela');
 
   /* honestidade: telas sem tradução avisam em vez de fingir */
-  await ev('return __t.clicar("nav.tabs button", "Multisig Vault")');
+  await ev('return __t.clicar("nav.pn-journey button", "Multisig Vault")');
   await espera(500);
   await ev(HELPERS + ' return 1;');
   console.log('    largura da janela: ' + await ev('return window.innerWidth'));
@@ -1388,14 +1409,14 @@ try {
      clique em "Mercado" caía no vazio — as três asserções liam "(sem barra)". */
   await ev(`localStorage.removeItem('raizes-idioma-v1'); window.location.hash = '#/painel'; return 1;`);
   await espera(600);
-  await ev('return __t.clicar("nav.tabs button", "Mercado")');
+  await ev('return __t.clicar("nav.pn-journey button", "Mercado")');
   await espera(350);
   await ev('window.__raf = window.requestAnimationFrame; window.requestAnimationFrame = function () { return 0; }; return true');
-  await ev('return __t.clicar(".produto button", "Comprar")');
+  await ev('return __t.clicar(".pn-prod button", "Comprar")');
   await espera(500);
-  const semQuadro1 = await ev('const n = document.querySelectorAll(".split-valor")[0]; return n ? n.innerText : "(sem barra)"');
+  const semQuadro1 = await ev('const n = document.querySelectorAll(".pn-split-valor")[0]; return n ? n.innerText : "(sem barra)"');
   await espera(1800);
-  const semQuadro2 = await ev('const n = document.querySelectorAll(".split-valor")[0]; return n ? n.innerText : "(sem barra)"');
+  const semQuadro2 = await ev('const n = document.querySelectorAll(".pn-split-valor")[0]; return n ? n.innerText : "(sem barra)"');
   ok(/R\$\s?0,00/.test(semQuadro1), `sem quadros a contagem nem começa (${semQuadro1})`);
   ok(/[1-9]/.test(semQuadro2), `e o valor certo aparece de todo jeito (${semQuadro2})`);
   ok(await ev('return __t.tem("Divisão executada por código, no instante da venda")'),

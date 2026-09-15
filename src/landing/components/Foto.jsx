@@ -23,7 +23,10 @@ export function Foto({ imagem, sizes = '100vw', alt, prioridade = false, ...rest
         alt={alt ?? altPadrao ?? ''}
         loading={prioridade ? 'eager' : 'lazy'}
         decoding={prioridade ? 'sync' : 'async'}
-        fetchPriority={prioridade ? 'high' : undefined}
+        /* Em minúsculas: o React 18 não conhece `fetchPriority` em camelCase e
+           reclama no console a cada foto, enquanto `fetchpriority` ele repassa
+           ao DOM como atributo, que é exatamente o que o navegador lê. */
+        fetchpriority={prioridade ? 'high' : undefined}
         {...resto}
       />
     </picture>

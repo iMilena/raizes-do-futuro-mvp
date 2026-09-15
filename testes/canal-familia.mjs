@@ -185,7 +185,7 @@ try {
       ok(viu, 'a reclamação feita no celular da família CHEGOU ao aparelho da operação');
 
       if (viu) {
-        await op.ev('return __t.clicar("nav.tabs button", "Instituto Vivá")');
+        await op.ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
         await espera(900);
         await op.ev(AJUDANTES + ' return 1;');
         ok(await op.ev('return __t.tem("Contestações das famílias")'), 'e aparece na tela de quem valida');
