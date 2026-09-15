@@ -1,0 +1,39 @@
+/* ----------------------------------------------------------------------------
+   Seletor de tema, no mesmo formato do PT/EN ao lado.
+
+   O par vive numa cápsula só, com o botão pressionado marcado por fundo E por
+   cor: quem não distingue bem os dois tons ainda vê qual está afundado. É o
+   único lugar do topo onde o acento aparece sem ser ação primária, e aparece
+   porque aqui ele significa "este é o estado atual", que é a mesma função do
+   item ativo da navegação.
+---------------------------------------------------------------------------- */
+
+.seletor-tema {
+  display: flex;
+  flex: none;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.seletor-tema button {
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 9px;
+  display: grid;
+  place-items: center;
+  color: var(--t3);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.seletor-tema button:hover {
+  color: var(--t1);
+}
+
+.seletor-tema button[aria-pressed="true"] {
+  color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent-ink) 14%, transparent);
+}

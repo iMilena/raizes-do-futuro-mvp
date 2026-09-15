@@ -1208,7 +1208,7 @@ body.gravando .so-sim{display:none!important}
     height:100dvh;
   }
   .menu-aberto .lateral{transform:none;box-shadow:0 0 60px rgba(0,0,0,.4)}
-  .menu-aberto .lateral-veu{display:block;position:fixed;inset:0;z-index:55;background:rgba(10,26,18,.5);backdrop-filter:blur(2px)}
+  .menu-aberto .lateral-veu{display:block;position:fixed;inset:0;z-index:55;background:rgba(10,26,18,.5);backdrop-filter:blur(2px);border:0;padding:0;cursor:pointer}
   .menu-hamb{display:block}
   .top-titulo{max-width:none;flex:1}
   .busca-global{order:9;flex:1 0 100%;max-width:none}

@@ -1,0 +1,37 @@
+/* ----------------------------------------------------------------------------
+   Estilo dos ícones.
+
+   O traço vive aqui, e não em cada `<symbol>`, porque é a mesma decisão para
+   todos: 1.45 de espessura, sem preenchimento, pontas arredondadas, cor herdada
+   do texto. Repetir isso em vinte símbolos seria vinte lugares para divergir.
+---------------------------------------------------------------------------- */
+
+.sprite-icones {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.ic {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: inline-block;
+  vertical-align: -2px;
+}
+
+.ic.sm {
+  width: 13px;
+  height: 13px;
+}
+
+.ic.lg {
+  width: 19px;
+  height: 19px;
+}

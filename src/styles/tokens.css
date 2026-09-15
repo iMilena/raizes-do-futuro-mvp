@@ -1,0 +1,125 @@
+/* ============================================================================
+   Tokens do painel Raízes do Futuro
+
+   Três blocos, porque quem abre a tela está num de três estados: escolheu
+   claro, escolheu escuro, ou não escolheu nada e segue o sistema. O terceiro é
+   o mais comum, e é por isso que o tema escuro aparece duas vezes aqui, uma
+   dentro de `prefers-color-scheme` e outra sob `[data-theme="dark"]`.
+
+   REGRA DO CASCADE: nenhuma cor pode existir só dentro de um `@media` ou de um
+   `[data-theme]`. Tudo nasce no `:root` puro e é redefinido nos outros dois
+   blocos. Um token declarado só no escuro vira `unset` para quem está no claro,
+   e o elemento some sem aviso, o que é o pior tipo de defeito: silencioso e
+   dependente da configuração de quem olha.
+
+   O verde da marca aparece em exatamente quatro lugares na interface: botão de
+   ação primária, item ativo da navegação, o número-chave do topo do Dashboard e
+   o ponto de status de rede ativa. Todo o resto é neutro. `--ok`, `--warn`,
+   `--crit` e `--wait` são cor semântica de estado, coisa diferente do acento, e
+   não contam como verde decorativo.
+   ========================================================================= */
+
+:root {
+  /* TEMA CLARO (padrão). Verde da marca só no acento. */
+  --ink:#F7F8F7; --abyss:#FFFFFF; --deep:#FFFFFF; --tide:#F3F5F3; --reef:#E8EBE9;
+  --line:#E2E5E3; --line-2:#D2D7D4; --line-3:#B9C0BC;
+  --accent:#2E5A3E; --accent-h:#24482F; --accent-on:#FFFFFF;
+  --accent-ink:#2C6B44; --accent-ink-on:#FFFFFF;
+  --foam:#0F1211;
+  --t1:#1A1D1B; --t2:#4C534F; --t3:#6B726E; --t4:#7F8681;
+  --ok:#2C6B44; --warn:#8A5B08; --warn-strong:#6E4906; --crit:#9E4229; --wait:#6B726E;
+  --chart-mark:#6E7671; --grid:#D2D7D4; --grid-soft:#E7EAE8;
+  --d1:#454C48; --d2:#6E7671; --d3:#A6ADA9;
+  --on-d1:#FFFFFF; --on-d2:#FFFFFF; --on-d3:#1A1D1B;
+  --page-bg:radial-gradient(120% 70% at 50% -10%, #FFFFFF 0%, #F8F9F8 55%, #F4F5F4 100%);
+  --rail-bg:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 60%,#FBFCFB 100%);
+  --topbar-bg:rgba(255,255,255,.92);
+  --hero-bg:radial-gradient(85% 150% at 88% 0%, rgba(46,90,62,.11) 0%, rgba(46,90,62,0) 60%), linear-gradient(135deg,#FFFFFF 0%,#FBFCFB 55%,#F4F7F5 100%);
+  --hero-sub:#5A615D; --hero-line:rgba(26,29,27,.12);
+  --seal-bg:radial-gradient(circle at 50% 30%, #EEF1EF 0%, #DFE4E1 70%);
+  --empty-bg:#FAFBFA; --ov-bg:rgba(18,22,20,.5);
+  --sh:0 1px 2px rgba(16,20,18,.05);
+
+  /* Tipografia. As três famílias são servidas pelo próprio domínio, via
+     @fontsource (ver src/estilos/fontes.js), e não pelo Google Fonts: o nome
+     que o @fontsource registra para as variáveis traz o sufixo "Variable", daí
+     ele vir primeiro na pilha, com a versão estática logo atrás. */
+  --fd:"Fraunces Variable","Fraunces","Iowan Old Style",Georgia,serif;
+  --fu:"Manrope Variable","Manrope","Helvetica Neue",Arial,sans-serif;
+  --fm:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --rs:6px; --rm:10px; --rl:14px;
+}
+
+/* TEMA ESCURO: do sistema, enquanto o visitante não escolheu claro */
+@media (prefers-color-scheme:dark) {
+  :root:not([data-theme="light"]) {
+    --ink:#0B0D0C; --abyss:#0E100F; --deep:#141715; --tide:#1A1E1C; --reef:#212624;
+    --line:#272C29; --line-2:#333A36; --line-3:#414944;
+    --accent:#2E5A3E; --accent-h:#3B6E4E; --accent-on:#F4F6F5;
+    --accent-ink:#74C68F; --accent-ink-on:#0B0D0C;
+    --foam:#F4F6F5;
+    --t1:#E9ECEA; --t2:#A8AFAA; --t3:#8A918C; --t4:#767E78;
+    --ok:#74C68F; --warn:#D9A441; --warn-strong:#EBC47F; --crit:#D2705A; --wait:#A8AFAA;
+    --chart-mark:#C5CCC7; --grid:#333A36; --grid-soft:#252A27;
+    --d1:#D7DCD9; --d2:#959C97; --d3:#656D67;
+    --on-d1:#151816; --on-d2:#151816; --on-d3:#F2F5F3;
+    --page-bg:radial-gradient(120% 70% at 50% -10%, #151917 0%, #0D100E 55%, #0B0D0C 100%);
+    --rail-bg:linear-gradient(180deg,#0E100F 0%,#0E100F 60%,#0B0D0C 100%);
+    --topbar-bg:rgba(14,16,15,.9);
+    --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(116,198,143,.08) 0%, rgba(116,198,143,0) 62%), linear-gradient(135deg,#1D221F 0%,#161A18 52%,#121513 100%);
+    --hero-sub:rgba(233,236,234,.66); --hero-line:rgba(233,236,234,.14);
+    --seal-bg:radial-gradient(circle at 50% 30%, #2A312D 0%, #161A18 70%);
+    --empty-bg:rgba(20,23,21,.5); --ov-bg:rgba(4,8,6,.84);
+    --sh:0 1px 0 rgba(255,255,255,.025) inset;
+  }
+}
+
+/* TEMA ESCURO: escolha explícita no seletor do topo */
+:root[data-theme="dark"] {
+  --ink:#0B0D0C; --abyss:#0E100F; --deep:#141715; --tide:#1A1E1C; --reef:#212624;
+  --line:#272C29; --line-2:#333A36; --line-3:#414944;
+  --accent:#2E5A3E; --accent-h:#3B6E4E; --accent-on:#F4F6F5;
+  --accent-ink:#74C68F; --accent-ink-on:#0B0D0C;
+  --foam:#F4F6F5;
+  --t1:#E9ECEA; --t2:#A8AFAA; --t3:#8A918C; --t4:#767E78;
+  --ok:#74C68F; --warn:#D9A441; --warn-strong:#EBC47F; --crit:#D2705A; --wait:#A8AFAA;
+  --chart-mark:#C5CCC7; --grid:#333A36; --grid-soft:#252A27;
+  --d1:#D7DCD9; --d2:#959C97; --d3:#656D67;
+  --on-d1:#151816; --on-d2:#151816; --on-d3:#F2F5F3;
+  --page-bg:radial-gradient(120% 70% at 50% -10%, #151917 0%, #0D100E 55%, #0B0D0C 100%);
+  --rail-bg:linear-gradient(180deg,#0E100F 0%,#0E100F 60%,#0B0D0C 100%);
+  --topbar-bg:rgba(14,16,15,.9);
+  --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(116,198,143,.08) 0%, rgba(116,198,143,0) 62%), linear-gradient(135deg,#1D221F 0%,#161A18 52%,#121513 100%);
+  --hero-sub:rgba(233,236,234,.66); --hero-line:rgba(233,236,234,.14);
+  --seal-bg:radial-gradient(circle at 50% 30%, #2A312D 0%, #161A18 70%);
+  --empty-bg:rgba(20,23,21,.5); --ov-bg:rgba(4,8,6,.84);
+  --sh:0 1px 0 rgba(255,255,255,.025) inset;
+}
+
+/* O fundo da página é pintado explicitamente, e não herdado: a cor e a textura
+   têm de vir do tema escolhido, não do que o navegador ou o host resolveram
+   pôr atrás. */
+body {
+  background: var(--ink);
+  background-image: var(--page-bg);
+  background-attachment: fixed;
+  color: var(--t1);
+}
+
+/* Anel de foco único para todo o painel. Fica aqui, e não no componente,
+   porque foco visível não é decisão de cada botão. */
+.painel-raizes :focus-visible,
+.painel-raizes:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .painel-raizes *,
+  .painel-raizes *::before,
+  .painel-raizes *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

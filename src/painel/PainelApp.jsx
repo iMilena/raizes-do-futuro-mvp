@@ -6,8 +6,16 @@ import { IdiomaProvider, useIdioma, TRADUZIDAS } from '../lib/i18n.jsx';
 import { ToastProvider, useToast } from '../componentes/ui.jsx';
 import { DemoProvider, DemoNarrador } from '../componentes/demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from '../componentes/tour.jsx';
+import { SpriteIcones } from './ui/Icones';
+import { SeletorTema } from './ui/SeletorTema';
 import '../estilos/styles.css';
 import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo proprio
+/* Os tokens entram DEPOIS da folha antiga, de proposito. As variaveis em si
+   resolvem na hora do uso, entao a ordem nao as afeta; o que precisa vir por
+   ultimo e a regra de `body`, que pinta o fundo do tema por cima do fundo fixo
+   que o styles.css do MVP declara. Quando a folha antiga for podada, no fim da
+   migracao, esta linha pode subir para o topo. */
+import '../styles/tokens.css';
 
 /* ---------------------------------------------------------------------------
    O painel da operação e as duas telas públicas que dependem do mesmo estado.
@@ -443,7 +451,8 @@ function Painel({ tab, setTab }) {
   const atual = TABS.find(t => t[0] === tab);
 
   return (
-    <div className={'app-shell' + (menuAberto ? ' menu-aberto' : '')}>
+    <div className={'app-shell painel-raizes' + (menuAberto ? ' menu-aberto' : '')}>
+      <SpriteIcones />
       <aside className="lateral">
         <div className="lat-marca">
           <img className="logo-emblema" src="./imagens/emblema.png" alt="Raízes do Futuro" />
@@ -493,6 +502,7 @@ function Painel({ tab, setTab }) {
           <BuscaGlobal setTab={setTab} />
           <div className="top-acoes">
             <SeletorIdioma tab={tab} />
+            <SeletorTema />
             <button className="btn-tour" onClick={() => { setTourIdx(0); setTourAberto(true); }}>{t('❔ Como funciona')}</button>
             <Notificacoes setTab={setTab} />
             <Perfil />
@@ -564,7 +574,17 @@ function Painel({ tab, setTab }) {
         </div>
       </div>
 
-      {menuAberto && <div className="lateral-veu" onClick={() => setMenuAberto(false)} />}
+      {/* Botao, e nao div com onClick: o veu e uma acao de verdade (fechar o
+          menu), e como botao ele recebe foco, responde a Enter e a Espaco, e e
+          anunciado com nome. Como div, so servia para quem usa mouse. */}
+      {menuAberto && (
+        <button
+          type="button"
+          className="lateral-veu"
+          aria-label="Fechar menu"
+          onClick={() => setMenuAberto(false)}
+        />
+      )}
 
       {gravando && (
         <button className="sair-gravacao" title="Sair do modo gravação" onClick={() => setGravando(false)}>🎥 ✕</button>
