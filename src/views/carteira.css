@@ -1,0 +1,175 @@
+/* ----------------------------------------------------------------------------
+   Etapa 8: Família (operação).
+
+   A tela que o agente abre sentado ao lado da família. Duas coisas mandam no
+   desenho: o consentimento vem primeiro e com prazo à vista (consentimento sem
+   prazo visível é consentimento que ninguém renova), e o saldo é o número que
+   a família olha, então ele não divide espaço com mais nada.
+---------------------------------------------------------------------------- */
+
+.pn-simular { max-width: 340px; }
+
+/* ------------------------------------------------------- consentimento ---- */
+/* A faixa na borda é o que diz o estado de longe, junto da pílula, que é o que
+   diz de perto. Cor sozinha nunca carrega o estado. */
+.pn-consent.ok { box-shadow: inset 2px 0 0 var(--ok); }
+.pn-consent.atencao { box-shadow: inset 2px 0 0 var(--warn); }
+
+.pn-consent-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pn-consent-topo > * { min-width: 0; }
+
+.pn-prazo {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--t1);
+}
+.pn-prazo.atencao { color: var(--warn-strong); }
+
+.pn-mt { margin-top: 14px; }
+
+/* --------------------------------------------------------------- PIN ------ */
+.pn-pin-linha {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--tide);
+  border: 1px solid var(--line);
+  border-radius: var(--rm);
+}
+.pn-pin-linha .pn-hint { flex: 1; min-width: 180px; }
+
+/* ------------------------------------------------------------ wizard ------ */
+.pn-wizard { max-width: 560px; }
+
+/* Passo a passo numerado. É `<ol>` porque é uma sequência de verdade, e o passo
+   atual sai também em `aria-current`, não só no contraste. */
+.pn-wpassos {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pn-wpassos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--tide);
+  color: var(--t3);
+  font-size: 11.5px;
+}
+.pn-wpassos .n {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--reef);
+  color: var(--t3);
+  font-family: var(--fm);
+  font-size: 10px;
+}
+.pn-wpassos li.on { border-color: var(--line-3); color: var(--foam); font-weight: 600; }
+.pn-wpassos li.on .n { background: var(--accent); color: var(--accent-on); }
+.pn-wpassos li[aria-current="step"] { background: var(--reef); }
+
+.pn-texto { font-size: 13.5px; color: var(--t2); line-height: 1.6; max-width: 62ch; }
+.pn-lista {
+  margin: 0 0 18px;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--t2);
+  line-height: 1.7;
+  max-width: 62ch;
+}
+.pn-lista b { color: var(--foam); }
+
+/* Quatro casas, tamanho de dedo. Fica em mono porque são dígitos que a pessoa
+   confere um a um. */
+.pn-pin { display: flex; gap: 10px; margin: 4px 0 16px; }
+.pn-pin input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-family: var(--fm);
+  font-size: 22px;
+  color: var(--t1);
+  background: var(--tide);
+  border: 1px solid var(--line-2);
+  border-radius: var(--rm);
+}
+.pn-pin input:focus {
+  outline: none;
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-ink) 22%, transparent);
+}
+
+/* ---------------------------------------------------------- saldo --------- */
+.pn-saldo { padding-bottom: 4px; }
+.pn-saldo .v {
+  display: block;
+  font-family: var(--fu);
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: var(--foam);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 5px;
+}
+
+.pn-extrato { margin-top: 24px; }
+.pn-extrato-linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--t2);
+}
+.pn-extrato-linha:last-child { border-bottom: 0; }
+.pn-extrato-linha > span { min-width: 0; }
+.pn-extrato-linha b {
+  font-family: var(--fm);
+  font-size: 13px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* Entrada e saída se distinguem pelo sinal antes da cor: o "+" e o "−" já estão
+   no texto, a cor só confirma. */
+.pn-extrato-linha b.entrou { color: var(--ok); }
+.pn-extrato-linha b.saiu { color: var(--t1); }
+
+/* --------------------------------------------------------- compromissos --- */
+.pn-compromisso {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pn-compromisso:last-of-type { border-bottom: 0; }
+.pn-compromisso > * { min-width: 0; }
+.pn-compromisso b { font-size: 13.5px; color: var(--foam); }
+
+@media (max-width: 620px) {
+  .pn-pin input { width: 44px; height: 52px; font-size: 20px; }
+}
