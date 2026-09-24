@@ -1,98 +1,103 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { Revelar } from './Revelar';
-import { impacto, numeros, coorte } from '../data/content';
+import { Eyebrow, Titulo } from './Pecas';
+import { impacto, coorte } from '../data/content';
 import { useVisivel } from '../hooks/useVisivel';
 import { useContagem } from '../hooks/useContagem';
 
-function Numero({ valor, sufixo, rotulo, atraso, contar }) {
-  const atual = useContagem(valor, contar);
+/** Um número que sobe do zero ao valor quando entra na tela. */
+function Numero({ valor, unidade, sufixo = '', rotulo, atraso }) {
+  const ref = useRef(null);
+  const visivel = useVisivel(ref);
+  const n = useContagem(valor, visivel);
   return (
-    <div className="rf-num" style={{ '--rf-d': `${atraso}ms` }}>
-      <b>
-        {atual}
-        {sufixo && <small>{sufixo}</small>}
+    <div ref={ref} className={`imp rf-rv${visivel ? ' is-in' : ''}`} style={{ '--rf-d': `${atraso}ms` }}>
+      {/* O leitor de tela ouve o valor final, e não a contagem subindo. */}
+      <b aria-hidden="true">
+        {n}
+        {sufixo}
+        {unidade && <small>{unidade}</small>}
       </b>
+      <span className="sr-only">
+        {valor}
+        {sufixo}
+        {unidade ? ` ${unidade}` : ''}
+      </span>
       <span>{rotulo}</span>
     </div>
   );
 }
 
 /**
- * A coorte: uma bolinha por criança, 60 delas, 51 preenchidas.
+ * Quais crianças aparecem "em acompanhamento".
  *
- * O gráfico é o argumento inteiro em uma linha — dá para contar as nove que
- * ainda faltam. Como cada ponto é um dado e não um enfeite, o conjunto vai
- * marcado com `role="img"` e um rótulo que diz a mesma coisa em texto, senão
- * quem usa leitor de tela ouviria sessenta elementos vazios.
+ * Um embaralhamento com semente fixa, e não `Math.random()`: os pontos apagados
+ * se espalham pela grade como no protótipo, mas no mesmo lugar em toda visita,
+ * o que evita a grade "piscar" diferente a cada render e deixa a captura de
+ * tela comparável entre versões.
  */
-function Coorte() {
+function acesos(total, emDia) {
+  let semente = 7;
+  const aleatorio = () => {
+    semente = (semente * 16807) % 2147483647;
+    return semente / 2147483647;
+  };
+  const ordem = [...Array(total).keys()];
+  for (let i = ordem.length - 1; i > 0; i--) {
+    const j = Math.floor(aleatorio() * (i + 1));
+    [ordem[i], ordem[j]] = [ordem[j], ordem[i]];
+  }
+  return new Set(ordem.slice(0, emDia));
+}
+
+function Criancas() {
   const ref = useRef(null);
-  const visivel = useVisivel(ref, { limiar: 0.25 });
-  const pontos = Array.from({ length: coorte.total }, (_, i) => i < coorte.emDia);
-
+  const visivel = useVisivel(ref);
+  const on = useMemo(() => acesos(coorte.total, coorte.emDia), []);
   return (
-    <Revelar className={`rf-coorte${visivel ? ' is-in' : ''}`} atraso={200}>
-      <div ref={ref}>
-        <div className="rf-coorte-topo">
-          <span className="rf-mono rf-coorte-k">{coorte.titulo}</span>
-          <span className="rf-legenda">
-            <span>
-              <em className="is-ok" aria-hidden="true" /> {coorte.legendaEmDia}
-            </span>
-            <span>
-              <em aria-hidden="true" /> {coorte.legendaEmCurso}
-            </span>
-          </span>
-        </div>
-
-        <div
-          className="rf-pontos"
-          role="img"
-          aria-label={`${coorte.emDia} de ${coorte.total} crianças com ${coorte.legendaEmDia}.`}
-        >
-          {pontos.map((emDia, i) => (
-            <i
-              key={i}
-              className={emDia ? 'is-ok' : undefined}
-              style={{ '--rf-d': `${i * 22}ms` }}
-            />
-          ))}
-        </div>
-
-        <p className="rf-coorte-nota">{coorte.nota}</p>
-      </div>
-    </Revelar>
+    <div
+      ref={ref}
+      className={`kids${visivel ? ' in' : ''}`}
+      role="img"
+      aria-label={coorte.rotuloGrade}
+    >
+      {[...Array(coorte.total).keys()].map((i) => (
+        <i key={i} className={on.has(i) ? 'on' : undefined} style={{ transitionDelay: `${i * 12}ms` }} />
+      ))}
+    </div>
   );
 }
 
 export function Impacto() {
-  const ref = useRef(null);
-  const visivel = useVisivel(ref, { limiar: 0.32 });
-
   return (
-    <section
-      className="rf-ato rf-noite"
-      id="impacto"
-      style={{ '--rf-de': '#08201A', '--rf-ate': '#0A2720' }}
-    >
-      <div className="rf-wrap">
-        <Revelar como="span" className="rf-eyebrow">
-          {impacto.eyebrow}
+    <section className="sec impact" id="impacto">
+      <div className="wrap">
+        <Revelar>
+          <Eyebrow>{impacto.eyebrow}</Eyebrow>
         </Revelar>
-        <Revelar como="h2" className="rf-h-sec" atraso={80} style={{ maxWidth: '17ch' }}>
-          {impacto.titulo}
+        <Revelar atraso={100}>
+          <Titulo partes={impacto.titulo} />
         </Revelar>
-        <Revelar como="p" className="rf-lede" atraso={140}>
+        <Revelar como="p" className="lead" atraso={200}>
           {impacto.lede}
         </Revelar>
-
-        <div className={`rf-numeros${visivel ? ' is-in' : ''}`} ref={ref}>
-          {numeros.map((n, i) => (
-            <Numero key={n.rotulo} {...n} atraso={i * 140} contar={visivel} />
+        <div className="imp-grid">
+          {impacto.numeros.map((n, i) => (
+            <Numero key={n.rotulo} {...n} atraso={i * 100} />
           ))}
         </div>
-
-        <Coorte />
+        <div className="kids-wrap" id="infancia">
+          <Criancas />
+          <Revelar className="kids-txt">
+            <Eyebrow>{coorte.eyebrow}</Eyebrow>
+            <h3>{coorte.titulo}</h3>
+            <p>{coorte.texto}</p>
+            <div className="leg">
+              <span>{coorte.legendaEmDia}</span>
+              <span>{coorte.legendaEmCurso}</span>
+            </div>
+          </Revelar>
+        </div>
       </div>
     </section>
   );

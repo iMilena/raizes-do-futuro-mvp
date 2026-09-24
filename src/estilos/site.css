@@ -1,0 +1,47 @@
+/* ---------------------------------------------------------------------------
+   Os tokens do site público: landing, "Falar com a equipe" e "Explorar a ilha".
+
+   Ficam num seletor de classe (`.rf-site`) e não no `:root` de propósito. As
+   três páginas e o painel vivem no mesmo aplicativo, e o painel declara no
+   `:root` nomes como `--line` e `--muted` com outros valores. Se os dois
+   brigassem pelo `:root`, quem abrisse o painel e voltasse para a landing veria
+   a landing com as linhas do painel. Aqui, cada página que usa a marca põe a
+   classe na raiz e herda tudo dali para baixo, sem depender da ordem em que as
+   folhas carregaram.
+
+   Nenhuma cor da marca deve aparecer solta nos CSS das páginas: tudo passa por
+   estas variáveis.
+--------------------------------------------------------------------------- */
+.rf-site {
+  /* fundos, do mais profundo ao mais claro */
+  --bg0: #04100d;
+  --bg1: #061713;
+  --bg2: #0a2720;
+  --bg3: #0e3227;
+
+  /* marca */
+  --green: #2e5a3e;
+  --mint: #7fd99a;
+  --mint-h: #9be6b1;
+  --foam: #cfedd9;
+  --dawn: #f3b267;
+  --clay: #d97742;
+  --cream: #fbf5e3;
+
+  /* texto e linhas */
+  --text: #eef5f0;
+  --muted: rgba(207, 237, 217, 0.66);
+  --line: rgba(207, 237, 217, 0.13);
+
+  /* tipografia: as três famílias saem do próprio domínio (ver fontes.js) */
+  --f-display: 'Fraunces Variable', 'Fraunces', Georgia, serif;
+  --f-body: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+
+  background: var(--bg0);
+  color: var(--text);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}

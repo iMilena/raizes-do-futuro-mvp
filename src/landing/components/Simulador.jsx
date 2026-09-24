@@ -1,108 +1,63 @@
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { Revelar } from './Revelar';
-import { cofre, coorte, simulador } from '../data/content';
+import { Eyebrow } from './Pecas';
+import { simulador as S } from '../data/content';
 
-const brl = (v) => `R$ ${v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
-
-/**
- * Reparte uma receita pelas regras que já estão no contrato.
- *
- * A operação fica com o resto em vez de com o seu próprio arredondamento: assim
- * as três parcelas somam exatamente o que entrou, e a tela nunca mostra um real
- * que apareceu ou sumiu no arredondamento.
- */
-function repartir(receita) {
-  const renda = Math.round(receita * 0.6);
-  const fundo = Math.round(receita * 0.25);
-  return { renda, fundo, operacao: receita - renda - fundo };
-}
+const brl = (v) => 'R$ ' + v.toLocaleString('pt-BR');
 
 /**
- * O simulador da divisão.
- *
- * Não é projeção de receita e a nota no rodapé diz isso com todas as letras:
- * é a aritmética do contrato, mostrando para onde vai cada real *quando* entra.
- * Confundir os dois transformaria uma peça de transparência em promessa de
- * retorno, que é exatamente o que este projeto não faz.
+ * "Para onde vai cada real": o controle deslizante vai de R$ 1.000 a
+ * R$ 60.000 e aplica a divisão 60/25/15 do contrato, contando quantos bônus
+ * de R$ 30 a fatia da infância paga e quantos meses isso cobre para as 60
+ * crianças de Boipeba. É aritmética das regras, não projeção de receita.
  */
 export function Simulador() {
-  const [receita, setReceita] = useState(simulador.inicial);
-  const idCampo = useId();
-
-  const partes = repartir(receita);
-  const bonus = Math.floor(partes.fundo / cofre.bonus);
-  const meses = Math.floor(partes.fundo / (cofre.bonus * coorte.total));
-  const pct = ((receita - simulador.min) / (simulador.max - simulador.min)) * 100;
+  const [v, setV] = useState(S.inicial);
+  const bonus = Math.floor((v * 0.25) / S.bonus);
+  const meses = Math.floor(bonus / S.criancas);
 
   return (
-    <Revelar className="rf-sim" atraso={120}>
-      <div className="rf-sim-topo">
-        <h3>{simulador.titulo}</h3>
-        <div className="rf-sim-valor">
-          <span className="rf-sim-lbl">{simulador.rotuloReceita}</span>
-          <output htmlFor={idCampo}>{brl(receita)}</output>
-        </div>
+    <Revelar className="panel" atraso={100}>
+      <Eyebrow>{S.eyebrow}</Eyebrow>
+      <h3>{S.titulo}</h3>
+      <div className="sim-v" aria-hidden="true">
+        {brl(v)}
       </div>
-
-      <div className="rf-slider" style={{ '--rf-pct': `${pct.toFixed(1)}%` }}>
-        <label className="rf-so-leitor" htmlFor={idCampo}>
-          {simulador.rotuloCampo}
-        </label>
-        <input
-          id={idCampo}
-          type="range"
-          min={simulador.min}
-          max={simulador.max}
-          step={simulador.passo}
-          value={receita}
-          onChange={(e) => setReceita(Number(e.target.value))}
-        />
-        <div className="rf-slider-marcas" aria-hidden="true">
-          {simulador.marcas.map((marca) => (
-            <span key={marca}>{brl(marca)}</span>
-          ))}
-        </div>
+      <label className="fine" htmlFor="lp-sim" style={{ display: 'block', marginTop: 6 }}>
+        {S.rotuloCampo}
+      </label>
+      <input
+        type="range"
+        id="lp-sim"
+        min={S.min}
+        max={S.max}
+        step={S.passo}
+        value={v}
+        aria-valuetext={brl(v)}
+        onChange={(e) => setV(Number(e.target.value))}
+      />
+      <div className="fine marcas" aria-hidden="true">
+        {S.marcas.map((m) => (
+          <span key={m}>{brl(m)}</span>
+        ))}
       </div>
-
-      <div className="rf-sim-saida">
-        {simulador.cartoes.map((cartao) => (
-          <div
-            className={`rf-sim-cartao is-${cartao.chave}`}
-            key={cartao.chave}
-            style={{ '--rf-w': cartao.barra }}
-          >
-            <span className="rf-sim-cartao-lbl">{cartao.rotulo}</span>
-            <span className="rf-sim-cartao-val rf-mono">{brl(partes[cartao.chave])}</span>
-            <span className="rf-sim-cartao-txt">{cartao.texto}</span>
+      <div className="sim-rows">
+        {S.linhas.map((l) => (
+          <div className="sim-row" key={l.rotulo}>
+            <i style={{ background: l.cor }} aria-hidden="true" />
+            <span>
+              {l.rotulo}
+              <small>{l.sub}</small>
+            </span>
+            <b>{brl((v * l.pct) / 100)}</b>
           </div>
         ))}
       </div>
-
-      <div className="rf-sim-resultado" aria-live="polite">
-        <span className="rf-sim-grande rf-mono">{bonus.toLocaleString('pt-BR')}</span>
-        <span className="rf-sim-frase">
-          {meses >= 1 ? (
-            <>
-              bônus de R$ {cofre.bonus} por criança, ou{' '}
-              <b>
-                as {coorte.total} crianças de Boipeba cobertas por {meses}{' '}
-                {meses === 1 ? 'mês' : 'meses'}
-              </b>
-              .
-            </>
-          ) : (
-            <>
-              bônus de R$ {cofre.bonus} por criança,{' '}
-              <b>
-                {bonus} de {coorte.total} crianças cobertas em um mês
-              </b>
-              .
-            </>
-          )}
-        </span>
+      <div className="sim-kids" aria-live="polite">
+        <b>{bonus.toLocaleString('pt-BR')}</b>
+        <span>{meses >= 1 ? S.cobertura(meses) : S.semCobertura}</span>
       </div>
-
-      <p className="rf-sim-nota">{simulador.nota}</p>
+      <p className="fine">{S.nota}</p>
     </Revelar>
   );
 }

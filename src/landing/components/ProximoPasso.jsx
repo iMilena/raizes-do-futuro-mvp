@@ -1,36 +1,63 @@
 import { Revelar } from './Revelar';
-import { proximoPasso } from '../data/content';
+import { Eyebrow, Seta, Titulo } from './Pecas';
+import { proximoPasso, fechamento } from '../data/content';
 
-/** As três frentes de captação, já na zona clara da página. */
+/**
+ * "O próximo passo": os três cartões levam à página de contato já com o
+ * assunto escolhido. Logo depois, o fechamento "Vamos construir juntos".
+ */
 export function ProximoPasso() {
   return (
-    <section
-      className="rf-ato rf-dia"
-      id="apoiar"
-      style={{ '--rf-de': '#F3F0E6', '--rf-ate': '#EFEBDE' }}
-    >
-      <div className="rf-wrap">
-        <Revelar como="span" className="rf-eyebrow">
-          {proximoPasso.eyebrow}
-        </Revelar>
-        <Revelar como="h2" className="rf-h-sec" atraso={80} style={{ maxWidth: '18ch' }}>
-          {proximoPasso.titulo}
-        </Revelar>
-        <Revelar como="p" className="rf-lede" atraso={140}>
-          {proximoPasso.lede}
-        </Revelar>
-
-        <div className="rf-frentes">
-          {proximoPasso.frentes.map((frente, i) => (
-            <Revelar className="rf-frente" key={frente.n} atraso={i * 140}>
-              <span className="rf-frente-n rf-mono">{frente.n}</span>
-              <h3>{frente.titulo}</h3>
-              <p>{frente.texto}</p>
-            </Revelar>
-          ))}
+    <>
+      <section className="sec next" id="contato">
+        <div className="wrap">
+          <Revelar>
+            <Eyebrow>{proximoPasso.eyebrow}</Eyebrow>
+          </Revelar>
+          <Revelar atraso={100}>
+            <Titulo partes={proximoPasso.titulo} />
+          </Revelar>
+          <Revelar como="p" className="lead" atraso={200}>
+            {proximoPasso.lede}
+          </Revelar>
+          <div className="ways">
+            {proximoPasso.frentes.map((f, i) => (
+              <Revelar key={f.n} como="a" className="way" href={f.href} atraso={i * 100}>
+                <b>{f.n}</b>
+                <h3>{f.titulo}</h3>
+                <p>{f.texto}</p>
+                <span className="go">
+                  {f.acao} <Seta tamanho={14} />
+                </span>
+              </Revelar>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="close" id="fim">
+        <div className="bg" aria-hidden="true" />
+        <div className="wrap">
+          <Revelar>
+            <Eyebrow style={{ justifyContent: 'center' }}>{fechamento.eyebrow}</Eyebrow>
+          </Revelar>
+          <Revelar como="h2" atraso={100}>
+            {fechamento.antes}
+            <em>{fechamento.destaque}</em>
+            {fechamento.depois}
+          </Revelar>
+          <Revelar className="cta" atraso={200}>
+            <a className="btn btn-p" href={fechamento.primario.href}>
+              {fechamento.primario.rotulo}
+              <Seta />
+            </a>
+            <a className="btn btn-g" href={fechamento.secundario.href}>
+              {fechamento.secundario.rotulo}
+            </a>
+          </Revelar>
+        </div>
+      </section>
+    </>
   );
 }
 

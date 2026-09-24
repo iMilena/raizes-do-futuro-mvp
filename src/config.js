@@ -28,7 +28,13 @@ export const URL_ENTRADA_PAINEL = env.VITE_URL_ENTRADA_PAINEL || '#/login';
 /** Site do projeto — o "voltar" da porta de entrada. */
 export const URL_SITE = env.VITE_URL_SITE || '#/';
 
-/** Caixa de entrada dos contatos e dos pedidos de acesso. */
+/** Página "Falar com a equipe". Aceita `?tipo=` para chegar com o assunto escolhido. */
+export const URL_CONTATO = '#/contato';
+
+/** Experiência "Explorar a ilha": o mapa de Boipeba com o ciclo animado. */
+export const URL_EXPLORAR = '#/explorar';
+
+/** Caixa de entrada dos pedidos de acesso ao painel (porta de entrada). */
 export const EMAIL_CONTATO = env.VITE_EMAIL_CONTATO || 'contato@raizesdofuturo.org';
 
 /**

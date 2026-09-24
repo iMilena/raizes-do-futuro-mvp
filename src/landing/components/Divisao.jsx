@@ -1,38 +1,52 @@
 import { useRef } from 'react';
-import { useContagem } from '../hooks/useContagem';
-import { useVisivel } from '../hooks/useVisivel';
+import { Revelar } from './Revelar';
+import { Eyebrow, Titulo } from './Pecas';
+import { Cofre } from './Cofre';
+import { Simulador } from './Simulador';
 import { divisao } from '../data/content';
-
-function Fatia({ fatia, atraso, contar }) {
-  const pct = useContagem(fatia.pct, contar);
-  return (
-    <div className={`rf-fatia is-${fatia.chave}`} style={{ '--rf-w': fatia.barra, '--rf-d': `${atraso}ms` }}>
-      <div className="rf-fatia-pct rf-mono">{pct}%</div>
-      <h3>{fatia.titulo}</h3>
-      <p>{fatia.texto}</p>
-      <div className="rf-fatia-barra" aria-hidden="true" />
-    </div>
-  );
-}
+import { useVisivel } from '../hooks/useVisivel';
 
 /**
- * A divisão 60/25/15.
- *
- * As tarjas embaixo dos cartões são proporcionais **entre si**, e não à largura
- * do cartão: a de 60% ocupa a linha inteira e as outras duas se medem contra
- * ela. Três tarjas cheias mostrariam uma divisão em partes iguais, que é
- * justamente o contrário do que a seção afirma.
+ * "Dividido por código": os blocos 60/25/15 crescem na proporção real quando
+ * entram na tela (no celular viram três linhas), e logo abaixo o cofre e o
+ * simulador deixam o leitor mexer nas regras.
  */
 export function Divisao() {
   const ref = useRef(null);
-  const visivel = useVisivel(ref, { limiar: 0.32 });
+  const visivel = useVisivel(ref);
 
   return (
-    <div className={`rf-divisao${visivel ? ' is-in' : ''}`} ref={ref}>
-      {divisao.fatias.map((fatia, i) => (
-        <Fatia key={fatia.chave} fatia={fatia} atraso={i * 180} contar={visivel} />
-      ))}
-    </div>
+    <section className="sec split-sec">
+      <div className="wrap">
+        <Revelar>
+          <Eyebrow>{divisao.eyebrow}</Eyebrow>
+        </Revelar>
+        <Revelar atraso={100}>
+          <Titulo partes={divisao.titulo} />
+        </Revelar>
+        <Revelar como="p" className="lead" atraso={200}>
+          {divisao.lede}
+        </Revelar>
+        <div ref={ref} className={`split-big${visivel ? ' in' : ''}`}>
+          {divisao.fatias.map((f) => (
+            <div key={f.chave} className={f.chave}>
+              <b>{f.pct}%</b>
+              <span>{f.titulo}</span>
+            </div>
+          ))}
+        </div>
+        <div className="split-txt">
+          {divisao.fatias.map((f) => (
+            <p key={f.chave}>{f.texto}</p>
+          ))}
+        </div>
+
+        <div className="play">
+          <Cofre />
+          <Simulador />
+        </div>
+      </div>
+    </section>
   );
 }
 
