@@ -104,6 +104,18 @@ window.__t = {
      quebrado. Ver o comentário longo em navegador.mjs. */
   tem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
   contem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
+  /* Cadastro, Família (operação) e App da Família viraram subabas de
+     "Famílias e carteiras". Clica no menu, espera a faixa de subabas aparecer
+     e clica na pedida. Devolve true quando conseguiu. */
+  abrirSubaba: async rot => {
+    if (__t.clicar('nav.pn-journey button', 'Famílias e carteiras') !== true) return false;
+    for (let i = 0; i < 40; i++) {
+      if (document.querySelector('.pn-subabas')) return __t.clicar('.pn-subabas button', rot);
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return false;
+  },
+  abrirAppFamilia: () => __t.abrirSubaba('App da Família'),
   clicar: (sel, txt) => {
     const els = [...document.querySelectorAll(sel)];
     const el = txt ? els.find(e => e.innerText.trim().includes(txt)) : els[0];

@@ -20,25 +20,30 @@
    ========================================================================= */
 
 :root {
-  /* TEMA CLARO (padrão). Verde da marca só no acento. */
-  --ink:#F7F8F7; --abyss:#FFFFFF; --deep:#FFFFFF; --tide:#F3F5F3; --reef:#E8EBE9;
-  --line:#E2E5E3; --line-2:#D2D7D4; --line-3:#B9C0BC;
+  /* TEMA CLARO (padrão): areia. Verde da marca só no acento. */
+  --ink:#F5F1E7; --abyss:#FFFDF8; --deep:#FFFDF8; --tide:#F0EADC; --reef:#E8E1D1;
+  --line:#E3DDCD; --line-2:#D3CCBA; --line-3:#B9B19C;
   --accent:#2E5A3E; --accent-h:#24482F; --accent-on:#FFFFFF;
-  --accent-ink:#2C6B44; --accent-ink-on:#FFFFFF;
+  --accent-ink:#2E5A3E; --accent-ink-on:#FFFFFF;
+  --accent-soft:rgba(46,90,62,.1);
   --foam:#0F1211;
-  --t1:#1A1D1B; --t2:#4C534F; --t3:#6B726E; --t4:#7F8681;
-  --ok:#2C6B44; --warn:#8A5B08; --warn-strong:#6E4906; --crit:#9E4229; --wait:#6B726E;
-  --chart-mark:#6E7671; --grid:#D2D7D4; --grid-soft:#E7EAE8;
+  --t1:#15241D; --t2:#46554D; --t3:#5C675F; --t4:#66716A;
+  --ok:#2F7A4F; --warn:#8A5B08; --warn-strong:#6E4906; --crit:#B23B2A; --wait:#66716A;
+  --gold:#A8661A; --gold-soft:rgba(194,122,34,.12);
+  --chart-mark:#6E7671; --grid:#D3CCBA; --grid-soft:#E8E1D1;
   --d1:#454C48; --d2:#6E7671; --d3:#A6ADA9;
-  --on-d1:#FFFFFF; --on-d2:#FFFFFF; --on-d3:#1A1D1B;
-  --page-bg:radial-gradient(120% 70% at 50% -10%, #FFFFFF 0%, #F8F9F8 55%, #F4F5F4 100%);
-  --rail-bg:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 60%,#FBFCFB 100%);
-  --topbar-bg:rgba(255,255,255,.92);
-  --hero-bg:radial-gradient(85% 150% at 88% 0%, rgba(46,90,62,.11) 0%, rgba(46,90,62,0) 60%), linear-gradient(135deg,#FFFFFF 0%,#FBFCFB 55%,#F4F7F5 100%);
-  --hero-sub:#5A615D; --hero-line:rgba(26,29,27,.12);
-  --seal-bg:radial-gradient(circle at 50% 30%, #EEF1EF 0%, #DFE4E1 70%);
-  --empty-bg:#FAFBFA; --ov-bg:rgba(18,22,20,.5);
-  --sh:0 1px 2px rgba(16,20,18,.05);
+  --on-d1:#FFFFFF; --on-d2:#FFFFFF; --on-d3:#15241D;
+  /* Gráficos: as três fatias da divisão, validadas para daltonismo e
+     contraste. Nunca aparecem sem rótulo ou legenda ao lado. */
+  --c-renda:#2F7A4F; --c-inf:#C27A22; --c-op:#3D6FC0; --c-neutral:rgba(21,36,29,.14);
+  --page-bg:linear-gradient(#F5F1E7,#F5F1E7);
+  --rail-bg:#FFFDF8;
+  --topbar-bg:rgba(245,241,231,.88);
+  --hero-bg:radial-gradient(85% 150% at 88% 0%, rgba(46,90,62,.09) 0%, rgba(46,90,62,0) 60%), linear-gradient(135deg,#FFFDF8 0%,#FBF7EE 55%,#F4EFE3 100%);
+  --hero-sub:#5C675F; --hero-line:rgba(21,36,29,.12);
+  --seal-bg:radial-gradient(circle at 50% 30%, #F0EADC 0%, #E3DDCD 70%);
+  --empty-bg:#FAF7EF; --ov-bg:rgba(18,22,20,.5);
+  --sh:0 1px 2px rgba(21,36,29,.05),0 8px 24px rgba(21,36,29,.05);
 
   /* Tipografia. As três famílias são servidas pelo próprio domínio, via
      @fontsource (ver src/estilos/fontes.js), e não pelo Google Fonts: o nome
@@ -46,54 +51,60 @@
      ele vir primeiro na pilha, com a versão estática logo atrás. */
   --fd:"Fraunces Variable","Fraunces","Iowan Old Style",Georgia,serif;
   --fu:"Manrope Variable","Manrope","Helvetica Neue",Arial,sans-serif;
-  --fm:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --fm:"JetBrains Mono","IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --rs:6px; --rm:10px; --rl:14px;
 }
 
-/* TEMA ESCURO: do sistema, enquanto o visitante não escolheu claro */
+/* TEMA ESCURO (grafite): do sistema, enquanto o visitante não escolheu claro */
 @media (prefers-color-scheme:dark) {
   :root:not([data-theme="light"]) {
-    --ink:#0B0D0C; --abyss:#0E100F; --deep:#141715; --tide:#1A1E1C; --reef:#212624;
-    --line:#272C29; --line-2:#333A36; --line-3:#414944;
-    --accent:#2E5A3E; --accent-h:#3B6E4E; --accent-on:#F4F6F5;
-    --accent-ink:#74C68F; --accent-ink-on:#0B0D0C;
+    --ink:#111413; --abyss:#181C1A; --deep:#181C1A; --tide:#212623; --reef:#2A302C;
+    --line:#262B28; --line-2:#333A36; --line-3:#444C47;
+    --accent:#7FD99A; --accent-h:#9BE6B1; --accent-on:#0B1A11;
+    --accent-ink:#7FD99A; --accent-ink-on:#0B1A11;
+    --accent-soft:rgba(127,217,154,.1);
     --foam:#F4F6F5;
-    --t1:#E9ECEA; --t2:#A8AFAA; --t3:#8A918C; --t4:#767E78;
-    --ok:#74C68F; --warn:#D9A441; --warn-strong:#EBC47F; --crit:#D2705A; --wait:#A8AFAA;
+    --t1:#EEF1ED; --t2:#B7C0BA; --t3:#98A29B; --t4:#8A948D;
+    --ok:#6FCF8E; --warn:#F0A94F; --warn-strong:#F5C27F; --crit:#F07A66; --wait:#98A29B;
+    --gold:#F3B267; --gold-soft:rgba(243,178,103,.1);
     --chart-mark:#C5CCC7; --grid:#333A36; --grid-soft:#252A27;
     --d1:#D7DCD9; --d2:#959C97; --d3:#656D67;
     --on-d1:#151816; --on-d2:#151816; --on-d3:#F2F5F3;
-    --page-bg:radial-gradient(120% 70% at 50% -10%, #151917 0%, #0D100E 55%, #0B0D0C 100%);
-    --rail-bg:linear-gradient(180deg,#0E100F 0%,#0E100F 60%,#0B0D0C 100%);
-    --topbar-bg:rgba(14,16,15,.9);
-    --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(116,198,143,.08) 0%, rgba(116,198,143,0) 62%), linear-gradient(135deg,#1D221F 0%,#161A18 52%,#121513 100%);
-    --hero-sub:rgba(233,236,234,.66); --hero-line:rgba(233,236,234,.14);
-    --seal-bg:radial-gradient(circle at 50% 30%, #2A312D 0%, #161A18 70%);
-    --empty-bg:rgba(20,23,21,.5); --ov-bg:rgba(4,8,6,.84);
-    --sh:0 1px 0 rgba(255,255,255,.025) inset;
+    --c-renda:#35A07F; --c-inf:#C97F28; --c-op:#5B8EE0; --c-neutral:rgba(255,255,255,.12);
+    --page-bg:linear-gradient(#111413,#111413);
+    --rail-bg:#181C1A;
+    --topbar-bg:rgba(17,20,19,.88);
+    --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(127,217,154,.07) 0%, rgba(127,217,154,0) 62%), linear-gradient(135deg,#1D221F 0%,#181C1A 52%,#151917 100%);
+    --hero-sub:rgba(238,241,237,.66); --hero-line:rgba(238,241,237,.14);
+    --seal-bg:radial-gradient(circle at 50% 30%, #2A302C 0%, #181C1A 70%);
+    --empty-bg:rgba(24,28,26,.6); --ov-bg:rgba(4,8,6,.84);
+    --sh:none;
   }
 }
 
 /* TEMA ESCURO: escolha explícita no seletor do topo */
 :root[data-theme="dark"] {
-  --ink:#0B0D0C; --abyss:#0E100F; --deep:#141715; --tide:#1A1E1C; --reef:#212624;
-  --line:#272C29; --line-2:#333A36; --line-3:#414944;
-  --accent:#2E5A3E; --accent-h:#3B6E4E; --accent-on:#F4F6F5;
-  --accent-ink:#74C68F; --accent-ink-on:#0B0D0C;
+  --ink:#111413; --abyss:#181C1A; --deep:#181C1A; --tide:#212623; --reef:#2A302C;
+  --line:#262B28; --line-2:#333A36; --line-3:#444C47;
+  --accent:#7FD99A; --accent-h:#9BE6B1; --accent-on:#0B1A11;
+  --accent-ink:#7FD99A; --accent-ink-on:#0B1A11;
+  --accent-soft:rgba(127,217,154,.1);
   --foam:#F4F6F5;
-  --t1:#E9ECEA; --t2:#A8AFAA; --t3:#8A918C; --t4:#767E78;
-  --ok:#74C68F; --warn:#D9A441; --warn-strong:#EBC47F; --crit:#D2705A; --wait:#A8AFAA;
+  --t1:#EEF1ED; --t2:#B7C0BA; --t3:#98A29B; --t4:#8A948D;
+  --ok:#6FCF8E; --warn:#F0A94F; --warn-strong:#F5C27F; --crit:#F07A66; --wait:#98A29B;
+  --gold:#F3B267; --gold-soft:rgba(243,178,103,.1);
   --chart-mark:#C5CCC7; --grid:#333A36; --grid-soft:#252A27;
   --d1:#D7DCD9; --d2:#959C97; --d3:#656D67;
   --on-d1:#151816; --on-d2:#151816; --on-d3:#F2F5F3;
-  --page-bg:radial-gradient(120% 70% at 50% -10%, #151917 0%, #0D100E 55%, #0B0D0C 100%);
-  --rail-bg:linear-gradient(180deg,#0E100F 0%,#0E100F 60%,#0B0D0C 100%);
-  --topbar-bg:rgba(14,16,15,.9);
-  --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(116,198,143,.08) 0%, rgba(116,198,143,0) 62%), linear-gradient(135deg,#1D221F 0%,#161A18 52%,#121513 100%);
-  --hero-sub:rgba(233,236,234,.66); --hero-line:rgba(233,236,234,.14);
-  --seal-bg:radial-gradient(circle at 50% 30%, #2A312D 0%, #161A18 70%);
-  --empty-bg:rgba(20,23,21,.5); --ov-bg:rgba(4,8,6,.84);
-  --sh:0 1px 0 rgba(255,255,255,.025) inset;
+  --c-renda:#35A07F; --c-inf:#C97F28; --c-op:#5B8EE0; --c-neutral:rgba(255,255,255,.12);
+  --page-bg:linear-gradient(#111413,#111413);
+  --rail-bg:#181C1A;
+  --topbar-bg:rgba(17,20,19,.88);
+  --hero-bg:radial-gradient(80% 140% at 88% 0%, rgba(127,217,154,.07) 0%, rgba(127,217,154,0) 62%), linear-gradient(135deg,#1D221F 0%,#181C1A 52%,#151917 100%);
+  --hero-sub:rgba(238,241,237,.66); --hero-line:rgba(238,241,237,.14);
+  --seal-bg:radial-gradient(circle at 50% 30%, #2A302C 0%, #181C1A 70%);
+  --empty-bg:rgba(24,28,26,.6); --ov-bg:rgba(4,8,6,.84);
+  --sh:none;
 }
 
 /* O fundo da página é pintado explicitamente, e não herdado: a cor e a textura

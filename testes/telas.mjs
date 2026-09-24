@@ -21,10 +21,13 @@ const ALVO = process.env.ALVO ?? 'http://localhost:5173';
    captura chegava a estourar o tempo do captureScreenshot, porque a landing é
    muito alta e carrega ~2,9 MB de imagens. */
 const TELAS = [
-  ['painel-dashboard', '#/painel', 'Dashboard'],
-  ['painel-cofre', '#/painel', 'Cofre Multisig'],
+  ['painel-visao-geral', '#/painel', 'Visão geral'],
+  ['painel-trilha', '#/painel', 'Trilha de prova'],
+  ['painel-cofre', '#/painel', 'Cofre 2-de-3'],
   ['painel-mercado', '#/painel', 'Mercado'],
-  ['painel-validacao', '#/painel', 'Instituto Vivá'],
+  ['painel-validacao', '#/painel', 'Validação do Vivá'],
+  ['explorar', '#/explorar', null],
+  ['contato', '#/contato', null],
   ['app-familia', '#/familia', null],
 ];
 

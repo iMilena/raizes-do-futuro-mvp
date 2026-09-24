@@ -72,6 +72,18 @@ window.__t = {
      decisão tipográfica de quem desenha. Nas asserções NEGATIVAS (ausência de
      jargão) ignorar a caixa só aumenta o rigor. */
   tem: s => document.body.innerText.toLowerCase().includes(String(s).toLowerCase()),
+  /* Cadastro, Família (operação) e App da Família viraram subabas de
+     "Famílias e carteiras". Clica no menu, espera a faixa de subabas aparecer
+     e clica na pedida. Devolve true quando conseguiu. */
+  abrirSubaba: async rot => {
+    if (__t.clicar('nav.pn-journey button', 'Famílias e carteiras') !== true) return false;
+    for (let i = 0; i < 40; i++) {
+      if (document.querySelector('.pn-subabas')) return __t.clicar('.pn-subabas button', rot);
+      await new Promise(r => setTimeout(r, 50));
+    }
+    return false;
+  },
+  abrirAppFamilia: () => __t.abrirSubaba('App da Família'),
   clicar: (sel, txt) => {
     const els = [...document.querySelectorAll(sel)];
     const el = txt ? els.find(e => e.innerText.trim().includes(txt)) : els[0];
@@ -194,33 +206,33 @@ try {
   await irParaPrimeiraVisita(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".tour") === 1'), 'tour abre sozinho na primeira visita');
   ok(await ev('return __t.tem("Bem-vindo ao Raízes do Futuro")'), 'passo 1 dá boas-vindas e explica o ciclo');
-  ok(await ev('return __t.tem("1 de 9")'), 'contador mostra 1 de 9');
-  ok(await ev('return __t.conta(".tour-pontos i") === 9'), '9 pontos de progresso');
+  ok(await ev('return __t.tem("1 de 11")'), 'contador mostra 1 de 11');
+  ok(await ev('return __t.conta(".tour-pontos i") === 11'), '11 pontos de progresso');
   ok(await ev('return __t.tem("Pular por agora") && __t.tem("Não mostrar de novo")'), 'oferece pular e não mostrar de novo');
   ok(await ev('return __t.conta(".tour-alvo") === 0'), 'passo de boas-vindas não destaca aba');
   ok(await ev('return __t.conta(".tour button.acao.sec") === 0'), 'sem botão Voltar no primeiro passo');
 
-  // percorre os 9 passos conferindo que cada um troca de aba e destaca a aba descrita
+  // percorre os 11 passos conferindo que cada um troca de aba e destaca a aba descrita
   const passosTour = [];
-  for (let n = 0; n < 9; n++) {
+  for (let n = 0; n < 11; n++) {
     const info = await ev(`
       const t = document.querySelector('.tour');
       const alvo = document.querySelector('nav.pn-journey button.tour-alvo');
-      const ativa = document.querySelector('nav.pn-journey button[aria-current="true"]');
+      const ativa = document.querySelector('nav.pn-journey button[aria-current="page"]');
       return { titulo: t.querySelector('b').innerText, contador: t.querySelector('.tour-contador').innerText,
                alvo: alvo ? alvo.innerText.trim() : null, ativa: ativa ? ativa.innerText.trim() : null,
                botao: [...t.querySelectorAll('button.acao')].pop().innerText };
     `);
     passosTour.push(info);
-    // clicar por texto: de "2 de 9" em diante existe também o botão "Voltar", que é o primeiro do container
-    if (n < 8) { await ev('return __t.clicar(".tour-botoes button.acao", "Avançar")'); await espera(420); }
+    // clicar por texto: de "2 de 11" em diante existe também o botão "Voltar", que é o primeiro do container
+    if (n < 10) { await ev('return __t.clicar(".tour-botoes button.acao", "Avançar")'); await espera(420); }
   }
   console.log('    passos: ' + passosTour.map(p => `${p.contador} ${p.titulo}${p.alvo ? ' →[' + p.alvo + ']' : ''}`).join(' | '));
-  ok(passosTour.length === 9, '9 passos percorridos');
-  ok(passosTour.map(p => p.titulo).join('|').includes('Cofre Multisig'), 'cobre a aba do Cofre Multisig');
-  ok(passosTour.filter(p => p.alvo).length === 7, `destaca as 7 abas (${passosTour.filter(p => p.alvo).length})`);
+  ok(passosTour.length === 11, '11 passos percorridos');
+  ok(passosTour.map(p => p.titulo).join('|').includes('Cofre 2-de-3'), 'cobre a tela do Cofre 2-de-3');
+  ok(passosTour.filter(p => p.alvo).length === 9, `destaca uma tela em 9 passos (${passosTour.filter(p => p.alvo).length})`);
   ok(passosTour.every(p => !p.alvo || p.alvo === p.ativa), 'a aba destacada é sempre a que está aberta');
-  ok(passosTour[8].botao.includes('Começar a explorar'), 'último passo tem botão de conclusão');
+  ok(passosTour[10].botao.includes('Começar a explorar'), 'último passo tem botão de conclusão');
 
   await ev('return __t.clicar(".tour-botoes button.acao", "Começar a explorar")');
   await espera(400);
@@ -239,32 +251,32 @@ try {
              classesBody: document.body.className, hash: location.hash };
   `);
   ok(await ev('return __t.tem("Como funciona")'),
-    `botão "❔ Como funciona" no topo${diagTour.existe ? '' : ' — ' + JSON.stringify(diagTour)}`);
+    `botão "Como funciona" no topo${diagTour.existe ? '' : ' — ' + JSON.stringify(diagTour)}`);
   if (!diagTour.existe || diagTour.display === 'none') console.log('    diag: ' + JSON.stringify(diagTour));
   await ev('return __t.clicar(".pn-tbtn")');
   await espera(400);
-  ok(await ev('return __t.conta(".tour") === 1 && __t.tem("1 de 9")'), 'reabre pelo botão, do começo');
+  ok(await ev('return __t.conta(".tour") === 1 && __t.tem("1 de 11")'), 'reabre pelo botão, do começo');
 
   // navegação: avançar, voltar e clicar num ponto
   await ev('return __t.clicar(".tour-botoes button.acao", "Avançar")');
   await espera(350);
-  ok(await ev('return __t.tem("2 de 9")'), 'Avançar vai ao passo 2');
+  ok(await ev('return __t.tem("2 de 11")'), 'Avançar vai ao passo 2');
   await ev('return __t.clicar(".tour-botoes button.acao.sec", "Voltar")');
   await espera(350);
-  ok(await ev('return __t.tem("1 de 9")'), 'Voltar retorna ao passo 1');
-  await ev('return document.querySelectorAll(".tour-pontos i")[5].click(), 1;');
+  ok(await ev('return __t.tem("1 de 11")'), 'Voltar retorna ao passo 1');
+  await ev('return document.querySelectorAll(".tour-pontos i")[7].click(), 1;');
   await espera(400);
-  ok(await ev('return __t.tem("6 de 9")'), 'clicar num ponto salta para o passo');
-  const abaNoPasso6 = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=true]"); return b.innerText.trim();');
-  ok(/Cofre Multisig/.test(abaNoPasso6), `salto também troca a aba (${abaNoPasso6})`);
+  ok(await ev('return __t.tem("8 de 11")'), 'clicar num ponto salta para o passo');
+  const abaNoPasso6 = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=page]"); return b.innerText.trim();');
+  ok(/Cofre 2-de-3/.test(abaNoPasso6), `salto também troca a tela (${abaNoPasso6})`);
 
   // teclado
   await ev('return document.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowRight",bubbles:true})) || window.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowRight"})), 1;');
   await espera(350);
-  ok(await ev('return __t.tem("7 de 9")'), 'seta direita avança');
+  ok(await ev('return __t.tem("9 de 11")'), 'seta direita avança');
   await ev('return window.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowLeft"})), 1;');
   await espera(350);
-  ok(await ev('return __t.tem("6 de 9")'), 'seta esquerda volta');
+  ok(await ev('return __t.tem("8 de 11")'), 'seta esquerda volta');
   await ev('return window.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"})), 1;');
   await espera(350);
   ok(await ev('return __t.conta(".tour") === 0'), 'Escape fecha o tour');
@@ -308,7 +320,7 @@ try {
   secao('1. Carga inicial · Dashboard');
   await irPara(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".tour") === 0'), 'visitante que já viu o tour entra direto no painel');
-  ok(await ev('return __t.tem("Impacto em tempo real")'), 'Dashboard renderiza');
+  ok(await ev('return __t.tem("Para onde foi cada real de setembro")'), 'Dashboard renderiza');
   ok(await ev('return __t.tem("Raízes do Futuro")'), 'cabeçalho presente');
   ok(await ev('return __t.tem("Boipeba")'), 'cabeçalho identifica o piloto');
   ok(await ev('return __t.tem("Solana")'), 'menciona Solana');
@@ -317,17 +329,17 @@ try {
      entre cor e nome. O que se afirma continua sendo o mesmo: há um gráfico de
      quilos por semana e um de receita por fonte, cada um com mais de uma
      série. */
-  ok(await ev('return __t.conta(".pn-chart") >= 1'), 'gráfico de quilos por semana em SVG');
-  ok(await ev('return __t.conta(".pn-chart .pn-bar") >= 2'), 'barras: uma por semana com coleta');
-  ok(await ev('return __t.conta(".pn-hbar") >= 2'), 'receita por fonte, uma barra por fonte');
+  ok(await ev('return __t.conta(".pn-flow svg .band") >= 5'), 'diagrama de fluxo do resíduo aos destinos, em SVG');
+  ok(await ev('return __t.conta(".vg-bars .vg-bar") === 8'), 'barras: uma por semana, agosto e setembro');
+  ok(await ev('return __t.conta(".vg-kpi") === 4'), 'quatro indicadores, cada um com a sua fonte');
   ok(await ev('return __t.tem("Ver o ciclo completo")'), 'botão do modo demo presente');
-  ok(await ev('return __t.conta("nav.pn-journey button") === 9'), '9 etapas (inclui Conferência, Cadastro e App da Família)');
+  ok(await ev('return __t.conta("nav.pn-journey button") === 8'), '8 telas no menu (Cadastro e App da Família viram subabas)');
 
   /* ---------- 2. cofre multisig ---------- */
   secao('2. Cofre multisig — assinaturas 2-de-3');
-  ok(await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")'), 'abre a aba do cofre');
+  ok(await ev('return __t.clicar("nav.pn-journey button", "Cofre 2-de-3")'), 'abre a aba do cofre');
   await espera(350);
-  ok(await ev('return __t.tem("Fundo Infância no cofre multisig")'), 'título novo do cofre');
+  ok(await ev('return __t.tem("Nenhuma organização mexe no dinheiro sozinha")'), 'título novo do cofre');
   ok(await ev('return /proposta #\\d+/.test(__t.txt())'), 'proposta de exemplo da seed aparece');
   ok(await ev('return __t.conta(".pn-signatario") === 3'), '3 signatários listados');
   ok(await ev('return __t.tem("Instituto Vivá") && __t.tem("DeTrash") && __t.tem("Representante Comunitário")'), 'os 3 nomes corretos');
@@ -418,7 +430,7 @@ try {
 
   /* ---------- 5. coleta e validação ---------- */
   secao('5. Coletor → Instituto Vivá');
-  await ev('return __t.clicar("nav.pn-journey button", "Coletor")');
+  await ev('return __t.clicar("nav.pn-journey button", "Coleta")');
   await espera(300);
   await ev('return __t.preencher(".pn-card input", "Seu Zé", 0)');
   await ev('return __t.preencher(".pn-card input[type=number]", "31")');
@@ -429,7 +441,7 @@ try {
   ok(await ev('return __t.tem("Coleta de 31 kg enviada")'), 'toast "Coleta enviada ✔"');
   ok(await ev('return __t.tem("Seu Zé")'), 'coleta aparece na tabela');
 
-  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
   await espera(350);
   ok(await ev('return __t.tem("31 kg")'), 'coleta pendente listada para validação');
   await ev('return __t.clicar(".pn-item-validar button", "Validar pelos critérios DeTrash")');
@@ -442,20 +454,20 @@ try {
   /* ---------- 6. comprovação → proposta ---------- */
   secao('6. Comprovação da família → proposta no cofre');
   // o seed não deixa nenhuma comprovação pendente de validação: a família envia uma agora
-  await ev('return __t.clicar("nav.pn-journey button", "Família (operação)")');
+  await ev('return __t.abrirSubaba("Família (operação)")');
   await espera(400);
   ok(await ev('return __t.clicar(".pn-card .pn-btn", "Enviar comprovação") === true'), 'família envia a comprovação pela visão da operação');
   await espera(450);
   ok(await ev('return __t.tem("em validação")'), 'condição passa a "em validação"');
 
-  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
   await espera(400);
   ok(await ev('return /Consulta pediátrica|Frequência escolar/.test(__t.txt())'), 'comprovação aparece para validação no Vivá');
   ok(await ev('return __t.tem("Livre no cofre para novas propostas")'), 'mostra saldo livre do cofre');
   await ev('return __t.clicar(".pn-item-validar button", "criar proposta no cofre")');
   await espera(500);
   ok(await ev('return __t.tem("Proposta criada no cofre")'), 'toast: proposta criada');
-  await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
+  await ev('return __t.clicar("nav.pn-journey button", "Cofre 2-de-3")');
   await espera(400);
   ok(await ev('return __t.conta(".pn-proposta") >= 1'), 'nova proposta aparece no cofre');
   ok(await ev('return __t.tem("0 de 2 assinaturas")'), 'nasce com 0 de 2 assinaturas');
@@ -464,7 +476,7 @@ try {
   secao('7. App da Família — entrada, saldo, compromissos, extrato');
   // seção autocontida: estado limpo, para a família ainda ter um compromisso pendente
   await irPara(ALVO + '/#/painel');
-  const cliqueAba = await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  const cliqueAba = await ev('return __t.abrirAppFamilia()');
   await espera(500);
   ok(cliqueAba === true, 'abre a aba do App da Família');
   ok(await ev('return __t.conta(".moldura-celular") === 1'), 'renderiza numa única moldura de celular');
@@ -640,7 +652,7 @@ try {
   /* ---------- 10. onboarding gamificado ---------- */
   secao('10. Onboarding gamificado (família sem conta)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(400);
   const semConta = await ev(`
     const s = JSON.parse(localStorage.getItem('raizes-mvp-v2'));
@@ -769,7 +781,7 @@ try {
   let terminou = false;
   for (let i = 0; i < 60; i++) {
     await espera(1200);
-    const abaAtiva = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=true]"); return b ? b.innerText.trim() : "";');
+    const abaAtiva = await ev('const b = document.querySelector("nav.pn-journey button[aria-current=page]"); return b ? b.innerText.trim() : "";');
     const passo = await ev('const b = document.querySelector(".demo-narrador-topo b"); return b ? b.innerText.trim() : "";');
     if (passo && !marcos.some(m => m.passo === passo)) marcos.push({ passo, aba: abaAtiva });
     if (!(await ev('return __t.conta(".demo-narrador") === 1'))) { terminou = true; break; }
@@ -817,7 +829,7 @@ try {
   ok(pos.tx > 5 && pos.props >= 1, `reset volta à seed (${pos.tx} tx, ${pos.props} propostas)`);
   ok(pos.aguardando === 1 && pos.assin === 1, 'seed traz 1 proposta multisig com 1 assinatura já coletada');
   ok(pos.cofre && typeof pos.slot === 'number' && pos.prov === 'Decaf', 'reset preserva cofre, slot e provider Decaf');
-  ok(await ev('return __t.tem("Impacto em tempo real")'), 'app segue funcional após o reset');
+  ok(await ev('return __t.tem("Para onde foi cada real de setembro")'), 'app segue funcional após o reset');
 
   /* ---------- 14. estado antigo/inválido ---------- */
   secao('14. Estado antigo no localStorage não quebra o app');
@@ -825,13 +837,13 @@ try {
   await cdp('Page.reload', {});
   await espera(2200);
   await ev(HELPERS + ' return 1;');
-  ok(await ev('return __t.tem("Impacto em tempo real")'), 'estado inválido é descartado e a seed é recriada');
-  ok(await ev('return __t.conta(".pn-chart") >= 1 && __t.conta(".pn-hbar") >= 1'), 'gráficos voltam a renderizar');
+  ok(await ev('return __t.tem("Para onde foi cada real de setembro")'), 'estado inválido é descartado e a seed é recriada');
+  ok(await ev('return __t.conta(".pn-flow svg .band") >= 5 && __t.conta(".vg-bars .vg-bar") === 8'), 'gráficos voltam a renderizar');
 
   /* ---------- 14a. ancoragem do relatório na Solana devnet ---------- */
   secao('14a. Ancoragem do relatório na Solana devnet');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
   await espera(900);
   ok(await ev('return __t.tem("não ancorado")'), 'relatório da seed aparece como não ancorado');
   /* O rótulo e o hash deixaram de morar na mesma linha de texto: agora são a
@@ -878,7 +890,7 @@ try {
   ok(guardado?.hash === hashApp, 'o hash guardado é o mesmo que o app exibiu');
   ok(guardado?.txs === 1 && guardado.real === true, 'gera transação ANCORAGEM marcada como real');
 
-  await ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
+  await ev('return __t.clicar("nav.pn-journey button", "Cofre 2-de-3")');
   await espera(600);
   ok(await ev('return __t.tem("ANCORAGEM")'), 'a ancoragem aparece no explorador de transações');
 
@@ -980,7 +992,7 @@ try {
   /* ---------- 14b2. cadastro de família ---------- */
   secao('14b2. Cadastro de família (com consentimento no mesmo formulário)');
   await irPara(ALVO + '/#/painel');
-  ok(await ev('return __t.clicar("nav.pn-journey button", "Cadastro")'), 'abre a aba de Cadastro');
+  ok(await ev('return __t.abrirSubaba("Cadastro")'), 'abre a aba de Cadastro');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1081,7 +1093,7 @@ try {
   await espera(500);
 
   /* a família nova tem de aparecer nas outras abas na hora */
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Joana Teste da Silva")'), 'aparece no seletor do App da Família');
@@ -1096,7 +1108,7 @@ try {
   /* ---------- 14b3. meta de poupança ---------- */
   secao('14b3. Meta de poupança (definida pela família, sem tutela)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1174,7 +1186,7 @@ try {
   /* ---------- 14b4. a família confere e contesta ---------- */
   secao('14b4. Suas entregas e "isso está errado"');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1187,7 +1199,7 @@ try {
     const f = s.familias.find(x => x.carteira);
     return { id: f.id, nome: f.resp };
   `);
-  await ev('return __t.clicar("nav.pn-journey button", "Coletor")');
+  await ev('return __t.clicar("nav.pn-journey button", "Coleta")');
   await espera(600);
   await ev(HELPERS + ' return 1;');
   await ev('return __t.preencher(".pn-card input", "Dona Nilza", 0)');
@@ -1208,7 +1220,7 @@ try {
   famC.nome = famAlvoC.nome;
   ok(famC.coletaId !== null, `a entrega nova ficou vinculada à família (${famC.kg} kg, pendente)`);
 
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
@@ -1254,7 +1266,7 @@ try {
   ok(!ctBase.temResposta, 'e ainda sem resposta');
 
   /* o outro lado do circuito: a operação vê e responde */
-  await ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
   await espera(800);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Contestações das famílias")'), 'a operação vê as contestações');
@@ -1280,7 +1292,7 @@ try {
   await espera(700);
 
   /* e a família vê a resposta no app dela */
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(700);
   await ev(HELPERS + ' return 1;');
   await ev(`return __t.preencher(".fam-entrada select", ${famC.id})`);
@@ -1297,7 +1309,7 @@ try {
   /* ---------- 14c. voz do Tuca ---------- */
   secao('14c. Voz da Tuca (leitura em voz alta, opcional)');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "App da Família")');
+  await ev('return __t.abrirAppFamilia()');
   await espera(600);
   await ev(HELPERS + ' return 1;');
 
@@ -1343,20 +1355,20 @@ try {
   await irPara(ALVO + '/#/painel');
   ok(await ev('return __t.conta(".idioma button") === 2'), 'seletor PT/EN no cabeçalho');
   ok(await ev('return document.documentElement.lang === "pt-BR"'), 'português é o padrão');
-  ok(await ev('return __t.tem("Impacto em tempo real")'), 'Dashboard em português');
+  ok(await ev('return __t.tem("Para onde foi cada real de setembro")'), 'Dashboard em português');
 
   ok(await ev('return __t.clicar(".idioma button", "EN") === true'), 'troca para inglês');
   await espera(400);
   ok(await ev('return document.documentElement.lang === "en"'), 'atributo lang do documento acompanha');
-  ok(await ev('return __t.tem("Impact in real time")'), 'Dashboard traduzido');
+  ok(await ev('return __t.tem("Where every real of September went")'), 'Dashboard traduzido');
   /* os grupos do menu usam text-transform:uppercase, e innerText devolve o texto
      TRANSFORMADO — comparar com a caixa original falha sem nada estar errado */
   ok(await ev('const s = __t.txt().toLowerCase(); return s.includes("overview") && s.includes("governance")'), 'menu traduzido');
-  ok(await ev('return __t.tem("Multisig Vault") && __t.tem("Family App")'), 'abas traduzidas');
-  ok(await ev('return !__t.tem("Impacto em tempo real")'), 'e o português sai da tela');
+  ok(await ev('return __t.tem("2-of-3 Vault") && __t.tem("Families and wallets")'), 'telas do menu traduzidas');
+  ok(await ev('return !__t.tem("Para onde foi cada real de setembro")'), 'e o português sai da tela');
 
   /* honestidade: telas sem tradução avisam em vez de fingir */
-  await ev('return __t.clicar("nav.pn-journey button", "Multisig Vault")');
+  await ev('return __t.clicar("nav.pn-journey button", "2-of-3 Vault")');
   await espera(500);
   await ev(HELPERS + ' return 1;');
   console.log('    largura da janela: ' + await ev('return window.innerWidth'));

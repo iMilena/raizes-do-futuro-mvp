@@ -211,9 +211,9 @@ export default function Mercado() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={5} total={9} area="Operação" titulo="Onde o impacto vira dinheiro">
-        Duas fontes de receita sobre o mesmo resíduo validado: o turista leva a peça, a empresa
-        leva a evidência. <b>A divisão 60/25/15 acontece na entrada, não no fim do mês.</b>
+      <TelaCabecalho area="Operação · Mercado" titulo="Duas fontes de receita sobre o mesmo resíduo validado.">
+        O turista leva a peça, a empresa leva a evidência. <b>A divisão 60/25/15 acontece no
+        momento da venda, não no fim do mês.</b>
       </TelaCabecalho>
 
       <Grade colunas={2}>

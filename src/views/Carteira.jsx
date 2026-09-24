@@ -361,10 +361,8 @@ export default function Carteira() {
 
   const cabecalho = (
     <TelaCabecalho
-      etapa={8}
-      total={9}
-      area="Operação"
-      titulo={`Carteira da Família, ${PROVIDER_CARTEIRA} (${REDE})`}
+      area={`Famílias · Carteira ${PROVIDER_CARTEIRA} (${REDE})`}
+      titulo="A conta é da família. A equipe acompanha, nunca gasta."
     >
       A conta é da família e o PIN fica no celular dela. <b>A operação acompanha, registra o
       consentimento e destrava, nunca gasta.</b>

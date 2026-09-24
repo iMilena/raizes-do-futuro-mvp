@@ -67,7 +67,7 @@ export default function Coleta() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={2} total={9} area="Operação" titulo="Registro de coleta">
+      <TelaCabecalho area="Operação · Coleta" titulo="Registrar uma entrega leva menos de um minuto.">
         O que o coletor faz no celular, na praia, com a sacola ainda na mão: peso, material,
         local e foto. <b>Menos de um minuto por entrega.</b>
       </TelaCabecalho>

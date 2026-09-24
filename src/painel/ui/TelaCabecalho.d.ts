@@ -10,11 +10,7 @@
 import type { ReactNode } from 'react';
 
 export declare function TelaCabecalho(props: {
-  /** Posição desta tela no ciclo, começando em 1. */
-  etapa: number;
-  /** Quantas telas o ciclo tem ao todo. */
-  total: number;
-  /** A área a que a tela pertence: Operação, Governança, Famílias. */
+  /** O rótulo "Área · Tela" acima do título (ex.: "Operação · Coleta"). */
   area: string;
   titulo: string;
   /** A frase de propósito, logo abaixo do título. */

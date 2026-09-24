@@ -24,7 +24,7 @@ const PASSOS = [
     tab: 'coleta', foco: 'coleta-form', dur: 3400,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'NOVA_COLETA', payload: { coletor: 'Dona Nilza', material: 'Vidro', kg: 52, local: 'Praia de Cueira', data: new Date().toISOString().slice(0, 10) } });
-      toast('Coleta de 52 kg enviada ✔');
+      toast('Coleta de 52 kg enviada');
     },
   },
   {
@@ -33,7 +33,7 @@ const PASSOS = [
     tab: 'validacao', foco: 'validar-coletas', dur: 3600,
     acao: ({ dispatch, state, toast }) => {
       const c = [...state.coletas].reverse().find(c => c.status === 'pendente');
-      if (c) { dispatch({ type: 'VALIDAR_COLETA', id: c.id }); toast(`Coleta de ${c.kg} kg validada pela DeTrash ✔`); }
+      if (c) { dispatch({ type: 'VALIDAR_COLETA', id: c.id }); toast(`Coleta de ${c.kg} kg validada pela DeTrash`); }
     },
   },
   {
@@ -42,7 +42,7 @@ const PASSOS = [
     tab: 'validacao', foco: 'relatorio', dur: 3600,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'EMITIR_RELATORIO', periodo: 'Julho 2026 — quinzena 2' });
-      toast('Relatório de Circularidade emitido 📄');
+      toast('Relatório de Circularidade emitido');
     },
   },
   {
@@ -51,7 +51,7 @@ const PASSOS = [
     tab: 'mercado', foco: 'split', dur: 3200,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'NOVA_VENDA', payload: { tipo: 'esg', descricao: 'Relatório de Circularidade — Julho Q2', comprador: 'Costa Verde Ltda.', valor: 2500 } });
-      toast('Venda de R$ 2.500,00 registrada 🛒');
+      toast('Venda de R$ 2.500,00 registrada');
     },
   },
   {
@@ -65,7 +65,7 @@ const PASSOS = [
     tab: 'familia', foco: 'compromissos', dur: 3800,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: FAMILIA_DEMO, condicaoId: CONDICAO_DEMO });
-      toast('Foto do comprovante enviada 📎');
+      toast('Foto do comprovante enviada');
     },
   },
   {
@@ -74,7 +74,7 @@ const PASSOS = [
     tab: 'validacao', foco: 'comprovacoes', dur: 3800,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'VALIDAR_CONDICAO', familiaId: FAMILIA_DEMO, condicaoId: CONDICAO_DEMO });
-      toast('Comprovação validada → proposta criada no cofre 🗳️', 'info');
+      toast('Comprovação validada: proposta criada no cofre', 'info');
     },
   },
   {
@@ -83,7 +83,7 @@ const PASSOS = [
     tab: 'fundo', foco: 'propostas', dur: 3600,
     acao: ({ dispatch, state, toast }) => {
       const p = state.propostas.find(p => p.status === 'aguardando' && p.familiaId === FAMILIA_DEMO && p.condicaoId === CONDICAO_DEMO);
-      if (p) { dispatch({ type: 'ASSINAR_PROPOSTA', propostaId: p.id, signatario: 'viva' }); toast('Instituto Vivá assinou (1/2) ✍️', 'info'); }
+      if (p) { dispatch({ type: 'ASSINAR_PROPOSTA', propostaId: p.id, signatario: 'viva' }); toast('Instituto Vivá assinou (1/2)', 'info'); }
     },
   },
   {
@@ -94,7 +94,7 @@ const PASSOS = [
       const p = state.propostas.find(p => p.status === 'aguardando' && p.familiaId === FAMILIA_DEMO && p.condicaoId === CONDICAO_DEMO);
       if (p) {
         dispatch({ type: 'ASSINAR_PROPOSTA', propostaId: p.id, signatario: 'detrash' });
-        toast(`Bônus de ${fmt(p.valor)} liberado 🎉`);
+        toast(`Bônus de ${fmt(p.valor)} liberado`);
       }
     },
   },
@@ -109,7 +109,7 @@ const PASSOS = [
     tab: 'familia', foco: 'saque', dur: 4000,
     acao: ({ dispatch, state, toast }) => {
       const f = state.familias.find(f => f.id === FAMILIA_DEMO);
-      if (f && f.saldo > 0) { dispatch({ type: 'SACAR_PIX', id: f.id, valor: f.saldo }); toast('Pix enviado 💸'); }
+      if (f && f.saldo > 0) { dispatch({ type: 'SACAR_PIX', id: f.id, valor: f.saldo }); toast('Pix enviado'); }
     },
   },
   {

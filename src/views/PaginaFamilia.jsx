@@ -1018,7 +1018,7 @@ export default function PaginaFamilia({ standalone = false }) {
      verdade e não leva nada disso à frente. */
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={9} total={9} area="Família" titulo="App da Família, como a família vê no celular">
+      <TelaCabecalho area="Famílias · App da Família" titulo="App da Família, como a família vê no celular">
         Zero jargão técnico: aqui é "conta da família", "dinheiro" e "cofre digital".
         Esta tela também abre sozinha, em modo celular, no endereço <b>{location.origin + location.pathname}#/familia</b>.
       </TelaCabecalho>

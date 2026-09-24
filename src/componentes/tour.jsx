@@ -3,7 +3,7 @@ import { useDemo } from './demo.jsx';
 
 /* ---------------------------------------------------------------------------
    Tour de primeira visita do painel: apresenta o ciclo do projeto e o que
-   cada uma das 7 abas faz. Avança no ritmo de quem está lendo (não é o modo
+   cada tela do menu faz. Avança no ritmo de quem está lendo (não é o modo
    demo automático) e destaca a aba descrita.
 --------------------------------------------------------------------------- */
 
@@ -18,40 +18,48 @@ function marcarVisto() {
 
 export const PASSOS_TOUR = [
   {
-    tab: 'dashboard', icone: '🌱', titulo: 'Bem-vindo ao Raízes do Futuro', semAlvo: true,
-    texto: 'Este painel demonstra o ciclo completo do piloto de Boipeba, na Bahia: o resíduo que sai da praia se transforma em renda para quem coleta e em bônus de saúde e educação para as crianças. Cada etapa fica registrada e verificável — e é isso que as 7 abas acima mostram, uma por perfil.',
+    tab: 'dashboard', titulo: 'Bem-vindo ao Raízes do Futuro', semAlvo: true,
+    texto: 'Este painel demonstra o ciclo completo do piloto de Boipeba, na Bahia: o resíduo que sai da praia se transforma em renda para quem coleta e em bônus de saúde e educação para as crianças. Cada etapa fica registrada e verificável, e é isso que as telas do menu mostram, uma por perfil.',
   },
   {
-    tab: 'dashboard', icone: '📊', titulo: 'Dashboard',
-    texto: 'Os indicadores do piloto contra as metas, os quilos validados por semana e a receita por fonte. Aqui também fica o botão ▶ Ver o ciclo completo, que executa a jornada inteira sozinho, narrando cada passo — é o atalho para ver tudo funcionando sem clicar em nada.',
+    tab: 'dashboard', titulo: 'Visão geral',
+    texto: 'O relatório do mês: de onde veio cada real e para onde foi, do quilo validado até a conta das famílias. No modo Apresentação, cada número mostra a sua fonte; no modo Operação, aparece a fila do dia. Aqui também fica o botão Ver o ciclo completo, que executa a jornada inteira sozinho, narrando cada passo.',
   },
   {
-    tab: 'coleta', icone: '🧹', titulo: 'Coletor',
-    texto: 'Onde o ciclo começa: quem coletou, qual material, quantos quilos e em que praia. No app real, foto e geolocalização compõem a evidência. Ponto importante do modelo: a renda desse trabalho é incondicional — ela não depende de nenhuma contrapartida da família.',
+    tab: 'trilha', titulo: 'Trilha de prova',
+    texto: 'Um valor pago, e todas as provas que ele atravessou: a coleta, a conferência da IA, a validação, a venda, a divisão no contrato e a liberação no cofre. É a resposta para a pergunta que todo investidor faz: como eu sei que o dinheiro chegou?',
   },
   {
-    tab: 'validacao', icone: '✅', titulo: 'Instituto Vivá',
-    texto: 'O oráculo credenciado. Valida a coleta pela metodologia DeTrash, consolida os Relatórios de Circularidade e confere as comprovações de saúde e educação. Repare: validar uma comprovação não libera dinheiro — apenas cria uma proposta no cofre.',
+    tab: 'coleta', titulo: 'Coleta',
+    texto: 'Onde o ciclo começa: quem coletou, qual material, quantos quilos e em que praia. No app real, foto e geolocalização compõem a evidência. Ponto importante do modelo: a renda desse trabalho é incondicional, e não depende de nenhuma contrapartida da família.',
   },
   {
-    tab: 'mercado', icone: '🛒', titulo: 'Mercado',
-    texto: 'De onde vem o dinheiro: turista comprando produto reaproveitado e empresa financiando resultado ambiental verificável. Cada venda é dividida na hora — 60% renda direta, 25% Fundo Infância, 15% operação — e você vê essa divisão acontecer na animação.',
+    tab: 'conferencia', titulo: 'Conferência da IA',
+    texto: 'A IA sinaliza. Uma pessoa decide. Quatro detectores revisam cada coleta, e o que parece estranho vem para esta fila com o motivo explicado. Ninguém é punido automaticamente.',
   },
   {
-    tab: 'fundo', icone: '🔗', titulo: 'Cofre Multisig',
+    tab: 'validacao', titulo: 'Validação do Vivá',
+    texto: 'O oráculo credenciado. Valida a coleta pela metodologia DeTrash, consolida os Relatórios de Circularidade e confere as comprovações de saúde e educação. Repare: validar uma comprovação não libera dinheiro, apenas cria uma proposta no cofre.',
+  },
+  {
+    tab: 'mercado', titulo: 'Mercado',
+    texto: 'De onde vem o dinheiro: turista comprando produto reaproveitado e empresa financiando resultado ambiental verificável. Cada venda é dividida na hora (60% renda direta, 25% Fundo Infância, 15% operação), e você vê essa divisão acontecer na animação.',
+  },
+  {
+    tab: 'fundo', titulo: 'Cofre 2-de-3',
     texto: 'O coração do modelo: um cofre 2-de-3 na Solana. Para o bônus sair, dois entre Instituto Vivá, DeTrash e Representante Comunitário precisam assinar a proposta. Nenhuma organização move esse dinheiro sozinha. Mais abaixo, o explorador mostra cada transação com sua signature e slot.',
   },
   {
-    tab: 'carteira', icone: '👨‍👩‍👧', titulo: 'Família (operação)',
-    texto: 'A visão do agente que acompanha a família: conectar a carteira Decaf, conferir o endereço na Solana, o extrato e o saque via Pix. Sem seed phrase de 12 palavras — só celular e um PIN de 4 números, porque essa barreira exclui exatamente quem o projeto quer alcançar.',
+    tab: 'carteira', titulo: 'Famílias e carteiras',
+    texto: 'Três visões da mesma família: o cadastro com o consentimento, a conta vista pelo agente (carteira Decaf, extrato e saque via Pix) e o App da Família, do lado de quem recebe. Sem seed phrase de 12 palavras: só celular e um PIN de 4 números.',
   },
   {
-    tab: 'familia', icone: '📱', titulo: 'App da Família',
-    texto: 'A mesma conta, do lado de quem recebe. Nenhuma palavra técnica aparece aqui: é "conta da família", "dinheiro" e "cofre digital". Tem onboarding guiado pelo caranguejo Tuca, saldo em reais e retirada em dois toques. Esta tela também abre sozinha, em modo celular, no endereço #/familia.',
+    tab: 'familia', titulo: 'App da Família',
+    texto: 'A mesma conta, do lado de quem recebe. Nenhuma palavra técnica aparece aqui: é "conta da família", "dinheiro" e "cofre digital". Saldo em reais, o que falta para o bônus de cada filho e retirada em dois toques. Esta tela também abre sozinha, em modo celular, no endereço #/familia.',
   },
   {
-    tab: 'dashboard', icone: '🎬', titulo: 'Pronto para explorar', semAlvo: true,
-    texto: 'Dois atalhos para guardar: ▶ Ver o ciclo completo, no Dashboard, roda a jornada inteira narrada; e Resetar demo, no rodapé, devolve tudo ao estado inicial quantas vezes você quiser. Este tour fica sempre disponível no ❔ Como funciona, no topo da página.',
+    tab: 'dashboard', titulo: 'Pronto para explorar', semAlvo: true,
+    texto: 'Dois atalhos para guardar: Ver o ciclo completo, na Visão geral, roda a jornada inteira narrada; e Resetar demo, no rodapé, devolve tudo ao estado inicial quantas vezes você quiser. Este tour fica sempre disponível no botão Como funciona, no topo da página.',
   },
 ];
 
@@ -89,7 +97,6 @@ export function TourPainel({ indice: i, setIndice: setI, setTab, aoFechar }) {
   return (
     <div className="tour" role="dialog" aria-label="Tour do painel">
       <div className="tour-topo">
-        <span className="tour-icone" aria-hidden="true">{passo.icone}</span>
         <b>{passo.titulo}</b>
         <span className="tour-contador">{i + 1} de {PASSOS_TOUR.length}</span>
       </div>

@@ -315,7 +315,7 @@ export default function Validacao() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={3} total={9} area="Operação" titulo="Validação pelo oráculo credenciado">
+      <TelaCabecalho area="Operação · Instituto Vivá" titulo="A comprovação é presencial. O painel só guarda o resultado.">
         O Instituto Vivá é quem transforma uma coleta em evidência e uma comprovação em dinheiro
         proposto. <b>Nada é liberado por uma pessoa sozinha.</b>
       </TelaCabecalho>

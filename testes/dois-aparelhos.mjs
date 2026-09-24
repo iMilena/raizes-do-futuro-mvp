@@ -122,7 +122,7 @@ try {
   ok(await contarNuvem('coletas') === antesColetas, 'e nada foi para a nuvem enquanto offline');
 
   secao('3. Aparelho B trabalha normalmente, online');
-  await B.ev('return __t.clicar("nav.pn-journey button", "Cofre Multisig")');
+  await B.ev('return __t.clicar("nav.pn-journey button", "Cofre 2-de-3")');
   await espera(700);
   await B.ev(AJUDANTES + ' return 1;');
   const antesAss = await contarNuvem('assinaturas');

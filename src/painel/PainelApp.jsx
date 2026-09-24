@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore, fmt, trunc } from '../estado/store.jsx';
 import * as auth from '../lib/auth.js';
 import * as nuvem from '../lib/nuvem.js';
@@ -8,6 +8,8 @@ import { DemoProvider, DemoNarrador } from '../componentes/demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from '../componentes/tour.jsx';
 import { Icon, SpriteIcones } from './ui/Icones';
 import { SeletorTema } from './ui/SeletorTema';
+import { ModoProvider, SeletorModo, useModo } from './ui/modo';
+import { CamadaDeDicas } from './ui/Dica';
 import { NavEtapa } from './ui/TelaCabecalho';
 import '../estilos/styles.css';
 import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo proprio
@@ -17,6 +19,7 @@ import '../estilos/estilos-rastreio.css'; // rastreio do produto, em arquivo pro
    que o styles.css do MVP declara. Quando a folha antiga for podada, no fim da
    migracao, esta linha pode subir para o topo. */
 import '../styles/tokens.css';
+import './ui/painel.css'; // os primitivos: as telas novas não passam por primitivos.jsx
 import './ui/shell.css';
 
 /* ---------------------------------------------------------------------------
@@ -36,7 +39,8 @@ import './ui/shell.css';
 
 /* Dentro do pedaço do painel, cada tela é ainda um pedaço próprio: quem entra
    para ver o Dashboard não precisa do Cadastro nem do App da Família junto. */
-const Dashboard = lazy(() => import('../views/Dashboard.jsx'));
+const VisaoGeral = lazy(() => import('../views/VisaoGeral.jsx'));
+const Trilha = lazy(() => import('../views/Trilha.jsx'));
 const Coleta = lazy(() => import('../views/Coleta.jsx'));
 const Validacao = lazy(() => import('../views/Validacao.jsx'));
 /* Do módulo de Validação de Coleta. É TSX no meio do JSX, e o Vite não se
@@ -56,24 +60,54 @@ function Carregando() {
   return <p className="mini" style={{ padding: '28px 4px' }}>Carregando…</p>;
 }
 
-/* [id, ícone, rótulo, subtítulo, grupo do menu]
-   O grupo só organiza a barra lateral; a ordem continua sendo a da jornada,
-   porque as setas "próxima etapa" e o tour guiado dependem dela. */
-const TABS = [
-  ['dashboard', '', 'Dashboard', 'visão geral do piloto', 'Visão geral'],
-  ['coleta', '', 'Coletor', 'registrar coleta', 'Operação'],
-  ['validacao', '', 'Instituto Vivá', 'validar & aprovar', 'Operação'],
-  /* "Conferência" e não "Validação de Coleta": a aba acima já se chama Validação
-     e faz outra coisa (emite o Relatório de Circularidade e valida as condições
-     das crianças). Dois itens com o mesmo nome no menu, cada um fazendo uma
-     coisa, é confusão garantida na primeira demonstração. */
-  ['conferencia', '', 'Conferência', 'coletas sinalizadas', 'Operação'],
-  ['mercado', '', 'Mercado', 'turista & empresa', 'Operação'],
-  ['fundo', '', 'Cofre Multisig', 'Solana · 2-de-3', 'Governança'],
-  ['cadastro', '', 'Cadastro', 'incluir família', 'Famílias'],
-  ['carteira', '', 'Família (operação)', 'visão do agente', 'Famílias'],
-  ['familia', '', 'App da Família', 'como a família vê', 'Famílias'],
+/* ---------------------------------------------------------------------------
+   O menu do redesign: oito telas em quatro grupos, na ordem do ciclo.
+
+   "Famílias e carteiras" reúne três telas que já existiam (Cadastro, Família
+   na visão do agente e App da Família) em subabas. Os ids antigos continuam
+   valendo em `setTab` (o tour, a busca, as notificações e o modo demo usam
+   'carteira' e 'familia'), e a tela ativa do menu é deduzida deles.
+
+   O `id` da Visão geral continua 'dashboard' porque é por ele que o seletor de
+   idioma sabe que a tela tem versão em inglês.
+--------------------------------------------------------------------------- */
+const TELAS = [
+  { id: 'dashboard', icone: 'home', rotulo: 'Visão geral', grupo: 'Visão geral' },
+  { id: 'trilha', icone: 'trilha', rotulo: 'Trilha de prova', grupo: 'Visão geral' },
+  { id: 'coleta', icone: 'bag', rotulo: 'Coleta', grupo: 'Operação' },
+  { id: 'conferencia', icone: 'ia', rotulo: 'Conferência da IA', grupo: 'Operação' },
+  { id: 'validacao', icone: 'viva', rotulo: 'Validação do Vivá', grupo: 'Operação' },
+  { id: 'mercado', icone: 'mercado', rotulo: 'Mercado', grupo: 'Operação' },
+  { id: 'fundo', icone: 'cofre', rotulo: 'Cofre 2-de-3', grupo: 'Governança' },
+  { id: 'familias', icone: 'casa', rotulo: 'Famílias e carteiras', grupo: 'Famílias' },
 ];
+
+/** As subabas de "Famílias e carteiras". */
+const SUBABAS = [
+  ['cadastro', 'Cadastro'],
+  ['carteira', 'Família (operação)'],
+  ['familia', 'App da Família'],
+];
+const ehSubaba = tab => SUBABAS.some(([id]) => id === tab);
+/** A tela do menu que corresponde a uma aba (as subabas caem em Famílias). */
+const telaDe = tab => (ehSubaba(tab) ? 'familias' : tab);
+
+/**
+ * O que está parado esperando alguém, por tela. Só aparece no modo Operação,
+ * e só com número que o store sabe contar: contador inventado seria ruído.
+ */
+function usePendencias() {
+  const { state } = useStore();
+  return useMemo(() => {
+    const cond = state.familias.flatMap(f => f.condicoes || []);
+    return {
+      validacao:
+        state.coletas.filter(c => c.status === 'pendente').length +
+        cond.filter(c => c.status === 'pendente' || c.status === 'validada-aguardando').length,
+      fundo: state.propostas.filter(p => p.status === 'aguardando').length,
+    };
+  }, [state]);
+}
 
 /** Anuncia cada nova transação registrada na rede simulada. */
 function AvisosDeRede() {
@@ -370,16 +404,17 @@ function SeletorIdioma({ tab }) {
   );
 }
 
-/* Navegação sequencial da jornada, no rodapé de cada tela. A ordem das TABS é
+/* Navegação sequencial da jornada, no rodapé de cada tela. A ordem de TELAS é
    a ordem do ciclo, então "anterior" e "próxima" são a etapa de fato. */
 function NavJornada({ tab, setTab }) {
-  const i = TABS.findIndex(t => t[0] === tab);
-  const comoEtapa = e => (e ? { id: e[0], titulo: e[2] } : null);
+  const { t } = useIdioma();
+  const i = TELAS.findIndex(x => x.id === telaDe(tab));
+  const comoEtapa = e => (e ? { id: e.id, titulo: t(e.rotulo) } : null);
   return (
     <NavEtapa
-      anterior={comoEtapa(TABS[i - 1])}
-      proxima={comoEtapa(TABS[i + 1])}
-      aoIr={setTab}
+      anterior={comoEtapa(TELAS[i - 1])}
+      proxima={comoEtapa(TELAS[i + 1])}
+      aoIr={id => setTab(id === 'familias' ? 'cadastro' : id)}
     />
   );
 }
@@ -436,16 +471,19 @@ function Painel({ tab, setTab }) {
     toast('Dados exportados em JSON', 'info');
   };
 
+  const { modo } = useModo();
+  const pendencias = usePendencias();
+  const irPara = id => setTab(id === 'familias' ? 'cadastro' : id);
+
   const grupos = [];
-  for (const t of TABS) {
-    const g = grupos.find(x => x.nome === t[4]);
-    (g || (grupos.push({ nome: t[4], itens: [] }), grupos[grupos.length - 1])).itens.push(t);
+  for (const tela of TELAS) {
+    const g = grupos.find(x => x.nome === tela.grupo);
+    (g || (grupos.push({ nome: tela.grupo, itens: [] }), grupos[grupos.length - 1])).itens.push(tela);
   }
-  const atual = TABS.find(t => t[0] === tab);
-  const indiceAtual = TABS.findIndex(x => x[0] === tab);
+  const telaAtual = TELAS.find(x => x.id === telaDe(tab)) || TELAS[0];
 
   return (
-    <div className={'painel-raizes pn-app' + (menuAberto ? ' menu-aberto' : '')}>
+    <div className={'painel-raizes pn-app modo-' + modo + (menuAberto ? ' menu-aberto' : '')}>
       <SpriteIcones />
       <aside className="pn-rail">
         <div className="pn-brand">
@@ -458,32 +496,33 @@ function Painel({ tab, setTab }) {
           </div>
         </div>
 
-        {/* A jornada, e não uma lista de links: número em círculo, espinha
-            ligando as etapas, e as já percorridas com o círculo contornado. */}
-        <nav className="pn-journey" aria-label={t('Etapas do ciclo')}>
+        <nav className="pn-journey" aria-label={t('Telas do painel')}>
           {grupos.map(g => (
-            <React.Fragment key={g.nome}>
+            <div className="pn-jgrupo" key={g.nome}>
               <div className="pn-jgroup">{t(g.nome)}</div>
               <ul className="pn-jlist">
-                {g.itens.map(([id, , rot, sub]) => {
-                  const n = TABS.findIndex(x => x[0] === id);
+                {g.itens.map(tela => {
+                  const n = pendencias[tela.id];
+                  const ativo = telaAtual.id === tela.id;
                   return (
-                    <li key={id} className={'pn-jitem' + (n < indiceAtual ? ' done' : '')}>
+                    <li key={tela.id} className="pn-jitem">
                       <button
                         type="button"
-                        className={'pn-jbtn' + (alvo === id ? ' tour-alvo' : '')}
-                        aria-current={tab === id ? 'true' : undefined}
-                        onClick={() => setTab(id)}
+                        className={'pn-jbtn' + (alvo && telaDe(alvo) === tela.id ? ' tour-alvo' : '')}
+                        aria-current={ativo ? 'page' : undefined}
+                        onClick={() => irPara(tela.id)}
                       >
-                        <span className="pn-jnum">{n + 1}</span>
-                        <span className="pn-jlabel">{t(rot)}</span>
-                        <span className="pn-jmeta">{t(sub)}</span>
+                        <Icon name={tela.icone} />
+                        <span className="pn-jlabel">{t(tela.rotulo)}</span>
+                        {n > 0 && (
+                          <span className="pn-jbadge mode-op" aria-label={`${n} ${t('pendências')}`}>{n}</span>
+                        )}
                       </button>
                     </li>
                   );
                 })}
               </ul>
-            </React.Fragment>
+            </div>
           ))}
         </nav>
 
@@ -508,11 +547,15 @@ function Painel({ tab, setTab }) {
           >
             <Icon name="menu" />
           </button>
-          {/* Contexto antes de tudo: em que area estou, e que tela e esta. */}
+          {/* Contexto antes de tudo: em que grupo estou, e que tela é esta. */}
           <div className="pn-ctx">
-            <div className="eyebrow">{t(atual?.[4] || '')}</div>
-            <h2 className="now">{t(atual?.[2] || '')}</h2>
+            <p className="pn-crumb">
+              <span className="pn-crumb-g">{t(telaAtual.grupo)}</span>
+              <span className="pn-crumb-g" aria-hidden="true"> / </span>
+              <b>{t(telaAtual.rotulo)}</b>
+            </p>
           </div>
+          <SeletorModo />
           <BuscaGlobal setTab={setTab} />
           <div className="top-acoes">
             <SeletorIdioma tab={tab} />
@@ -540,9 +583,25 @@ function Painel({ tab, setTab }) {
         </header>
 
         <div className="pn-stage">
+          {ehSubaba(tab) && (
+            <div className="pn-subabas" role="tablist" aria-label={t('Famílias e carteiras')}>
+              {SUBABAS.map(([id, rot]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === id}
+                  onClick={() => setTab(id)}
+                >
+                  {t(rot)}
+                </button>
+              ))}
+            </div>
+          )}
           <Suspense fallback={<Carregando />}>
           <div key={tab} className="vista">
-            {tab === 'dashboard' && <Dashboard />}
+            {tab === 'dashboard' && <VisaoGeral irPara={irPara} />}
+            {tab === 'trilha' && <Trilha />}
             {tab === 'coleta' && <Coleta />}
             {tab === 'validacao' && <Validacao />}
             {tab === 'conferencia' && <Conferencia embutido />}
@@ -627,6 +686,7 @@ function Painel({ tab, setTab }) {
         <button className="sair-gravacao" title="Sair do modo gravação" onClick={() => setGravando(false)}><Icon name="close" /></button>
       )}
 
+      <CamadaDeDicas />
       <DemoNarrador />
       {tourAberto && (
         <TourPainel indice={tourIdx} setIndice={setTourIdx} setTab={setTab} aoFechar={fecharTour} />
@@ -690,8 +750,10 @@ export default function PainelApp({ rota }) {
       <IdiomaProvider>
         <ToastProvider>
           <DemoProvider setTab={setTab}>
-            <AvisosDeRede />
-            <Painel tab={tab} setTab={setTab} />
+            <ModoProvider>
+              <AvisosDeRede />
+              <Painel tab={tab} setTab={setTab} />
+            </ModoProvider>
           </DemoProvider>
         </ToastProvider>
       </IdiomaProvider>

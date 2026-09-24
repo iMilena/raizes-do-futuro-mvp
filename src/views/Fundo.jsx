@@ -573,9 +573,9 @@ export default function Fundo() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={6} total={9} area="Governança" titulo={`Fundo Infância no cofre multisig (${REDE})`}>
-        O dinheiro das crianças não fica em conta de ninguém. Fica num cofre multisig na Solana,
-        e <b>nenhuma das três organizações consegue mover sozinha.</b>
+      <TelaCabecalho area={`Governança · Cofre 2-de-3 · ${REDE}`} titulo="Nenhuma organização mexe no dinheiro sozinha.">
+        Toda liberação do Fundo Infância exige duas de três assinaturas. A comunidade tem uma
+        delas. <b>Isso está no contrato, não numa promessa.</b>
       </TelaCabecalho>
 
       <OnchainDevnet />

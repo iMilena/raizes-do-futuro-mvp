@@ -1,0 +1,197 @@
+/* ============================================================================
+   Visão geral e Trilha de prova, as duas telas novas do redesign.
+
+   Tudo sai dos tokens (src/styles/tokens.css). O verde da marca aparece só no
+   número-chave e na ação principal; as fatias 60/25/15 usam as três cores de
+   gráfico (--c-renda, --c-inf, --c-op) e sempre com rótulo ao lado.
+   ========================================================================= */
+
+.vg .vg-cap,
+.tr .vg-cap {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.vg-head h1,
+.tr-head h1 {
+  font-family: var(--fd);
+  font-weight: 400;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 12px 0 0;
+  max-width: 900px;
+  color: var(--t1);
+}
+.vg-head h1 em { font-style: normal; color: var(--accent-ink); }
+.vg-head .lead,
+.tr-head .lead { margin: 12px 0 0; color: var(--t2); font-size: 15.5px; line-height: 1.6; max-width: 720px; }
+.vg-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+.vg-row.between { justify-content: space-between; align-items: flex-start; margin-top: 0; }
+.vg-t { font-size: 15px; font-weight: 800; margin: 0; color: var(--t1); }
+.vg-sub { font-size: 13px; color: var(--t3); margin: 4px 0 0; line-height: 1.5; }
+.pn-card.pad { padding: 22px 24px; }
+
+/* indicadores */
+.vg-g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.vg-kpi { padding: 20px 22px; }
+.vg-kpi .v { font-family: var(--fd); font-weight: 400; font-size: 32px; line-height: 1; margin-top: 12px; color: var(--t1); }
+.vg-kpi .v small { font-size: 16px; color: var(--t3); margin-left: 4px; font-family: var(--fu); }
+.vg-kpi.key .v { color: var(--accent-ink); }
+.vg-kpi .d { margin-top: 10px; font-size: 12.5px; color: var(--t3); }
+.vg-kpi .d .up { color: var(--ok); font-weight: 800; }
+.vg-kpi .src {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line-2);
+  font-size: 11.5px;
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* diagrama de fluxo */
+.pn-flow .flow-d { margin-top: 22px; }
+.pn-flow svg { width: 100%; height: auto; display: block; overflow: visible; }
+.pn-flow .band { transition: opacity 0.2s; cursor: pointer; }
+.pn-flow .band.esmaecida { opacity: 0.18 !important; }
+.pn-flow .band:not(.esmaecida):hover { opacity: 0.9 !important; }
+.pn-flow .nd { cursor: pointer; }
+.pn-flow [role="button"]:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+.pn-flow text { font-family: var(--fu); fill: var(--t1); }
+.pn-flow .lbl { font-size: 13px; font-weight: 700; }
+.pn-flow .val { font-size: 12px; fill: var(--t3); }
+.pn-flow .flow-m { display: none; margin-top: 12px; }
+.vg-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--t2); }
+.vg-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.vg-legend b { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.vg-split { display: flex; gap: 2px; height: 14px; border-radius: 5px; overflow: hidden; margin: 14px 0 4px; }
+.vg-split i { display: block; height: 100%; }
+
+/* linhas de detalhe (fila, provas, lista do celular) */
+.vg-list { margin-top: 14px; }
+.vg-det {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--t1);
+  text-align: left;
+}
+.vg-det:last-child { border-bottom: 0; }
+button.vg-det { cursor: pointer; }
+button.vg-det:hover { background: var(--tide); }
+.vg-det small { display: block; font-size: 12px; color: var(--t3); margin-top: 2px; }
+.vg-det .mono { font-family: var(--fm); }
+.vg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  color: var(--t2);
+  white-space: nowrap;
+}
+.vg-chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.vg-chip.st-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, transparent); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+.vg-chip.st-warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); background: color-mix(in srgb, var(--warn) 9%, transparent); }
+.vg-chip.st-info { color: var(--c-op); border-color: color-mix(in srgb, var(--c-op) 35%, transparent); background: color-mix(in srgb, var(--c-op) 8%, transparent); }
+
+/* barras semanais */
+.vg-g21 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; }
+.vg-bars { display: flex; align-items: flex-end; gap: 10px; height: 190px; padding-top: 10px; position: relative; margin-top: 24px; }
+.vg-bars .gl { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--t3); }
+.vg-bars .gl span { position: absolute; left: 0; top: -15px; }
+.vg-bars .vg-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; position: relative; z-index: 1; }
+.vg-bars .vg-bar i { display: block; width: 100%; max-width: 34px; border-radius: 4px 4px 0 0; background: var(--c-renda); }
+.vg-bars .vg-bar.agosto i { background: var(--c-neutral); }
+.vg-bars .vg-bar small { font-size: 11px; color: var(--t3); }
+
+.vg-hint {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--tide);
+  font-size: 13px;
+  color: var(--t2);
+  line-height: 1.55;
+}
+.vg-hint b { color: var(--t1); }
+.vg-demo { font-size: 11.5px; color: var(--t3); margin: 0; }
+
+/* ------------------------------------------------------ trilha de prova -- */
+.tr-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: start; }
+.tr-lado { position: sticky; top: 90px; }
+.tr-valor { font-family: var(--fd); font-size: 44px; margin-top: 10px; color: var(--accent-ink); line-height: 1.1; }
+.tr-div { height: 1px; background: var(--line); margin: 18px 0; }
+.tr-outros { display: grid; gap: 8px; margin-top: 8px; }
+.tr-outros button { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.tr-outros button[aria-pressed="true"] { border-color: var(--accent-ink); background: var(--accent-soft); }
+.tr-tl { position: relative; padding-left: 34px; margin: 0; list-style: none; }
+.tr-tl::before { content: ""; position: absolute; left: 12px; top: 8px; bottom: 8px; width: 2px; background: var(--line-2); }
+.tr-tl li { position: relative; padding: 0 0 22px; animation: tr-in 0.5s ease both; }
+.tr-tl li:last-child { padding-bottom: 0; }
+@keyframes tr-in { from { opacity: 0; transform: translateY(8px); } }
+.tr-tl .dot {
+  position: absolute;
+  left: -34px;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-size: 11px;
+  font-weight: 800;
+}
+.tr-tl h3 { font-size: 15px; font-weight: 800; padding-top: 3px; margin: 0; color: var(--t1); }
+.tr-tl .when { font-size: 12px; color: var(--t3); margin-top: 2px; }
+.tr-tl p { font-size: 13.5px; color: var(--t2); margin: 6px 0 0; line-height: 1.55; }
+.tr-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: var(--tide);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--t2);
+}
+.tr-proof .mono { font-family: var(--fm); color: var(--t1); }
+.tr-proof .real { color: var(--ok); font-weight: 700; }
+
+/* ------------------------------------------------------------- celular -- */
+@media (max-width: 1100px) {
+  .vg-g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vg-g21,
+  .tr-grid { grid-template-columns: minmax(0, 1fr); }
+  .tr-lado { position: static; }
+}
+@media (max-width: 640px) {
+  .pn-flow .flow-d { display: none; }
+  .pn-flow .flow-m { display: block; }
+  .vg-kpi .v { font-size: 26px; }
+  .vg-kpi { padding: 16px; }
+  .vg-kpi .src { display: none; }
+  .pn-card.pad { padding: 18px; }
+}

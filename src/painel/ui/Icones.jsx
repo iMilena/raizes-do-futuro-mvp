@@ -55,6 +55,14 @@ export function SpriteIcones() {
         <symbol id="i-key" viewBox="0 0 20 20"><circle cx="7.5" cy="7.5" r="3.4" /><path d="M10.2 10.2 16 16M13.4 13.4l1.6-1.6" /></symbol>
         <symbol id="i-building" viewBox="0 0 16 16"><path d="M2.6 13.4V4.2a1 1 0 0 1 1-1h5.2a1 1 0 0 1 1 1v9.2" /><path d="M9.8 6.8h2.8a1 1 0 0 1 1 1v5.6" /><path d="M1.6 13.4h12.8M5 6h2M5 8.6h2M5 11.2h2" /></symbol>
         <symbol id="i-tag" viewBox="0 0 16 16"><path d="M2.6 8.2V3.4a.8.8 0 0 1 .8-.8h4.8l5.2 5.2a1.1 1.1 0 0 1 0 1.6l-4 4a1.1 1.1 0 0 1-1.6 0L2.6 8.2Z" /><path d="M5.6 5.6v.01" strokeWidth="1.8" /></symbol>
+        {/* Navegação do redesign: início, trilha, cofre e família. */}
+        <symbol id="i-home" viewBox="0 0 16 16"><path d="M2.4 7.4 8 3l5.6 4.4v5.4a.8.8 0 0 1-.8.8H9.8V9.8H6.2v3.8H3.2a.8.8 0 0 1-.8-.8Z" /></symbol>
+        <symbol id="i-trilha" viewBox="0 0 16 16"><circle cx="4" cy="4" r="1.7" /><circle cx="12" cy="12" r="1.7" /><path d="M5.7 4h3.6a2.7 2.7 0 0 1 0 5.4H6.7a2.7 2.7 0 0 0 0 5.4" /></symbol>
+        <symbol id="i-cofre" viewBox="0 0 16 16"><rect x="2.4" y="3.2" width="11.2" height="10" rx="1.4" /><circle cx="8" cy="8.2" r="2.3" /><path d="M8 5.9v.7M8 9.8v.7M5.7 8.2h.7M9.6 8.2h.7" /></symbol>
+        <symbol id="i-casa" viewBox="0 0 16 16"><path d="M2.4 13.6V6.8L8 3l5.6 3.8v6.8" /><path d="M6.2 13.6V9.8h3.6v3.8" /></symbol>
+        <symbol id="i-ia" viewBox="0 0 16 16"><rect x="3.2" y="3.2" width="9.6" height="9.6" rx="1.8" /><path d="M6.2 6.2h3.6v3.6H6.2zM6 1.6v1.6M10 1.6v1.6M6 12.8v1.6M10 12.8v1.6M1.6 6h1.6M1.6 10h1.6M12.8 6h1.6M12.8 10h1.6" /></symbol>
+        <symbol id="i-viva" viewBox="0 0 16 16"><circle cx="6" cy="5.4" r="2" /><circle cx="11.4" cy="6" r="1.6" /><path d="M2 13.4a4 4 0 0 1 8 0M9.4 13.4a3 3 0 0 1 5-2.2" /></symbol>
+        <symbol id="i-mercado" viewBox="0 0 16 16"><path d="M2.6 6 3.6 2.8h8.8L13.4 6" /><path d="M2.6 6h10.8v1.2a2 2 0 0 1-3.6 1.2 2 2 0 0 1-3.6 0 2 2 0 0 1-3.6-1.2Z" /><path d="M3.4 8.8v4.6h9.2V8.8" /></symbol>
         <symbol id="i-split" viewBox="0 0 16 16"><path d="M2.4 8h3.2l2.2-3.4h5.8M13.6 4.6l-1.8-1.6M13.6 4.6l-1.8 1.6" /><path d="M5.6 8l2.2 3.4h5.8M13.6 11.4l-1.8-1.6M13.6 11.4l-1.8 1.6" /></symbol>
 
         {/* App da Família. Cada um destes substitui um emoji que estava no

@@ -156,7 +156,7 @@ export default function PainelRevisao({ embutido = false }: PropsPainelRevisao) 
           das outras oito. Na pagina autonoma (revisao.html) o publico chega
           direto pelo link, sem jornada em volta, e ai vale o titulo simples. */}
       {embutido && (
-        <TelaCabecalho etapa={4} total={9} area="Operação" titulo="Conferência da coleta sinalizada">
+        <TelaCabecalho area="Operação · Conferência da IA" titulo="A IA sinaliza. Uma pessoa decide.">
           O que a IA apontou e o que uma pessoa precisa decidir. <b>Toda sinalização vira pedido
           de conferência humana, nunca rejeição automática.</b>
         </TelaCabecalho>
@@ -336,10 +336,10 @@ function CartaoRevisao({ item, assinaturaConfere, aoDecidir }: PropsCartao) {
         <div>
           <dt>integridade</dt>
           <dd>
-            {item.hashConfere ? 'hash confere' : '⚠ HASH NÃO CONFERE'}
+            {item.hashConfere ? 'hash confere' : 'HASH NÃO CONFERE'}
             {' · '}
             {assinaturaConfere === null ? 'assinatura não verificada'
-              : assinaturaConfere ? 'assinatura confere' : '⚠ ASSINATURA INVÁLIDA'}
+              : assinaturaConfere ? 'assinatura confere' : 'ASSINATURA INVÁLIDA'}
           </dd>
         </div>
       </dl>
@@ -391,13 +391,13 @@ function CartaoRevisao({ item, assinaturaConfere, aoDecidir }: PropsCartao) {
             className="botao-aprovar"
             onClick={() => void aoDecidir(item.registro, 'aprovado', justificativa)}
           >
-            ✓ Aprovar coleta
+            Aprovar coleta
           </button>
           <button
             className="botao-rejeitar"
             onClick={() => void aoDecidir(item.registro, 'rejeitado', justificativa)}
           >
-            ✕ Rejeitar coleta
+            Rejeitar coleta
           </button>
         </div>
       </footer>

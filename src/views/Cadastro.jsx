@@ -297,7 +297,7 @@ export default function Cadastro() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho etapa={7} total={9} area="Operação" titulo="Cadastro de famílias">
+      <TelaCabecalho area="Famílias · Cadastro" titulo="Cadastro de famílias">
         Inclui uma família no piloto. O <b>nome fica só neste aparelho</b>; para a base
         compartilhada vai apenas o código ({proximoCodigo}). O consentimento é parte
         deste formulário porque é na frente da família que o termo é lido, e porque

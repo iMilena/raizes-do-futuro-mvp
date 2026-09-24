@@ -1,21 +1,22 @@
 import { Icon } from './Icones';
 
 /* ---------------------------------------------------------------------------
-   O cabeçalho que abre as nove telas, sempre na mesma ordem:
+   O cabeçalho que abre as telas, sempre na mesma ordem:
 
-     onde estou   chip "Etapa X de 9 · Área"
-     o que é isto h1, em Fraunces
+     onde estou      rótulo "Área · Tela", em maiúsculas
+     o que é isto    a frase-título, em Fraunces
      para que serve  uma frase de propósito
 
    Resumo antes do detalhe. Sem isso, cada tela começava direto num gráfico ou
    numa tabela, e quem chegava pelo meio não sabia em que ponto do ciclo estava.
+   A numeração "Etapa X de 9" saiu com o menu de oito itens do redesign: o
+   lugar no ciclo agora é dito pelo nome da área, que não muda quando uma tela
+   entra ou sai.
 --------------------------------------------------------------------------- */
-export function TelaCabecalho({ etapa, total, area, titulo, children }) {
+export function TelaCabecalho({ area, titulo, children }) {
   return (
     <header className="pn-shead">
-      <span className="pn-stepchip">
-        Etapa {etapa} de {total} · {area}
-      </span>
+      <span className="pn-stepchip">{area}</span>
       <h1>{titulo}</h1>
       {children && <p className="pn-purpose">{children}</p>}
     </header>
