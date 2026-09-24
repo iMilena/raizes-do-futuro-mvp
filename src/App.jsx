@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Landing } from './landing';
 import { Login } from './login/Login';
 
@@ -16,6 +16,11 @@ import { Login } from './login/Login';
    quem entra no painel espera um aplicativo e tolera o instante de carga.
 --------------------------------------------------------------------------- */
 const PainelApp = lazy(() => import('./painel/PainelApp.jsx'));
+
+/* As duas páginas públicas novas também chegam sob demanda: a de contato é
+   pequena, mas a do mapa traz o Leaflet, e nenhuma das duas precisa pesar na
+   primeira visita à landing. */
+const Contato = lazy(() => import('./contato/Contato.jsx'));
 
 /**
  * Ponte enquanto o pedaço do painel chega.
@@ -38,6 +43,11 @@ function Abrindo() {
   );
 }
 
+/** Enquanto uma página pública chega: só o fundo escuro, sem lampejo branco. */
+function FundoDoSite() {
+  return <div style={{ minHeight: '100vh', background: '#04100d' }} />;
+}
+
 const ROTAS_DO_PAINEL = ['#/rastreio/', '#/familia', '#/painel'];
 
 export default function App() {
@@ -48,6 +58,16 @@ export default function App() {
     window.addEventListener('hashchange', aoMudar);
     return () => window.removeEventListener('hashchange', aoMudar);
   }, []);
+
+  /* Trocar de página começa do topo. Só quando a PÁGINA muda: as âncoras da
+     landing (#impacto, #faq) também mexem no hash, e essas têm de rolar até a
+     seção, não voltar ao início. */
+  const pagina = rota.startsWith('#/') ? rota.slice(2).split(/[/?]/)[0] : '';
+  const paginaAnterior = useRef(pagina);
+  useEffect(() => {
+    if (paginaAnterior.current !== pagina) window.scrollTo(0, 0);
+    paginaAnterior.current = pagina;
+  }, [pagina]);
 
   /* Entrada do painel — sem credencial, por decisão de produto.
      O painel é a demonstração da jornada e roda local: `nuvem.ativo()` exige
@@ -61,6 +81,14 @@ export default function App() {
      porta honestamente aberta é melhor do que uma tranca de mentira. */
   if (rota.startsWith('#/login')) {
     return <Login onLogin={async () => { window.location.hash = '#/painel'; }} />;
+  }
+
+  if (rota.startsWith('#/contato')) {
+    return (
+      <Suspense fallback={<FundoDoSite />}>
+        <Contato rota={rota} />
+      </Suspense>
+    );
   }
 
   if (ROTAS_DO_PAINEL.some(prefixo => rota.startsWith(prefixo))) {
