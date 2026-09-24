@@ -21,6 +21,7 @@ const PainelApp = lazy(() => import('./painel/PainelApp.jsx'));
    pequena, mas a do mapa traz o Leaflet, e nenhuma das duas precisa pesar na
    primeira visita à landing. */
 const Contato = lazy(() => import('./contato/Contato.jsx'));
+const Explorar = lazy(() => import('./explorar/Explorar.jsx'));
 
 /**
  * Ponte enquanto o pedaço do painel chega.
@@ -87,6 +88,14 @@ export default function App() {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Contato rota={rota} />
+      </Suspense>
+    );
+  }
+
+  if (rota.startsWith('#/explorar')) {
+    return (
+      <Suspense fallback={<FundoDoSite />}>
+        <Explorar />
       </Suspense>
     );
   }
