@@ -762,10 +762,12 @@ try {
   ok(await ev('return __t.conta("nav.pn-journey") === 1'), 'o link "Voltar ao painel" abre o painel, não a landing');
   ok(await ev('return location.hash.indexOf("painel") > -1'), 'e deixa a rota do painel na barra de endereço');
 
-  /* a raiz agora é a landing — vale afirmar, para a troca não passar em branco */
+  /* A raiz abre o mapa ("Explorar a ilha"), carregado sob demanda com o
+     Leaflet. Espera o mapa montar em vez de um tempo fixo: em máquina lenta,
+     600 ms não bastavam e a asserção lia a tela no meio da troca. */
   await ev('window.location.hash = "#/"; return 1;');
-  await espera(600);
-  ok(await ev('return __t.conta("nav.pn-journey") === 0'), 'a raiz não é mais o painel (virou a landing)');
+  await ev('return new Promise(r => { const t0 = Date.now(); (function f(){ if (document.querySelector(".ex") || Date.now() - t0 > 8000) r(1); else setTimeout(f, 100); })(); })');
+  ok(await ev('return __t.conta("nav.pn-journey") === 0 && __t.conta(".ex") === 1'), 'a raiz não é mais o painel (abre o mapa)');
 
   /* ---------- 12. modo demo guiado ---------- */
   secao('12. Modo demo guiado (▶ Ver o ciclo completo)');
