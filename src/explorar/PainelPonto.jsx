@@ -97,7 +97,7 @@ function Criancas({ reduzir }) {
   const on = new Set(ordem.slice(0, acesas));
   return (
     <>
-      <div className="kids" role="img" aria-label="51 de 60 crianças com saúde e escola em dia">
+      <div className="kids" role="img" aria-label="Exemplo: 51 de 60 crianças com saúde e escola em dia">
         {[...Array(60).keys()].map((i) => (
           <i key={i} className={on.has(i) ? 'on' : undefined} />
         ))}

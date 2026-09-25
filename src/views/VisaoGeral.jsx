@@ -250,14 +250,14 @@ export default function VisaoGeral({ irPara }) {
     <div className="pn-screen vg">
       <header className="vg-head">
         <span className="vg-cap">
-          {t('Relatório do mês')} · {D.nome}
+          {t('Demonstração')} · {t('Relatório do mês')} · {D.nome}
         </span>
         <h1>
-          {t('Até aqui,')} <em>{TOTAIS.toneladas} t</em> {t('de resíduo validado viraram renda para')} {TOTAIS.familias}{' '}
+          {t('Exemplo:')} <em>{TOTAIS.toneladas} t</em> {t('de resíduo validado viraram renda para')} {TOTAIS.familias}{' '}
           {t('famílias e bônus para')} <em>{TOTAIS.emDia} {t('das')} {TOTAIS.criancas} {t('crianças.')}</em>
         </h1>
         <p className="lead">
-          {t('Nenhum número desta tela é estimativa. Cada um vem de uma prova: a coleta validada pela DeTrash, a venda registrada no Mercado e a divisão executada pelo contrato na Solana.')}
+          {t('O projeto ainda não começou: esta tela é uma demonstração, com dados de exemplo. Quando o ciclo começar, cada número vai vir de uma prova: a coleta validada pela DeTrash, a venda registrada no Mercado e a divisão executada pelo contrato na Solana.')}
         </p>
         <div className="vg-row">
           <button type="button" className="pn-btn" onClick={() => irPara('trilha')}>
@@ -343,7 +343,7 @@ export default function VisaoGeral({ irPara }) {
         </div>
       </div>
       <p className="vg-demo">
-        {t('Totais do projeto: os mesmos da página pública. Valores de setembro (receita, quilos e divisão): ilustrativos e coerentes com esses totais, até a equipe fechar o mês. A fila de hoje e as provas na cadeia leem o estado real do painel.')}
+        {t('Totais: as metas da primeira fase, as mesmas da página pública. Valores de setembro (receita, quilos e divisão): ilustrativos e coerentes com essas metas. A fila de hoje e as provas na cadeia leem o estado desta demonstração.')}
       </p>
     </div>
   );

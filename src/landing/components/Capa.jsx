@@ -16,15 +16,21 @@ export function Capa() {
     <header className="hero" id="inicio">
       <div className="wrap capa-grid">
         <div>
-          <span className="badge fu">
-            <b>{hero.selo.destaque}</b>
-            {hero.selo.texto}
-          </span>
+          <div className="selos fu">
+            <span className="badge">
+              <b>{hero.selo.destaque}</b>
+              {hero.selo.texto}
+            </span>
+            <span className="fase">{hero.fase}</span>
+          </div>
           <h1 className="fu" style={{ animationDelay: '.1s' }}>
             {hero.titulo} <em>{hero.destaque}</em>
           </h1>
           <p className="sub fu" style={{ animationDelay: '.2s' }}>
             {hero.subtitulo}
+          </p>
+          <p className="aviso fu" style={{ animationDelay: '.25s' }}>
+            {hero.aviso}
           </p>
           <div className="cta fu" style={{ animationDelay: '.3s' }}>
             <a className="btn btn-p" href={hero.primario.href}>
@@ -36,6 +42,7 @@ export function Capa() {
             </a>
           </div>
           <div className="nums fu" style={{ animationDelay: '.4s' }}>
+            <small className="nums-rot">{hero.rotuloMarcadores}</small>
             {hero.marcadores.map((m) => (
               <div key={m.rotulo}>
                 <b>{m.valor}</b>

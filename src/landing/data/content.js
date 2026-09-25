@@ -9,9 +9,12 @@
    que trata o território como defeito a consertar, e qualquer verbo que sugira
    que o projeto *participa* do Youth Challenge Blockchain. Ele venceu.
 
-   Os números são os reais e não têm arredondamento de conveniência: 12
-   toneladas, 30 famílias, 60 crianças, 51 em dia (85%), divisão 60/25/15,
-   R$ 30 por criança/mês, cofre 2-de-3.
+   O projeto está em implantação: a coleta, os pagamentos e os bônus ainda
+   não começaram. Por isso o texto fala do ciclo no futuro, e 12 toneladas,
+   30 famílias e 60 crianças aparecem sempre como metas da primeira fase. O
+   "51 de 60 em dia" é exemplo de como o Fundo Infância vai funcionar, e diz
+   isso onde aparece. As regras (60/25/15, R$ 30 por criança/mês, cofre
+   2-de-3) são as previstas no contrato.
 --------------------------------------------------------------------------- */
 
 import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
@@ -37,12 +40,16 @@ export const nav = {
 
 export const hero = {
   selo: { destaque: 'Vencedor', texto: 'Youth Challenge Blockchain · UNICEF Brasil' },
+  fase: 'Em implantação',
   titulo: 'Um futuro mais justo para',
   destaque: 'as crianças de Boipeba',
   subtitulo:
-    'O lixo que as famílias recolhem das praias vira renda para elas e um bônus para os filhos, quando vacina, matrícula e escola estão em dia. Cada quilo tem prova, e cada real é dividido por contrato.',
+    'O lixo que as famílias recolherem das praias vai virar renda para elas e um bônus para os filhos, quando vacina, matrícula e escola estiverem em dia. Cada quilo vai ter prova, e cada real vai ser dividido por contrato.',
+  aviso:
+    'O projeto está em implantação com o Instituto Vivá, parceiro do Raízes em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram.',
   primario: { rotulo: 'Investir no projeto', href: contatoCom('investimento') },
   secundario: { rotulo: 'Explorar a ilha e o ciclo', href: URL_EXPLORAR },
+  rotuloMarcadores: 'Meta da primeira fase',
   marcadores: [
     { valor: '30+', rotulo: 'famílias' },
     { valor: '60', rotulo: 'crianças' },
@@ -51,7 +58,7 @@ export const hero = {
   /* o cartão sobre a foto, ao lado da criança */
   cartao: {
     eyebrow: 'Fundo Infância',
-    texto: 'Quando os compromissos estão em dia, o bônus chega à família.',
+    texto: 'Quando os compromissos estiverem em dia, o bônus vai chegar à família.',
     itens: ['Vacina', 'Matrícula', 'Frequência'],
   },
   altFoto: 'Criança de Boipeba na sala de aula faz um coração com as mãos',
@@ -65,39 +72,39 @@ export const manifesto = {
   destaque: 'a saúde e a educação das crianças',
   depois: 'da comunidade.',
   lateral:
-    'O Raízes do Futuro transforma esse valor em renda familiar e em suporte financeiro programável, de forma transparente, automática, e sem depender de caridade.',
+    'O Raízes do Futuro vai transformar esse valor em renda familiar e em suporte financeiro programável, de forma transparente, automática, e sem depender de caridade.',
   botao: 'Ver como o ciclo funciona',
 };
 
 export const impacto = {
-  eyebrow: 'Impacto até aqui',
-  titulo: ['O ciclo não é projeto de gaveta. ', 'Ele já roda.'],
-  lede: 'Coleta validada, receita dividida por contrato e bônus liberado por cofre multisig, acontecendo em Boipeba com as famílias da ilha.',
+  eyebrow: 'Metas da primeira fase',
+  titulo: ['Onde o ciclo ', 'quer chegar primeiro.'],
+  lede: 'O Raízes do Futuro está em implantação em Boipeba, com o Instituto Vivá como parceiro no território. A coleta, a divisão da receita e os bônus ainda não começaram. Estas são as metas da primeira fase.',
   numeros: [
-    { valor: 12, unidade: 't', rotulo: 'Toneladas de resíduo coletadas e validadas' },
-    { valor: 30, rotulo: 'Famílias participantes do projeto' },
-    { valor: 60, rotulo: 'Crianças acompanhadas' },
-    { valor: 85, sufixo: '%', rotulo: 'Com saúde e escola em dia' },
+    { valor: 12, unidade: 't', rotulo: 'Toneladas de resíduo a coletar e validar' },
+    { valor: 30, rotulo: 'Famílias que o projeto quer alcançar' },
+    { valor: 60, rotulo: 'Crianças a acompanhar no Fundo Infância' },
+    { valor: 60, sufixo: '%', rotulo: 'Da receita vai direto para as famílias que coletam' },
   ],
 };
 
 export const coorte = {
   total: 60,
   emDia: 51,
-  rotuloGrade: '51 de 60 crianças com saúde e escola em dia',
-  eyebrow: 'As 60 crianças acompanhadas',
-  titulo: 'Cada ponto é uma criança dentro do Fundo Infância.',
+  rotuloGrade: 'Exemplo: 51 de 60 crianças com saúde e escola em dia',
+  eyebrow: 'Como vai funcionar · exemplo',
+  titulo: 'Cada ponto vai ser uma criança dentro do Fundo Infância.',
   texto:
-    '51 das 60 estão com vacinação, matrícula e frequência comprovadas, e por isso recebem o bônus do mês. Para as outras, o valor fica reservado, nunca perdido.',
+    'Quando o ciclo começar, cada criança com vacinação, matrícula e frequência comprovadas garante o bônus do mês. Para as outras, o valor fica reservado, nunca perdido. Os pontos acesos são um exemplo, não dados reais.',
   legendaEmDia: 'Saúde e escola em dia',
   legendaEmCurso: 'Acompanhamento em curso',
   botaoApp: { rotulo: 'Conhecer o app da família', href: URL_PAGINA_APP },
 };
 
 export const parceiros = {
-  eyebrow: 'Quem opera o ciclo',
+  eyebrow: 'Quem vai operar o ciclo',
   titulo: ['Três organizações, e ', 'nenhuma manda sozinha.'],
-  lede: 'A governança não é promessa de slide: está escrita no contrato que libera o dinheiro.',
+  lede: 'A governança não é promessa de slide: ela vai estar escrita no contrato que libera o dinheiro.',
   legendaFoto: 'Encontro comunitário · Boipeba',
   itens: [
     {
@@ -105,21 +112,21 @@ export const parceiros = {
       etiqueta: 'Território · Assinatura 1',
       nome: 'Instituto Vivá',
       texto:
-        'Mobiliza famílias e recicladores em Boipeba e valida presencialmente as comprovações de saúde e educação das crianças.',
+        'Parceiro do Raízes com presença em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças.',
     },
     {
       n: '2',
       etiqueta: 'Validação · Assinatura 2',
       nome: 'DeTrash',
       texto:
-        'Metodologia que valida a coleta e gera o Relatório de Circularidade, com a evidência ancorada on-chain.',
+        'Metodologia que vai validar a coleta e gerar o Relatório de Circularidade, com a evidência ancorada on-chain.',
     },
     {
       n: '3',
       etiqueta: 'Comunidade · Assinatura 3',
       nome: 'Representante comunitário',
       texto:
-        'A ilha tem assento no cofre. Nenhuma liberação do Fundo Infância acontece sem que a comunidade possa assinar.',
+        'A ilha vai ter assento no cofre. Nenhuma liberação do Fundo Infância vai acontecer sem que a comunidade possa assinar.',
     },
   ],
 };
@@ -228,7 +235,7 @@ export const cofre = {
   eyebrow: 'Experimente o cofre',
   titulo: 'Ninguém abre sozinho.',
   texto:
-    'Um Smart Contract libera R$ 30 por criança/mês quando vacinação, matrícula e frequência escolar são comprovadas. A liberação exige 2 de 3 assinaturas. Desligue um compromisso ou tire uma assinatura e veja o que acontece.',
+    'Um Smart Contract vai liberar R$ 30 por criança/mês quando vacinação, matrícula e frequência escolar são comprovadas. A liberação exige 2 de 3 assinaturas. Desligue um compromisso ou tire uma assinatura e veja o que acontece.',
   bonus: 30,
   rotuloCompromissos: 'Compromissos da criança',
   rotuloAssinaturas: 'Assinaturas do cofre',
@@ -269,7 +276,7 @@ export const simulador = {
   bonus: 30,
   cobertura: (m) => `bônus de R$ 30 por criança, ou as 60 crianças de Boipeba cobertas por ${m} ${m === 1 ? 'mês' : 'meses'}.`,
   semCobertura: 'bônus de R$ 30 por criança neste mês.',
-  nota: 'Simulação com as regras que já estão no contrato: divisão 60/25/15 e bônus de R$ 30 por criança/mês. Não é projeção de receita, é a aritmética de para onde o dinheiro vai quando entra.',
+  nota: 'Simulação com as regras previstas no contrato: divisão 60/25/15 e bônus de R$ 30 por criança/mês. Não é projeção de receita, é a aritmética de para onde o dinheiro vai quando entra.',
 };
 
 export const pontas = {
@@ -326,7 +333,7 @@ export const pilares = {
 
 export const feira = {
   citacao:
-    'Cada peça carrega um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
+    'Cada peça vai carregar um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
   legenda: 'Feira da comunidade · Moreré, Boipeba',
 };
 
@@ -335,12 +342,12 @@ export const feira = {
    colunas, `alto` duas linhas (a foto em pé), `cheio` a linha inteira. */
 export const galeria = {
   eyebrow: 'Boipeba, de perto',
-  titulo: ['O ciclo acontece ', 'com gente de verdade.'],
+  titulo: ['A ilha e as pessoas ', 'com quem o ciclo vai acontecer.'],
   fotos: [
     { foto: 'mutiraoGrupo', legenda: 'Mutirão de limpeza · Boipeba', forma: 'largo' },
     { foto: 'criancaEscola', legenda: 'Na escola · Boipeba', forma: 'alto' },
-    { foto: 'pesagemSacos', legenda: 'Pesagem da coleta · Boipeba' },
-    { foto: 'balancaPesagem', legenda: 'Cada quilo registrado · 6,54 kg' },
+    { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba' },
+    { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg' },
     { foto: 'oficinaEscola', legenda: 'Oficina com o Instituto Vivá · escola da ilha', forma: 'cheio' },
   ],
 };
@@ -351,7 +358,11 @@ export const faq = {
   itens: [
     {
       q: 'O que é o Raízes do Futuro?',
-      a: 'Uma solução que conecta economia circular, renda familiar e proteção da infância em Boipeba (Bahia), usando blockchain e dinheiro programável. O projeto é o vencedor do Youth Challenge Blockchain, iniciativa do UNICEF Brasil que busca soluções inovadoras de tecnologia para a proteção de crianças e adolescentes, e hoje está em operação no território.',
+      a: 'Uma solução que conecta economia circular, renda familiar e proteção da infância em Boipeba (Bahia), usando blockchain e dinheiro programável. O projeto é o vencedor do Youth Challenge Blockchain, iniciativa do UNICEF Brasil que busca soluções inovadoras de tecnologia para a proteção de crianças e adolescentes, e está em implantação em Boipeba.',
+    },
+    {
+      q: 'O projeto já começou?',
+      a: 'Ainda não. O Raízes do Futuro está em implantação, em parceria com o Instituto Vivá. A coleta, os pagamentos e os bônus ainda não começaram. Os números deste site são metas da primeira fase, e o painel e o app da família são demonstrações com dados de exemplo.',
     },
     {
       q: 'Por que blockchain é essencial para o projeto?',
@@ -359,7 +370,7 @@ export const faq = {
     },
     {
       q: 'Qual o papel do Instituto Vivá?',
-      a: 'O Instituto Vivá é o parceiro com presença territorial em Boipeba: mobiliza famílias e recicladores, valida presencialmente as comprovações de saúde e educação das crianças, e é um dos três signatários que autorizam cada liberação do cofre multisig do Fundo Infância.',
+      a: 'O Instituto Vivá é parceiro do Raízes do Futuro, com presença territorial em Boipeba. Quando o ciclo começar, vai mobilizar famílias e recicladores, validar presencialmente as comprovações de saúde e educação das crianças e ser um dos três signatários que autorizam cada liberação do cofre multisig do Fundo Infância.',
     },
     {
       q: 'Como funciona o fluxo do projeto, do resíduo à criança?',
@@ -379,21 +390,21 @@ export const faq = {
     },
     {
       q: 'Onde posso comprar os produtos feitos com material reciclado?',
-      a: 'O canal preferido pela nossa pesquisa com turistas foi a feira da própria comunidade em Boipeba: é lá que a compra se conecta diretamente com quem participa da coleta. Cada produto carrega um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
+      a: 'O canal preferido pela nossa pesquisa com turistas foi a feira da própria comunidade em Boipeba: é lá que a compra se conecta diretamente com quem participa da coleta. Cada produto vai carregar um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
     },
   ],
 };
 
 export const proximoPasso = {
   eyebrow: 'O próximo passo',
-  titulo: ['A prova está feita. ', 'Agora é escalar.'],
-  lede: 'O ciclo funciona em Boipeba. O que falta não é tecnologia, é volume: mais coleta validada, mais receita entrando no cofre, mais crianças cobertas pelo Fundo Infância.',
+  titulo: ['O ciclo está desenhado. ', 'Agora é começar.'],
+  lede: 'A tecnologia foi construída e o Instituto Vivá é parceiro em Boipeba. O que falta para começar é financiamento e quem compre o Relatório de Circularidade.',
   frentes: [
     {
       n: '01',
       titulo: 'Investimento',
       texto:
-        'Capital para ampliar a operação de coleta e validação na ilha e levar mais famílias para dentro do ciclo.',
+        'Capital para iniciar a coleta e a validação na ilha e trazer as primeiras famílias para dentro do ciclo.',
       acao: 'Quero investir',
       href: contatoCom('investimento'),
     },

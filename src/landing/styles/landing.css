@@ -142,6 +142,21 @@
     text-transform: uppercase; color: var(--muted);
   }
   & .badge b { background: var(--mint); color: var(--bg0); padding: 6px 12px; border-radius: 999px; font-family: var(--f-body); font-weight: 800; letter-spacing: .1em; }
+  & .selos { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  & .fase {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid rgba(243, 178, 103, .45); color: var(--dawn); font-family: var(--f-mono);
+    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  }
+  & .fase::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dawn); }
+  & .hero p.aviso {
+    margin-top: 16px; max-width: 34em; padding-left: 14px; border-left: 2px solid var(--dawn);
+    font-size: 14.5px; line-height: 1.55; color: var(--muted);
+  }
+  & .nums-rot {
+    flex-basis: 100%; font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dawn); margin-bottom: -10px;
+  }
   & .hero h1 {
     font-family: var(--f-display); font-weight: 600; font-size: clamp(44px, min(5.8vw, 9.4vh), 100px);
     line-height: .96; letter-spacing: -.035em; margin-top: 24px;
@@ -526,7 +541,8 @@
     & .nav { top: 10px; padding-left: 14px; }
     & .nav .btn-p { padding: 10px 14px; font-size: 13px; }
     & .hero { padding-top: 100px; min-height: auto; }
-    & .badge { font-size: 10px; letter-spacing: .1em; }
+    & .badge,
+    & .fase { font-size: 10px; letter-spacing: .1em; }
     & .hero .cta .btn { flex: 1 1 100%; justify-content: center; }
     & .palco { width: calc(100% - 24px); }
     & .cartao { position: relative; right: auto; bottom: auto; width: 92%; margin: -54px auto 0; }

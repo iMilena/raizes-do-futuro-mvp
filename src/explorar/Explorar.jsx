@@ -26,9 +26,9 @@ const FILTROS = [
   ['comunidade', 'Comunidade'],
 ];
 const ESTATISTICAS = [
-  [12, 't validadas'],
-  [30, 'famílias'],
-  [60, 'crianças'],
+  [12, 't · meta'],
+  [30, 'famílias · meta'],
+  [60, 'crianças · meta'],
 ];
 
 function Estatistica({ valor, rotulo, ligado }) {
@@ -373,12 +373,12 @@ export function Explorar() {
       <div className="ui-camada" aria-hidden={!entrou} inert={entrou ? undefined : ''}>
         <div className="place-chip ui">
           <div className="caps" style={{ color: 'var(--dawn)' }}>
-            Em operação · Cairu, Bahia
+            Em implantação · Cairu, Bahia
           </div>
           <h2>Ilha de Boipeba</h2>
-          <p>Arraste para sobrevoar. Chegue perto das praias para ver o ciclo acontecendo.</p>
+          <p>Arraste para sobrevoar. Chegue perto das praias para ver como o ciclo vai funcionar.</p>
         </div>
-        <div className="stats ui" aria-label="Números do projeto">
+        <div className="stats ui" aria-label="Metas da primeira fase">
           {ESTATISTICAS.map(([v, r]) => (
             <Estatistica key={r} valor={v} rotulo={r} ligado={contar} />
           ))}

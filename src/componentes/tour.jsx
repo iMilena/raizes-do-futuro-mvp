@@ -19,7 +19,7 @@ function marcarVisto() {
 export const PASSOS_TOUR = [
   {
     tab: 'dashboard', titulo: 'Bem-vindo ao Raízes do Futuro', semAlvo: true,
-    texto: 'Este painel demonstra o ciclo completo do piloto de Boipeba, na Bahia: o resíduo que sai da praia se transforma em renda para quem coleta e em bônus de saúde e educação para as crianças. Cada etapa fica registrada e verificável, e é isso que as telas do menu mostram, uma por perfil.',
+    texto: 'Este painel é uma demonstração, com dados de exemplo, do ciclo que o Raízes vai implantar em Boipeba, na Bahia: o resíduo que sai da praia vira renda para quem coleta e bônus de saúde e educação para as crianças. Cada etapa vai ficar registrada e verificável, e é isso que as telas do menu mostram, uma por perfil.',
   },
   {
     tab: 'dashboard', titulo: 'Visão geral',

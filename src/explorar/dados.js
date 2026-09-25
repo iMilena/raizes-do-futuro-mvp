@@ -50,7 +50,7 @@ export const POIS = [
     foto: 'coletaValidacao', cap: 'Mutirão de coleta · Boipeba',
     alt: 'Moradores reunidos na praia, sob os coqueiros, ao lado dos sacos de resíduo recolhidos.',
     text: 'Moradores e turistas separam o reciclável. Coletores parceiros percorrem as praias recolhendo PET, alumínio e vidro que chegam com a maré e com o turismo.',
-    num: ['12 t', 'de resíduo coletadas e validadas até aqui'], tags: ['PET', 'Alumínio', 'Vidro'],
+    num: ['12 t', 'de resíduo: meta da primeira fase'], tags: ['PET', 'Alumínio', 'Vidro'],
   },
   {
     id: 'pesagem', g: ['ciclo'], n: '02', ll: L0.pesagem, zoom: 17,
@@ -66,8 +66,8 @@ export const POIS = [
     et: '03 · Território', title: 'Instituto Vivá', local: 'Velha Boipeba',
     foto: 'pilaresComunidade', cap: 'Encontro comunitário · Boipeba',
     alt: 'Roda de mulheres da comunidade reunidas em formação, com cadernos e materiais de trabalho.',
-    text: 'Mobiliza famílias e recicladores na ilha e valida presencialmente as comprovações de saúde e educação das crianças. É a primeira das três assinaturas do cofre.',
-    num: ['30+', 'famílias participantes do projeto'], tags: ['Assinatura 1', 'Mobilização'],
+    text: 'Parceiro do Raízes com presença em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças. Vai ser a primeira das três assinaturas do cofre.',
+    num: ['30+', 'famílias: meta da primeira fase'], tags: ['Assinatura 1', 'Mobilização'],
   },
   {
     id: 'feira', g: ['ciclo', 'comunidade'], n: '04', ll: L0.feira, zoom: 17, left: true,
@@ -89,8 +89,8 @@ export const POIS = [
     et: '06 · Destino final', title: 'Fundo Infância', local: 'Escolas e unidades de saúde da ilha',
     foto: 'oficinaEscola', cap: 'Oficina com o Instituto Vivá · escola da ilha',
     alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em oficina com o Instituto Vivá.',
-    text: 'O contrato libera R$ 30 por criança, por mês, quando vacinação, matrícula e frequência escolar estão comprovadas. A renda do trabalho é incondicional; o bônus é adicional.',
-    num: ['51 de 60', 'crianças com saúde e escola em dia neste mês'], tags: ['R$ 30 por criança', 'Vacinação', 'Matrícula', 'Frequência'],
+    text: 'O contrato vai liberar R$ 30 por criança, por mês, quando vacinação, matrícula e frequência escolar estão comprovadas. A renda do trabalho é incondicional; o bônus é adicional.',
+    num: ['60', 'crianças: meta da primeira fase. Abaixo, um exemplo de mês'], tags: ['R$ 30 por criança', 'Vacinação', 'Matrícula', 'Frequência'],
     extra: 'criancas',
   },
   /* praias */
