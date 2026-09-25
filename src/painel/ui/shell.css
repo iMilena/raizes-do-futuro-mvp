@@ -468,3 +468,21 @@
   .pn-topbar { flex-wrap: wrap; }
   .pn-topbar .busca-global { order: 5; flex-basis: 100%; max-width: none; }
 }
+
+/* O tour e o avatar do perfil também vinham com cores fixas do MVP: no tema
+   escuro, o texto do tour (que segue o tema) ficava claro sobre cartão branco. */
+.painel-raizes .tour {
+  background: var(--deep);
+  border: 1px solid var(--line-2);
+  border-top: 3px solid var(--accent-ink);
+  color: var(--t1);
+}
+.painel-raizes .tour-topo b { color: var(--t1); }
+.painel-raizes .tour p { color: var(--t2); }
+.painel-raizes .tour-contador,
+.painel-raizes .tour-nunca { color: var(--t3); }
+.painel-raizes .tour-rodape { border-top-color: var(--line); }
+.painel-raizes .tour-pontos i { background: var(--line-2); }
+.painel-raizes .tour-pontos i.feito { background: var(--line-3); }
+.painel-raizes .tour-pontos i.on { background: var(--accent-ink); }
+.painel-raizes .perfil-av.anon { background: var(--tide); border-color: var(--line-2); color: var(--t3); }

@@ -25,8 +25,8 @@ export const URL_PAINEL = env.VITE_URL_PAINEL || '#/painel';
 /** Porta de entrada do painel: quem ainda não tem acesso passa por aqui. */
 export const URL_ENTRADA_PAINEL = env.VITE_URL_ENTRADA_PAINEL || '#/login';
 
-/** Site do projeto — o "voltar" da porta de entrada. */
-export const URL_SITE = env.VITE_URL_SITE || '#/';
+/** O site do projeto (a landing). A raiz do endereço abre o mapa. */
+export const URL_SITE = env.VITE_URL_SITE || '#/site';
 
 /** Página "Falar com a equipe". Aceita `?tipo=` para chegar com o assunto escolhido. */
 export const URL_CONTATO = '#/contato';

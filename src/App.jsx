@@ -66,7 +66,10 @@ export default function App() {
   /* Trocar de página começa do topo. Só quando a PÁGINA muda: as âncoras da
      landing (#impacto, #faq) também mexem no hash, e essas têm de rolar até a
      seção, não voltar ao início. */
-  const pagina = rota.startsWith('#/') ? rota.slice(2).split(/[/?]/)[0] : '';
+  /* A âncora de uma seção da landing (#impacto, #faq) conta como a página do
+     site, e o hash vazio como o mapa: é o que a rota decide mais abaixo. */
+  const segmento = rota.startsWith('#/') ? rota.slice(2).split(/[/?]/)[0] : null;
+  const pagina = segmento === null ? (rota && rota !== '#' ? 'site' : 'explorar') : segmento || 'explorar';
   const paginaAnterior = useRef(pagina);
   useEffect(() => {
     if (paginaAnterior.current !== pagina) window.scrollTo(0, 0);
@@ -99,7 +102,9 @@ export default function App() {
     );
   }
 
-  if (rota.startsWith('#/explorar')) {
+  /* A porta de entrada é o mapa: quem abre o endereço sem nada depois dele cai
+     em "Explorar a ilha", e o "Saiba mais" de lá leva ao site (#/site). */
+  if (pagina === 'explorar') {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Explorar />

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { logoRaizesUrl } from '../landing/images';
 import { useContagem } from '../landing/hooks/useContagem';
-import { URL_CONTATO, URL_PAINEL } from '../config.js';
+import { URL_CONTATO, URL_PAINEL, URL_SITE } from '../config.js';
 import { CICLO, POIS } from './dados.js';
 import { criarMapa } from './mapa.js';
 import { criarSom } from './som.js';
@@ -321,8 +321,8 @@ export function Explorar() {
           <small>Boipeba · Bahia</small>
         </a>
         <div className="h-right">
-          <a className="h-link hide-m" href="#/">
-            Site
+          <a className="h-link" href={URL_SITE}>
+            Saiba mais
           </a>
           <a className="h-link hide-m" href={URL_PAINEL}>
             Painel
