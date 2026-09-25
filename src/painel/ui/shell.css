@@ -461,4 +461,10 @@
   border-color: var(--line);
   color: var(--t1);
 }
+/* O caminho não encolhe; quem cede espaço é a busca, que desce para a própria
+   linha antes de a barra passar da largura da tela. */
 .pn-ctx { flex: none; }
+@media (max-width: 1520px) {
+  .pn-topbar { flex-wrap: wrap; }
+  .pn-topbar .busca-global { order: 5; flex-basis: 100%; max-width: none; }
+}

@@ -1,21 +1,38 @@
 /* ===========================================================================
-   DADOS DE DEMONSTRAÇÃO. NÃO SÃO NÚMEROS REAIS DO PROJETO.
+   A base da Visão geral e da Trilha de prova.
 
-   Tudo o que a Visão geral e a Trilha de prova mostram sai daqui, e só daqui:
-   o mês de setembro de 2026 que o protótipo aprovado usa para contar a
-   história (R$ 16.400 de receita, os hashes, a família de exemplo).
+   DECISÃO DA EQUIPE: os totais do projeto são os da página pública, e só
+   eles. Por isso não estão escritos aqui: vêm de `landing/data/content.js`,
+   o mesmo arquivo que a landing lê. Mudou lá, muda aqui, e o site e o painel
+   nunca mais contam números diferentes.
 
-   A equipe ainda não decidiu qual base vale para essas duas telas: os números
-   da landing (12 t, 30 famílias, 60 crianças, 51 em dia), o estado do painel
-   ou uma base nova. Quando decidir, basta trocar os valores deste arquivo, ou
-   substituir as leituras dele por seletores do store. Nenhuma outra tela lê
-   este arquivo, e nenhum número daqui deve ir parar em outra tela.
+     12 t validadas · 30 famílias · 60 crianças · 51 com saúde e escola em dia
+
+   O MÊS DE SETEMBRO, abaixo, é ILUSTRATIVO: a landing não tem receita nem
+   quilos mensais. Os valores foram escolhidos para bater com os totais (51
+   crianças × R$ 30 = R$ 1.530 de bônus; divisão 60/25/15 exata) e ficam aqui
+   até a equipe fechar o mês de verdade. A tela diz isso no rodapé.
 
    Onde o painel já tem o dado de verdade (as transações do cofre na devnet),
    a Trilha usa o real e cai neste arquivo só quando o real ainda não existe.
 =========================================================================== */
 
-export const DEMONSTRACAO = true;
+import { impacto, coorte } from '../../landing/data/content.js';
+
+const numero = (rotulo) => impacto.numeros.find((n) => n.rotulo.startsWith(rotulo)).valor;
+
+/** Os totais oficiais, lidos da landing. */
+export const TOTAIS = {
+  toneladas: numero('Toneladas'),
+  familias: numero('Famílias'),
+  criancas: coorte.total,
+  emDia: coorte.emDia,
+};
+
+export const BONUS_POR_CRIANCA = 30;
+
+/** true enquanto os valores de setembro forem ilustrativos. */
+export const MES_ILUSTRATIVO = true;
 
 export const MES = {
   nome: 'setembro de 2026',
@@ -27,11 +44,13 @@ export const MES = {
   renda: 9840,
   infancia: 4100,
   operacao: 2460,
-  bonusLiberado: 1530,
-  reservado: 2570,
-  familias: 30,
-  criancas: 60,
-  emDia: 51,
+  familias: TOTAIS.familias,
+  criancas: TOTAIS.criancas,
+  emDia: TOTAIS.emDia,
+  /* derivados: o bônus sai das 51 crianças em dia, e o reservado é o resto
+     da fatia de 25% do mês */
+  bonusLiberado: TOTAIS.emDia * BONUS_POR_CRIANCA,
+  reservado: 4100 - TOTAIS.emDia * BONUS_POR_CRIANCA,
   /* quilos validados por semana: as quatro primeiras são de agosto */
   semanas: [
     ['04/08', 188], ['11/08', 214], ['18/08', 251], ['25/08', 236],

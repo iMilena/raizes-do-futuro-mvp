@@ -550,8 +550,12 @@ function Painel({ tab, setTab }) {
           {/* Contexto antes de tudo: em que grupo estou, e que tela é esta. */}
           <div className="pn-ctx">
             <p className="pn-crumb">
-              <span className="pn-crumb-g">{t(telaAtual.grupo)}</span>
-              <span className="pn-crumb-g" aria-hidden="true"> / </span>
+              {telaAtual.grupo !== telaAtual.rotulo && (
+                <>
+                  <span className="pn-crumb-g">{t(telaAtual.grupo)}</span>
+                  <span className="pn-crumb-g" aria-hidden="true"> / </span>
+                </>
+              )}
               <b>{t(telaAtual.rotulo)}</b>
             </p>
           </div>

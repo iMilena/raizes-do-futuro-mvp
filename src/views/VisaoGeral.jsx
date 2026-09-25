@@ -2,7 +2,7 @@ import { useStore, fmt, trunc, tipoTx } from '../estado/store.jsx';
 import { useIdioma } from '../lib/i18n.jsx';
 import { useDemo, useDestaque } from '../componentes/demo.jsx';
 import { Icon } from '../painel/ui/Icones.jsx';
-import { MES as D, PROVAS_RECENTES } from '../painel/demo/setembro.js';
+import { MES as D, PROVAS_RECENTES, TOTAIS } from '../painel/demo/setembro.js';
 import './visao-geral.css';
 
 /* ---------------------------------------------------------------------------
@@ -253,8 +253,8 @@ export default function VisaoGeral({ irPara }) {
           {t('Relatório do mês')} · {D.nome}
         </span>
         <h1>
-          {t('Em setembro,')} <em>{(D.kg / 1000).toLocaleString('pt-BR')} t</em> {t('de resíduo validado viraram')}{' '}
-          <em>{brl(D.renda)}</em> {t('de renda para')} {D.familias} {t('famílias e bônus para')} {D.emDia} {t('crianças.')}
+          {t('Até aqui,')} <em>{TOTAIS.toneladas} t</em> {t('de resíduo validado viraram renda para')} {TOTAIS.familias}{' '}
+          {t('famílias e bônus para')} <em>{TOTAIS.emDia} {t('das')} {TOTAIS.criancas} {t('crianças.')}</em>
         </h1>
         <p className="lead">
           {t('Nenhum número desta tela é estimativa. Cada um vem de uma prova: a coleta validada pela DeTrash, a venda registrada no Mercado e a divisão executada pelo contrato na Solana.')}
@@ -284,10 +284,10 @@ export default function VisaoGeral({ irPara }) {
       </header>
 
       <div className="vg-g4">
-        <Kpi rotulo={t('Resíduo validado')} valor={kg(D.kg)} unidade="kg" delta={<><b className="up">+{pctKg}%</b> {t('sobre agosto')}</>} fonte={t('Validado pela DeTrash')} />
+        <Kpi rotulo={t('Resíduo validado')} valor={TOTAIS.toneladas} unidade="t" delta={<>{kg(D.kg)} kg {t('em setembro')}, <b className="up">+{pctKg}%</b> {t('sobre agosto')}</>} fonte={t('Validado pela DeTrash')} />
         <Kpi rotulo={t('Receita do mês')} valor={brl(D.receita)} delta={`${t('Turismo')} ${brl(D.turismo)} · ${t('Empresas')} ${brl(D.esg)}`} fonte={t('Vendas registradas no Mercado')} />
-        <Kpi rotulo={t('Renda para as famílias')} valor={brl(D.renda)} delta={t('60% da receita, sem condições')} fonte={t('Pago pelo contrato na Solana')} chave />
-        <Kpi rotulo={t('Crianças com bônus')} valor={`${D.emDia} ${t('de')} ${D.criancas}`} delta={`${Math.round((D.emDia / D.criancas) * 100)}% ${t('com saúde e escola em dia')}`} fonte={t('Comprovado pelo Instituto Vivá')} />
+        <Kpi rotulo={t('Renda para as famílias')} valor={brl(D.renda)} delta={`${t('em setembro')} · ${TOTAIS.familias} ${t('famílias')} · ${t('60% da receita, sem condições')}`} fonte={t('Pago pelo contrato na Solana')} chave />
+        <Kpi rotulo={t('Crianças com bônus')} valor={`${TOTAIS.emDia} ${t('de')} ${TOTAIS.criancas}`} delta={`${Math.round((TOTAIS.emDia / TOTAIS.criancas) * 100)}% ${t('com saúde e escola em dia')}`} fonte={t('Comprovado pelo Instituto Vivá')} />
       </div>
 
       <div className={`pn-card pad pn-flow${focoFluxo ? ' ' + focoFluxo : ''}`}>
@@ -343,7 +343,7 @@ export default function VisaoGeral({ irPara }) {
         </div>
       </div>
       <p className="vg-demo">
-        {t('Números do mês: dados de demonstração, até a equipe definir a base oficial. A fila de hoje e as provas na cadeia leem o estado real do painel.')}
+        {t('Totais do projeto: os mesmos da página pública. Valores de setembro (receita, quilos e divisão): ilustrativos e coerentes com esses totais, até a equipe fechar o mês. A fila de hoje e as provas na cadeia leem o estado real do painel.')}
       </p>
     </div>
   );

@@ -36,6 +36,11 @@ export const TRADUZIDAS = ['dashboard'];
 const DICIONARIO = {
   en: {
     /* ---- Visão geral e menu do redesign ---- */
+    'Até aqui,': 'So far,',
+    'de resíduo validado viraram renda para': 'of validated waste became income for',
+    'das': 'of the',
+    'em setembro': 'in September',
+    'Totais do projeto: os mesmos da página pública. Valores de setembro (receita, quilos e divisão): ilustrativos e coerentes com esses totais, até a equipe fechar o mês. A fila de hoje e as provas na cadeia leem o estado real do painel.': "Project totals: the same as the public site. September figures (revenue, kilos and split): illustrative and consistent with those totals, until the team closes the month. Today's queue and the on-chain proofs read the dashboard's real state.",
     '15% · validação, logística, infraestrutura': '15% · validation, logistics, infrastructure',
     '60% da receita, sem condições': '60% of revenue, no conditions',
     '60% · incondicional · 30 famílias': '60% · unconditional · 30 families',
