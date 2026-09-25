@@ -37,25 +37,24 @@ export const nav = {
 
 export const hero = {
   selo: { destaque: 'Vencedor', texto: 'Youth Challenge Blockchain · UNICEF Brasil' },
-  /* Quebrado em linhas à mão: cada uma sobe por trás da própria máscara. */
-  linhas: [
-    { texto: 'Um futuro', acento: false },
-    { texto: 'mais justo para', acento: false },
-    { texto: 'as crianças', acento: true },
-    { texto: 'de Boipeba', acento: true },
-  ],
+  titulo: 'Um futuro mais justo para',
+  destaque: 'as crianças de Boipeba',
   subtitulo:
-    'Transformamos economia circular em renda familiar e proteção à infância, por meio de blockchain e dinheiro programável.',
+    'O lixo que as famílias recolhem das praias vira renda para elas e um bônus para os filhos, quando vacina, matrícula e escola estão em dia. Cada quilo tem prova, e cada real é dividido por contrato.',
   primario: { rotulo: 'Investir no projeto', href: contatoCom('investimento') },
   secundario: { rotulo: 'Explorar a ilha e o ciclo', href: URL_EXPLORAR },
-  aoVivo: 'Em operação em Boipeba, Cairu, Bahia',
   marcadores: [
     { valor: '30+', rotulo: 'famílias' },
     { valor: '60', rotulo: 'crianças' },
     { valor: '12 t', rotulo: 'de resíduo validadas' },
   ],
-  legendaFoto: 'Mutirão de coleta · Boipeba',
-  role: 'ROLE',
+  /* o cartão sobre a foto, ao lado da criança */
+  cartao: {
+    eyebrow: 'Fundo Infância',
+    texto: 'Quando os compromissos estão em dia, o bônus chega à família.',
+    itens: ['Vacina', 'Matrícula', 'Frequência'],
+  },
+  altFoto: 'Criança de Boipeba na sala de aula faz um coração com as mãos',
 };
 
 export const manifesto = {

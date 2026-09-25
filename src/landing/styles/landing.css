@@ -11,23 +11,9 @@
    mesmo motivo: nomes de animação são globais.
 --------------------------------------------------------------------------- */
 
-@keyframes lp-kb {
-  from { transform: scale(1.02); }
-  to { transform: scale(1.12) translate(-1.5%, -1%); }
-}
-@keyframes lp-mist { to { transform: translateX(4%); } }
-@keyframes lp-up { to { transform: none; } }
+@keyframes lp-arco { to { transform: scale(1.07); } }
+@keyframes lp-bate { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.12); } 24% { transform: scale(1); } 36% { transform: scale(1.08); } }
 @keyframes lp-fu { to { opacity: 1; transform: none; } }
-@keyframes lp-pl {
-  70% { box-shadow: 0 0 0 10px rgba(127, 217, 154, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(127, 217, 154, 0); }
-}
-@keyframes lp-sh {
-  0% { transform: scaleY(0); transform-origin: top; }
-  50% { transform: scaleY(1); transform-origin: top; }
-  51% { transform-origin: bottom; }
-  100% { transform: scaleY(0); transform-origin: bottom; }
-}
 
 .lp {
   overflow-x: clip;
@@ -137,61 +123,67 @@
   & .mnav .btn { margin-top: 24px; font-family: var(--f-body); font-size: 16px; align-self: flex-start; }
 
   /* --------------------------------------------------------------- CAPA -- */
-  /* `position: relative` é o que prende a foto dentro da capa: sem ele, o
-     fundo com inset negativo vaza para baixo em telas largas. */
-  & .hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; overflow: hidden; padding: 120px 0 36px; }
-  & .hero-bg { position: absolute; inset: -6%; animation: lp-kb 30s ease-in-out infinite alternate; will-change: transform; }
-  & .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+  /* Segue raizes-capa-crianca.html: texto à esquerda, a criança numa janela
+     em arco à direita. `position: relative` prende o brilho dentro da capa. */
+  & .hero {
+    position: relative; min-height: 100svh; overflow: hidden; display: flex; align-items: center;
+    padding: 112px 0 48px; isolation: isolate;
+  }
   & .hero::before {
-    content: ""; position: absolute; inset: 0; z-index: 1;
+    content: ""; position: absolute; inset: 0; z-index: -1;
     background:
-      linear-gradient(90deg, rgba(4, 16, 13, .92) 0%, rgba(4, 16, 13, .62) 42%, rgba(4, 16, 13, .15) 75%),
-      linear-gradient(0deg, rgba(4, 16, 13, 1) 0%, rgba(4, 16, 13, 0) 38%);
+      radial-gradient(45% 60% at 74% 45%, rgba(243, 178, 103, .2), transparent 70%),
+      radial-gradient(40% 50% at 0% 100%, rgba(127, 217, 154, .1), transparent 70%);
   }
-  & .mist {
-    position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .5;
-    background:
-      radial-gradient(40% 30% at 20% 110%, rgba(207, 237, 217, .18), transparent 70%),
-      radial-gradient(35% 25% at 85% 105%, rgba(207, 237, 217, .14), transparent 70%);
-    animation: lp-mist 18s ease-in-out infinite alternate;
-  }
-  & .hero .wrap { position: relative; z-index: 2; }
+  & .capa-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: clamp(34px, 6vw, 96px); align-items: center; }
   & .badge {
     display: inline-flex; align-items: center; gap: 12px; padding: 6px 16px 6px 6px; border-radius: 999px;
-    border: 1px solid var(--line); background: rgba(4, 16, 13, .55); backdrop-filter: blur(10px);
-    font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+    border: 1px solid var(--line); font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted);
   }
   & .badge b { background: var(--mint); color: var(--bg0); padding: 6px 12px; border-radius: 999px; font-family: var(--f-body); font-weight: 800; letter-spacing: .1em; }
   & .hero h1 {
-    font-family: var(--f-display); font-weight: 400; font-size: clamp(44px, min(7vw, 11.5vh), 112px);
-    line-height: .98; letter-spacing: -.02em; margin-top: 26px;
+    font-family: var(--f-display); font-weight: 600; font-size: clamp(44px, min(5.8vw, 9.4vh), 100px);
+    line-height: .96; letter-spacing: -.035em; margin-top: 24px;
   }
-  & .hero h1 .ln { display: block; overflow: hidden; padding-bottom: .04em; }
-  & .hero h1 .ln span { display: inline-block; transform: translateY(105%); animation: lp-up 1.2s var(--ease) forwards; }
-  & .hero h1 .ln:nth-child(2) span { animation-delay: .12s; }
-  & .hero h1 .ln:nth-child(3) span { animation-delay: .24s; }
-  & .hero h1 .ln:nth-child(4) span { animation-delay: .36s; }
-  /* O mesmo desenho dos outros títulos do site: reto em 400, e o destaque em
-     itálico leve menta. */
-  & .hero h1 .g { color: var(--mint); font-style: italic; font-weight: 300; }
-  & .hero p.sub { margin-top: 26px; max-width: 520px; font-size: clamp(16px, 1.5vw, 19px); line-height: 1.6; color: var(--foam); }
-  & .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
-  & .fu { opacity: 0; transform: translateY(16px); animation: lp-fu 1s var(--ease) forwards; }
-  & .strip {
-    margin-top: clamp(28px, 5vh, 52px); display: grid; grid-template-columns: auto repeat(3, 1fr) auto;
-    align-items: center; border-top: 1px solid var(--line); padding-top: 20px; gap: 28px;
+  & .hero h1 em { display: block; font-style: italic; font-weight: 300; color: var(--mint); }
+  & .hero p.sub { margin-top: 24px; max-width: 31em; font-size: clamp(16px, 1.35vw, 19px); line-height: 1.62; color: var(--foam); }
+  & .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  & .fu { opacity: 0; transform: translateY(14px); animation: lp-fu 1s var(--ease) forwards; }
+  & .nums {
+    display: flex; flex-wrap: wrap; gap: clamp(22px, 3.5vw, 48px); margin-top: clamp(28px, 5vh, 46px);
+    padding-top: 20px; border-top: 1px solid var(--line);
   }
-  & .strip .live { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
-  & .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 rgba(127, 217, 154, .6); animation: lp-pl 2s infinite; }
-  & .strip .s b { font-family: var(--f-display); font-weight: 400; font-size: 30px; display: block; line-height: 1; }
-  & .strip .s span { font-size: 13px; color: var(--muted); }
-  & .strip .cap { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; text-align: right; }
-  & .scroll-hint {
-    position: absolute; right: max(24px, calc((100vw - 1240px) / 2)); bottom: 130px; z-index: 2;
-    writing-mode: vertical-rl; font-family: var(--f-mono); font-size: 11px; letter-spacing: .2em; color: var(--muted);
-    display: flex; align-items: center; gap: 12px;
+  & .nums b { display: block; font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 3vw, 40px); line-height: 1; }
+  & .nums span { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+
+  /* a foto em janela de arco */
+  & .palco { position: relative; justify-self: center; width: min(100%, 480px); }
+  & .arco {
+    position: relative; aspect-ratio: 4 / 5; border-radius: 999px 999px 36px 36px; overflow: hidden;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, .35); outline: 1px solid var(--line); outline-offset: 10px;
   }
-  & .scroll-hint::after { content: ""; width: 1px; height: 60px; background: linear-gradient(var(--mint), transparent); animation: lp-sh 2s ease-in-out infinite; }
+  & .arco picture { display: contents; }
+  & .arco img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; animation: lp-arco 24s ease-in-out infinite alternate; }
+  & .arco::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(4, 16, 13, .45), transparent 35%); }
+  & .coracao {
+    position: absolute; left: -26px; top: 22%; width: 74px; height: 74px; border-radius: 50%; background: var(--dawn);
+    display: grid; place-items: center; box-shadow: 0 16px 36px rgba(0, 0, 0, .28); animation: lp-bate 2.4s ease-in-out infinite;
+  }
+  & .coracao svg { width: 34px; height: 34px; fill: #15241d; }
+  & .cartao {
+    position: absolute; right: -34px; bottom: 26px; width: min(270px, 78%); padding: 18px 20px; border-radius: 22px;
+    background: rgba(6, 23, 19, .88); color: var(--text); border: 1px solid var(--line); backdrop-filter: blur(12px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  }
+  & .cartao small { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--mint); }
+  & .cartao p { margin-top: 6px; font-family: var(--f-display); font-size: 19px; line-height: 1.25; }
+  & .cartao ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  & .cartao li {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+    background: var(--line); font-size: 12.5px; font-weight: 700;
+  }
+  & .cartao li svg { width: 13px; height: 13px; stroke: var(--mint); fill: none; stroke-width: 2.6; }
 
   /* ---------------------------------------------------------- MANIFESTO -- */
   & .manifesto { padding: clamp(110px, 14vw, 200px) 0; }
@@ -466,11 +458,10 @@
   /* A lista vertical do "Como funciona": abaixo de 900 px, e também com
      menos movimento (a classe `.lista` vem do componente). */
   @media (max-width: 900px) {
-    & .strip { grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    & .strip .live,
-    & .strip .cap { grid-column: 1 / -1; }
-    & .strip .cap { text-align: left; }
-    & .scroll-hint { display: none; }
+    & .capa-grid { grid-template-columns: 1fr; }
+    & .palco { width: min(100%, 400px); margin-top: 10px; }
+    & .coracao { left: -10px; width: 62px; height: 62px; }
+    & .cartao { right: -10px; }
     & .manifesto .aside,
     & .kids-wrap,
     & .ops,
@@ -534,9 +525,12 @@
     & .wrap { width: calc(100% - 32px); }
     & .nav { top: 10px; padding-left: 14px; }
     & .nav .btn-p { padding: 10px 14px; font-size: 13px; }
-    & .hero { padding-bottom: 28px; }
-    & .hero .cta .btn { flex: 1; justify-content: center; }
-    & .strip .s b { font-size: 24px; }
+    & .hero { padding-top: 100px; min-height: auto; }
+    & .badge { font-size: 10px; letter-spacing: .1em; }
+    & .hero .cta .btn { flex: 1 1 100%; justify-content: center; }
+    & .palco { width: calc(100% - 24px); }
+    & .cartao { position: relative; right: auto; bottom: auto; width: 92%; margin: -54px auto 0; }
+    & .coracao { top: 14%; }
     & .kids { gap: 7px; }
     & .hide-s { display: none; }
     & .show-s { display: inline; }
@@ -559,8 +553,8 @@
     & *::after { animation: none !important; transition: none !important; }
     & .rf-rv,
     & .fu { opacity: 1; transform: none; }
-    & .hero h1 .ln span { transform: none; }
-    & .hero-bg { transform: none; }
+    & .arco img,
+    & .coracao { transform: none; }
     & .kids i,
     & .split-big div,
     & .photo img { transform: none; }
