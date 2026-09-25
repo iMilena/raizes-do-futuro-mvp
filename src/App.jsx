@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Landing } from './landing';
-import { Login } from './login/Login';
+
 
 /* ---------------------------------------------------------------------------
    O roteador do aplicativo, e nada além disso.
@@ -21,6 +21,9 @@ const PainelApp = lazy(() => import('./painel/PainelApp.jsx'));
    pequena, mas a do mapa traz o Leaflet, e nenhuma das duas precisa pesar na
    primeira visita à landing. */
 const Contato = lazy(() => import('./contato/Contato.jsx'));
+/* A porta do painel também: a folha dela ia junto no CSS de entrada e
+   atrasava a primeira pintura da landing, que não usa nada disso. */
+const Login = lazy(() => import('./login/Login').then((m) => ({ default: m.Login })));
 const Explorar = lazy(() => import('./explorar/Explorar.jsx'));
 
 /**
@@ -81,7 +84,11 @@ export default function App() {
      imprimia a SENHA no console e abria o painel com qualquer credencial. Uma
      porta honestamente aberta é melhor do que uma tranca de mentira. */
   if (rota.startsWith('#/login')) {
-    return <Login onLogin={async () => { window.location.hash = '#/painel'; }} />;
+    return (
+      <Suspense fallback={<FundoDoSite />}>
+        <Login onLogin={async () => { window.location.hash = '#/painel'; }} />
+      </Suspense>
+    );
   }
 
   if (rota.startsWith('#/contato')) {

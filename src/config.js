@@ -12,9 +12,9 @@
    nunca aponta para o lugar errado. Se um dia o painel morar em outro domínio,
    basta preencher `VITE_URL_PAINEL`.
 
-   O e-mail abaixo veio do material de referência e **precisa ser confirmado**
-   com a equipe antes de ir ao ar — é para ele que o formulário de contato
-   escreve.
+   O e-mail abaixo foi confirmado pela equipe em 24/09/2026 e é o mesmo da
+   página "Falar com a equipe" (src/contato/config.js). É para ele que a porta
+   do painel manda os pedidos de acesso.
 --------------------------------------------------------------------------- */
 
 const env = import.meta.env ?? {};
@@ -35,7 +35,7 @@ export const URL_CONTATO = '#/contato';
 export const URL_EXPLORAR = '#/explorar';
 
 /** Caixa de entrada dos pedidos de acesso ao painel (porta de entrada). */
-export const EMAIL_CONTATO = env.VITE_EMAIL_CONTATO || 'contato@raizesdofuturo.org';
+export const EMAIL_CONTATO = env.VITE_EMAIL_CONTATO || 'milena.lcalasans@gmail.com';
 
 /**
  * `true` quando o destino é uma rota interna de hash, e não outro site.

@@ -10,8 +10,37 @@ import { resolve } from 'node:path';
    São apps separados de propósito. O catador instala só "Coleta" na tela
    inicial, e o bundle que ele baixa em 3G de ilha não carrega o painel, os
    gráficos, o cofre multisig e a tela de revisão junto. */
+/* As três fontes que a capa da landing usa na primeira tela. Sem isto, o
+   navegador só descobre os arquivos depois de baixar e ler o CSS, e o texto da
+   capa (que é o maior elemento pintado, e portanto o LCP) espera essa ida e
+   volta a mais. Com o preload, a fonte começa a descer junto com o CSS. Só na
+   página principal: o app de campo e a revisão não usam estas fontes. */
+const FONTES_DA_CAPA = [
+  /fraunces-latin-wght-normal-.*\.woff2$/,
+  /manrope-latin-wght-normal-.*\.woff2$/,
+  /jetbrains-mono-latin-400-normal-.*\.woff2$/,
+];
+function preloadFontesDaCapa() {
+  return {
+    name: 'preload-fontes-da-capa',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        if (!ctx.bundle || !ctx.filename.endsWith('index.html')) return undefined;
+        return Object.keys(ctx.bundle)
+          .filter((f) => FONTES_DA_CAPA.some((r) => r.test(f)))
+          .map((f) => ({
+            tag: 'link',
+            attrs: { rel: 'preload', href: '/' + f, as: 'font', type: 'font/woff2', crossorigin: '' },
+            injectTo: 'head',
+          }));
+      },
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), preloadFontesDaCapa()],
   build: {
     rollupOptions: {
       input: {

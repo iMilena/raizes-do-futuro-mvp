@@ -43,6 +43,9 @@ const Check = () => (
   </span>
 );
 
+/** 5571984233923 → (71) 98423-3923, para ler como número de telefone. */
+const telefone = (n) => n.replace(/^55(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3');
+
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Lê o `?tipo=` de dentro do hash (`#/contato?tipo=investimento`). */
@@ -293,7 +296,7 @@ export function Contato({ rota }) {
   }
 
   const canais = [
-    CONTATO.whatsapp && ['wa', 'WhatsApp', 'resposta no mesmo dia', `https://wa.me/${CONTATO.whatsapp}`],
+    CONTATO.whatsapp && ['wa', 'WhatsApp', telefone(CONTATO.whatsapp), `https://wa.me/${CONTATO.whatsapp}`],
     CONTATO.email && ['mail', 'E-mail', CONTATO.email, `mailto:${CONTATO.email}`],
     CONTATO.instagram && ['ig', 'Instagram', '@' + CONTATO.instagram, `https://instagram.com/${CONTATO.instagram}`],
   ].filter(Boolean);

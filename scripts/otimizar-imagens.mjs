@@ -24,6 +24,12 @@ const FOTOS = [
   { arquivo: 'pilares.jpeg', larguras: [600, 900, 1186] },
   { arquivo: 'fundo-infancia.png', larguras: [335, 670] },
   { arquivo: 'logo_raizes.png', larguras: [96, 192] },
+  /* as fotos enviadas pela equipe em setembro de 2026 */
+  { arquivo: 'oficina-escola.jpeg', larguras: [800, 1200, 1600] },
+  { arquivo: 'balanca-pesagem.jpeg', larguras: [800, 1200, 1600] },
+  { arquivo: 'pesagem-sacos.jpeg', larguras: [800, 1200, 1428] },
+  { arquivo: 'mutirao-grupo.jpeg', larguras: [800, 1200, 1600] },
+  { arquivo: 'crianca-escola.jpeg', larguras: [600, 963] },
 ];
 
 await mkdir(destino, { recursive: true });

@@ -33,7 +33,7 @@ export function Infraestrutura() {
           {pilares.itens.map((p, i) => (
             <Revelar key={p.titulo} className="pilar" atraso={i * 100}>
               <b>{String(i + 1).padStart(2, '0')}</b>
-              <h4>{p.titulo}</h4>
+              <h3>{p.titulo}</h3>
               <p>{p.texto}</p>
             </Revelar>
           ))}

@@ -7,6 +7,7 @@ import { QuemOpera } from './components/QuemOpera';
 import { ComoFunciona } from './components/ComoFunciona';
 import { Divisao } from './components/Divisao';
 import { Infraestrutura } from './components/Infraestrutura';
+import { Galeria } from './components/Galeria';
 import { Feira } from './components/Feira';
 import { Faq } from './components/Faq';
 import { ProximoPasso } from './components/ProximoPasso';
@@ -55,6 +56,7 @@ export function Landing() {
         <ComoFunciona />
         <Divisao />
         <Infraestrutura />
+        <Galeria />
         <Feira />
         <Faq />
         <ProximoPasso />

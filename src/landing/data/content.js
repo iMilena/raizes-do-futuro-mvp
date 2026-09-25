@@ -145,7 +145,7 @@ export const ciclo = {
       titulo: 'Coleta',
       texto: 'Catadores e pontos de coleta parceiros recolhem e pesam o material recolhido na ilha.',
       tags: ['Pesagem', 'Ponto parceiro'],
-      arte: 'balanca',
+      foto: 'pesagemSacos',
     },
     {
       indice: '03 · Prova',
@@ -190,7 +190,7 @@ export const ciclo = {
       texto:
         'Renda e bônus chegam às famílias e às crianças. A renda do trabalho é incondicional; o bônus do Fundo Infância é adicional.',
       tags: ['Renda direta', 'Bônus da infância'],
-      foto: 'fundoInfancia',
+      foto: 'oficinaEscola',
     },
   ],
 };
@@ -327,6 +327,21 @@ export const feira = {
   citacao:
     'Cada peça carrega um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
   legenda: 'Feira da comunidade · Moreré, Boipeba',
+};
+
+/* A galeria: as fotos reais do ciclo, uma ao lado da outra. `foto` é a
+   chave em ../images; `forma` diz quanto da grade a foto ocupa: `largo` duas
+   colunas, `alto` duas linhas (a foto em pé), `cheio` a linha inteira. */
+export const galeria = {
+  eyebrow: 'Boipeba, de perto',
+  titulo: ['O ciclo acontece ', 'com gente de verdade.'],
+  fotos: [
+    { foto: 'mutiraoGrupo', legenda: 'Mutirão de limpeza · Boipeba', forma: 'largo' },
+    { foto: 'criancaEscola', legenda: 'Na escola · Boipeba', forma: 'alto' },
+    { foto: 'pesagemSacos', legenda: 'Pesagem da coleta · Boipeba' },
+    { foto: 'balancaPesagem', legenda: 'Cada quilo registrado · 6,54 kg' },
+    { foto: 'oficinaEscola', legenda: 'Oficina com o Instituto Vivá · escola da ilha', forma: 'cheio' },
+  ],
 };
 
 export const faq = {

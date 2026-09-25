@@ -69,6 +69,76 @@ export const fundoInfancia = {
   alt: 'Duas crianças montando peças com material reciclado sobre a mesa.',
 };
 
+/* ------------------------------------------------------------------------
+   As fotos que a equipe enviou em setembro de 2026.
+------------------------------------------------------------------------ */
+import oficinaOriginal from './oficina-escola.jpeg';
+import oficina800 from './webp/oficina-escola-800.webp';
+import oficina1200 from './webp/oficina-escola-1200.webp';
+import oficina1600 from './webp/oficina-escola-1600.webp';
+import balancaOriginal from './balanca-pesagem.jpeg';
+import balanca800 from './webp/balanca-pesagem-800.webp';
+import balanca1200 from './webp/balanca-pesagem-1200.webp';
+import balanca1600 from './webp/balanca-pesagem-1600.webp';
+import sacosOriginal from './pesagem-sacos.jpeg';
+import sacos800 from './webp/pesagem-sacos-800.webp';
+import sacos1200 from './webp/pesagem-sacos-1200.webp';
+import sacos1428 from './webp/pesagem-sacos-1428.webp';
+import mutiraoOriginal from './mutirao-grupo.jpeg';
+import mutirao800 from './webp/mutirao-grupo-800.webp';
+import mutirao1200 from './webp/mutirao-grupo-1200.webp';
+import mutirao1600 from './webp/mutirao-grupo-1600.webp';
+import criancaOriginal from './crianca-escola.jpeg';
+import crianca600 from './webp/crianca-escola-600.webp';
+import crianca963 from './webp/crianca-escola-963.webp';
+
+/** Oficina na escola da ilha: a serpente de garrafas PET iluminada. */
+export const oficinaEscola = {
+  fallback: oficinaOriginal,
+  webp: srcset([[oficina800, 800], [oficina1200, 1200], [oficina1600, 1600]]),
+  width: 1600,
+  height: 1200,
+  alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em oficina com o Instituto Vivá.',
+};
+/** Para o fundo em CSS, onde um `<picture>` não cabe. */
+export const oficinaEscolaUrl = oficina1600;
+
+/** A balança de mão marcando 6,54 kg. */
+export const balancaPesagem = {
+  fallback: balancaOriginal,
+  webp: srcset([[balanca800, 800], [balanca1200, 1200], [balanca1600, 1600]]),
+  width: 1600,
+  height: 1200,
+  alt: 'Balança de mão laranja marcando 6,54 kg de resíduo recolhido na praia.',
+};
+
+/** Crianças e adultos em volta dos sacos, na hora da pesagem. */
+export const pesagemSacos = {
+  fallback: sacosOriginal,
+  webp: srcset([[sacos800, 800], [sacos1200, 1200], [sacos1428, 1428]]),
+  width: 1428,
+  height: 1071,
+  alt: 'Crianças e adultos abrem os sacos de resíduo recolhidos enquanto a coleta é pesada numa balança de mão.',
+};
+
+/** O grupo do mutirão comemorando ao lado dos sacos. */
+export const mutiraoGrupo = {
+  fallback: mutiraoOriginal,
+  webp: srcset([[mutirao800, 800], [mutirao1200, 1200], [mutirao1600, 1600]]),
+  width: 1600,
+  height: 1200,
+  alt: 'Moradores, voluntários e crianças comemoram de braços erguidos ao lado dos sacos de resíduo recolhidos no mutirão.',
+};
+
+/** Criança na escola fazendo um coração com as mãos. */
+export const criancaEscola = {
+  fallback: criancaOriginal,
+  webp: srcset([[crianca600, 600], [crianca963, 963]]),
+  width: 963,
+  height: 1280,
+  alt: 'Criança sentada na carteira da escola faz um coração com as mãos na frente do rosto.',
+};
+
 /** Marca do projeto. */
 export const logoRaizes = {
   fallback: logoOriginal,

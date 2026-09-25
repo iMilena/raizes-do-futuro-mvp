@@ -55,6 +55,8 @@ export const POIS = [
   {
     id: 'pesagem', g: ['ciclo'], n: '02', ll: L0.pesagem, zoom: 17,
     et: '02 · Validação', title: 'Pesagem e prova com IA', local: 'Ponto de coleta · Velha Boipeba',
+    foto: 'balancaPesagem', cap: 'Pesagem da coleta · Boipeba',
+    alt: 'Balança de mão laranja marcando 6,54 kg de resíduo recolhido na praia.',
     text: 'O material é pesado no ponto de coleta. O app de campo funciona offline, registra peso e foto, e um modelo de visão computacional sinaliza o que precisa de conferência antes de a DeTrash emitir o Relatório de Circularidade.',
     num: ['4', 'detectores revisam cada coleta antes da validação'], tags: ['App offline', 'Visão computacional', 'DeTrash'],
     extra: 'detectores',
@@ -85,8 +87,8 @@ export const POIS = [
   {
     id: 'escola', g: ['ciclo', 'comunidade'], n: '06', ll: L0.escola, zoom: 17,
     et: '06 · Destino final', title: 'Fundo Infância', local: 'Escolas e unidades de saúde da ilha',
-    foto: 'fundoInfancia', cap: 'Oficina com material reciclado',
-    alt: 'Duas crianças montando peças com material reciclado sobre a mesa.',
+    foto: 'oficinaEscola', cap: 'Oficina com o Instituto Vivá · escola da ilha',
+    alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em oficina com o Instituto Vivá.',
     text: 'O contrato libera R$ 30 por criança, por mês, quando vacinação, matrícula e frequência escolar estão comprovadas. A renda do trabalho é incondicional; o bônus é adicional.',
     num: ['51 de 60', 'crianças com saúde e escola em dia neste mês'], tags: ['R$ 30 por criança', 'Vacinação', 'Matrícula', 'Frequência'],
     extra: 'criancas',
