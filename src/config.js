@@ -28,6 +28,17 @@ export const URL_ENTRADA_PAINEL = env.VITE_URL_ENTRADA_PAINEL || '#/login';
 /** O site do projeto (a landing). A raiz do endereço abre o mapa. */
 export const URL_SITE = env.VITE_URL_SITE || '#/site';
 
+/** O app das famílias (Raízes Família), um projeto à parte, publicado como
+    app web instalável. Todos os botões "Abrir o app", o QR code da página
+    #/app e a política de privacidade saem daqui. */
+export const URL_APP = env.VITE_URL_APP || 'https://raizesfamilia-uniwork.vercel.app';
+
+/** A política de privacidade mora no app, junto de quem coleta os dados. */
+export const URL_PRIVACIDADE = `${URL_APP}/privacidade`;
+
+/** A página que apresenta o app às famílias, à equipe e a parceiros. */
+export const URL_PAGINA_APP = '#/app';
+
 /** Página "Falar com a equipe". Aceita `?tipo=` para chegar com o assunto escolhido. */
 export const URL_CONTATO = '#/contato';
 

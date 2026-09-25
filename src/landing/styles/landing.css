@@ -117,6 +117,12 @@
   }
   & .links a:hover { color: var(--text); }
   & .links a.on { color: var(--text); background: rgba(207, 237, 217, .1); }
+  /* "App da família": uma página do site, e não uma seção da landing */
+  & .nav > a.app {
+    padding: 9px 13px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--muted);
+    text-decoration: none; white-space: nowrap; transition: color .2s;
+  }
+  & .nav > a.app:hover { color: var(--text); }
   & .nav .btn { padding: 11px 18px; font-size: 14px; }
   & .burger { display: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); place-items: center; }
   & .burger svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
@@ -449,10 +455,12 @@
   }
 
   /* ---------------------------------------------------------- RESPONSIVO -- */
-  @media (max-width: 1060px) {
+  /* com "App da família" no menu, os links deixam de caber antes de 1240 px */
+  @media (max-width: 1240px) {
     & .links { display: none; }
     & .burger { display: grid; }
     & .nav .btn-g { display: none; }
+    & .nav > a.app { display: none; }
   }
 
   /* A lista vertical do "Como funciona": abaixo de 900 px, e também com

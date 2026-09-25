@@ -85,6 +85,9 @@ export function Nav() {
             </a>
           ))}
         </div>
+        <a className="app" href={nav.app.href}>
+          {nav.app.rotulo}
+        </a>
         <a className="btn btn-g" href={nav.painel.href}>
           {nav.painel.rotulo}
         </a>
@@ -112,6 +115,9 @@ export function Nav() {
             {item.label}
           </a>
         ))}
+        <a href={nav.app.href} onClick={fechar}>
+          {nav.app.rotulo}
+        </a>
         <a href={nav.painel.href} onClick={fechar}>
           {nav.painel.rotulo}
         </a>

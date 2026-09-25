@@ -30,6 +30,9 @@ const FOTOS = [
   { arquivo: 'pesagem-sacos.jpeg', larguras: [800, 1200, 1428] },
   { arquivo: 'mutirao-grupo.jpeg', larguras: [800, 1200, 1600] },
   { arquivo: 'crianca-escola.jpeg', larguras: [600, 963] },
+  /* capturas do app Raízes Família, para os celulares da página #/app */
+  { arquivo: 'app-capa.png', larguras: [540] },
+  { arquivo: 'app-inicio.png', larguras: [540] },
 ];
 
 await mkdir(destino, { recursive: true });

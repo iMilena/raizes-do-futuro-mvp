@@ -14,7 +14,7 @@
    R$ 30 por criança/mês, cofre 2-de-3.
 --------------------------------------------------------------------------- */
 
-import { URL_CONTATO, URL_EXPLORAR, URL_PAINEL } from '../../config.js';
+import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
 
 /** Link para a página de contato com o assunto já escolhido. */
 export const contatoCom = (tipo) => `${URL_CONTATO}?tipo=${tipo}`;
@@ -30,6 +30,7 @@ export const navItems = [
 ];
 
 export const nav = {
+  app: { rotulo: 'App da família', href: URL_PAGINA_APP },
   painel: { rotulo: 'Entrar no painel', href: URL_PAINEL },
   contato: { rotulo: 'Falar com a equipe', curto: 'Contato', href: URL_CONTATO },
 };
@@ -91,6 +92,7 @@ export const coorte = {
     '51 das 60 estão com vacinação, matrícula e frequência comprovadas, e por isso recebem o bônus do mês. Para as outras, o valor fica reservado, nunca perdido.',
   legendaEmDia: 'Saúde e escola em dia',
   legendaEmCurso: 'Acompanhamento em curso',
+  botaoApp: { rotulo: 'Conhecer o app da família', href: URL_PAGINA_APP },
 };
 
 export const parceiros = {
@@ -433,6 +435,7 @@ export const rodape = {
         { rotulo: 'Impacto', href: '#impacto' },
         { rotulo: 'Como funciona', href: '#como' },
         { rotulo: 'FAQ', href: '#faq' },
+        { rotulo: 'App da família', href: URL_PAGINA_APP },
       ],
     },
     {
@@ -446,14 +449,13 @@ export const rodape = {
     },
     {
       titulo: 'Outros',
-      /* "Equipe" e "Política de Privacidade" ainda não têm página; apontam
-         para o contato até existirem, em vez de um `#` que não leva a lugar
-         nenhum. */
+      /* "Equipe" ainda não tem página e aponta para o contato. A política de
+         privacidade mora no app das famílias, que é quem coleta os dados. */
       links: [
         { rotulo: 'Equipe', href: URL_CONTATO },
         { rotulo: 'Contato', href: URL_CONTATO },
         { rotulo: 'UNICEF Brasil', href: 'https://www.unicef.org/brazil/', externo: true },
-        { rotulo: 'Política de Privacidade', href: URL_CONTATO },
+        { rotulo: 'Política de Privacidade', href: URL_PRIVACIDADE, externo: true },
       ],
     },
   ],

@@ -96,6 +96,9 @@ export function Impacto() {
               <span>{coorte.legendaEmDia}</span>
               <span>{coorte.legendaEmCurso}</span>
             </div>
+            <a className="btn btn-g" href={coorte.botaoApp.href} style={{ marginTop: 26 }}>
+              {coorte.botaoApp.rotulo}
+            </a>
           </Revelar>
         </div>
       </div>

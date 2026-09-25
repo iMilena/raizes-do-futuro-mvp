@@ -25,6 +25,7 @@ const Contato = lazy(() => import('./contato/Contato.jsx'));
    atrasava a primeira pintura da landing, que não usa nada disso. */
 const Login = lazy(() => import('./login/Login').then((m) => ({ default: m.Login })));
 const Explorar = lazy(() => import('./explorar/Explorar.jsx'));
+const AppFamilia = lazy(() => import('./app-familia/AppFamilia.jsx'));
 
 /**
  * Ponte enquanto o pedaço do painel chega.
@@ -108,6 +109,14 @@ export default function App() {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Explorar />
+      </Suspense>
+    );
+  }
+
+  if (pagina === 'app') {
+    return (
+      <Suspense fallback={<FundoDoSite />}>
+        <AppFamilia />
       </Suspense>
     );
   }
