@@ -16,15 +16,18 @@
    `import '../config'` ambíguo para quem lê.
 --------------------------------------------------------------------------- */
 
+import { EMAIL_CONTATO, URL_MATERIAL_INVESTIDORES } from '../config.js';
+
 export const CONTATO = {
-  /** Recebe os envios quando não há `formEndpoint`. Ex.: contato@dominio.org */
-  email: 'milena.lcalasans@gmail.com',
+  /** Recebe os envios quando não há `formEndpoint`. Vem de `src/config.js`,
+      para o e-mail do site inteiro trocar num lugar só. */
+  email: EMAIL_CONTATO,
   /** Opcional: URL que recebe um POST JSON com as respostas. */
   formEndpoint: '',
   /** Só números, com DDI e DDD. Ex.: 5571999999999 */
   whatsapp: '5571984233923',
   /** Sem o @. Ex.: raizesdofuturo */
   instagram: '',
-  /** Link do kit de imprensa e investidores. */
-  kitUrl: '',
+  /** Link do kit de imprensa e investidores. Também vem de `src/config.js`. */
+  kitUrl: URL_MATERIAL_INVESTIDORES,
 };

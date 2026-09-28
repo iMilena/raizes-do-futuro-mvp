@@ -144,6 +144,28 @@ export interface ResultadoSemeadura {
 }
 
 /**
+ * O dia do exemplo como registros prontos, ainda sem assinatura.
+ *
+ * Funcao pura: o mesmo dia da sempre os mesmos hashes, e por isso a mesma raiz
+ * de Merkle. E o que permite a pagina de investidores publicar a raiz do lote
+ * de exemplo e deixar o visitante recalcula-la no navegador.
+ *
+ * Os registros anteriores entram na comparacao: e assim que a coleta das 11:30
+ * "enxerga" a das 09:10 e a sinalizacao de foto reaproveitada nasce do
+ * detector, e nao de uma linha escrita aqui. A assinatura do aparelho fica fora
+ * do conteudo, entao nao muda nada disso.
+ */
+export function registrosDoExemplo(dia: string): RegistroEvidencia[] {
+  const registros: RegistroEvidencia[] = [];
+  for (const [indice, item] of ROTEIRO.entries()) {
+    const conteudo = conteudoDe(item, dia, indice);
+    const sinalizacoes = analisar({ ...conteudo, versaoEsquema: VERSAO_ESQUEMA }, registros);
+    registros.push(montarRegistro(conteudo, sinalizacoes));
+  }
+  return registros;
+}
+
+/**
  * Planta o exemplo no banco.
  *
  * `dia` existe para o exemplo cair sempre no dia de hoje: lote de tres semanas
@@ -157,17 +179,11 @@ export async function semearDemonstracao(
   const dia = opcoes.dia ?? dataLoteDe(new Date().toISOString());
   const identidade = opcoes.identidade ?? await IdentidadeDispositivo.carregar(banco);
 
-  /* Os registros ja plantados entram na comparacao junto com os do roteiro: e
-     assim que a coleta das 11:30 "enxerga" a das 09:10 e a sinalizacao de foto
-     reaproveitada nasce do detector, e nao de uma linha escrita aqui. */
-  const anteriores: RegistroEvidencia[] = [];
   const codigos = new Set<string>();
   let sinalizados = 0;
 
-  for (const [indice, item] of ROTEIRO.entries()) {
-    const conteudo = conteudoDe(item, dia, indice);
-    const sinalizacoes = analisar({ ...conteudo, versaoEsquema: VERSAO_ESQUEMA }, anteriores);
-    const registro = await identidade.assinarRegistro(montarRegistro(conteudo, sinalizacoes));
+  for (const semAssinatura of registrosDoExemplo(dia)) {
+    const registro = await identidade.assinarRegistro(semAssinatura);
 
     const guardado: RegistroGuardado = {
       id: registro.conteudo.id,
@@ -180,9 +196,8 @@ export async function semearDemonstracao(
     // entra na fila e exemplo que um dia sobe para a base de verdade.
     await banco.salvarRegistro(guardado, undefined, { enfileirar: false });
 
-    anteriores.push(registro);
-    if (sinalizacoes.length > 0) sinalizados++;
-    for (const s of sinalizacoes) codigos.add(s.codigo);
+    if (registro.sinalizacoes.length > 0) sinalizados++;
+    for (const s of registro.sinalizacoes) codigos.add(s.codigo);
   }
 
   return { gravados: ROTEIRO.length, sinalizados, codigos: [...codigos].sort() };

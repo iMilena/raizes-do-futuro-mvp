@@ -45,8 +45,23 @@ export const URL_CONTATO = '#/contato';
 /** Experiência "Explorar a ilha": o mapa de Boipeba com o ciclo animado. */
 export const URL_EXPLORAR = '#/explorar';
 
-/** Caixa de entrada dos pedidos de acesso ao painel (porta de entrada). */
+/** A página única em inglês para investidores e para o júri da Colosseum.
+    É este o link que vai na submissão: abre direto nela, sem passar pelo mapa. */
+export const URL_INVESTIDORES = '#/investors';
+
+/** O código-fonte, público. A seção de tecnologia aponta para cá. */
+export const URL_REPOSITORIO = 'https://github.com/iMilena/raizes-do-futuro-mvp';
+
+/** A caixa de entrada da equipe: pedidos de acesso ao painel, a página de
+    contato, a página de investidores e as cartas de intenção chegam todos aqui.
+
+    PENDENTE: trocar pelo e-mail com domínio próprio (ex.: contato@<domínio>)
+    assim que ele existir. É uma linha só, ou `VITE_EMAIL_CONTATO` no .env. */
 export const EMAIL_CONTATO = env.VITE_EMAIL_CONTATO || 'milena.lcalasans@gmail.com';
+
+/** O material para investidores (PDF). Enquanto estiver vazio, a página de
+    investidores esconde o botão de baixar em vez de apontar para o nada. */
+export const URL_MATERIAL_INVESTIDORES = env.VITE_URL_MATERIAL_INVESTIDORES || '';
 
 /**
  * `true` quando o destino é uma rota interna de hash, e não outro site.

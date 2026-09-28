@@ -118,6 +118,9 @@ export function Nav() {
         <a href={nav.app.href} onClick={fechar}>
           {nav.app.rotulo}
         </a>
+        <a href={nav.investidores.href} onClick={fechar} lang="en">
+          {nav.investidores.rotulo}
+        </a>
         <a href={nav.painel.href} onClick={fechar}>
           {nav.painel.rotulo}
         </a>

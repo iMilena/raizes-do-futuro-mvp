@@ -10,14 +10,15 @@
    que o projeto *participa* do Youth Challenge Blockchain. Ele venceu.
 
    O projeto está em implantação: a coleta, os pagamentos e os bônus ainda
-   não começaram. Por isso o texto fala do ciclo no futuro, e 12 toneladas,
+   não começaram (a chave fica em src/status.js, e a capa lê de lá). Por isso o texto fala do ciclo no futuro, e 12 toneladas,
    30 famílias e 60 crianças aparecem sempre como metas da primeira fase. O
    "51 de 60 em dia" é exemplo de como o Fundo Infância vai funcionar, e diz
    isso onde aparece. As regras (60/25/15, R$ 30 por criança/mês, cofre
    2-de-3) são as previstas no contrato.
 --------------------------------------------------------------------------- */
 
-import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
+import { URL_CONTATO, URL_EXPLORAR, URL_INVESTIDORES, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
+import { emPiloto } from '../../status.js';
 
 /** Link para a página de contato com o assunto já escolhido. */
 export const contatoCom = (tipo) => `${URL_CONTATO}?tipo=${tipo}`;
@@ -34,19 +35,24 @@ export const navItems = [
 
 export const nav = {
   app: { rotulo: 'App da família', href: URL_PAGINA_APP },
+  /* A página em inglês para investidores e para o júri da Colosseum. */
+  investidores: { rotulo: 'EN · Investors', href: URL_INVESTIDORES },
   painel: { rotulo: 'Entrar no painel', href: URL_PAINEL },
   contato: { rotulo: 'Falar com a equipe', curto: 'Contato', href: URL_CONTATO },
 };
 
 export const hero = {
   selo: { destaque: 'Vencedor', texto: 'Youth Challenge Blockchain · UNICEF Brasil' },
-  fase: 'Em implantação',
-  titulo: 'Um futuro mais justo para',
-  destaque: 'as crianças de Boipeba',
+  fase: emPiloto() ? 'Piloto em andamento' : 'Em implantação',
+  /* O título diz o mecanismo e o impacto de uma vez: quem lê em poucos
+     segundos precisa entender o que o projeto FAZ, não só o que ele deseja. */
+  titulo: 'Coleta verificada por IA, paga por contrato,',
+  destaque: 'com parte garantida para as crianças',
   subtitulo:
     'O lixo que as famílias recolherem das praias vai virar renda para elas e um bônus para os filhos, quando vacina, matrícula e escola estiverem em dia. Cada quilo vai ter prova, e cada real vai ser dividido por contrato.',
-  aviso:
-    'O projeto está em implantação com o Instituto Vivá, parceiro do Raízes em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram.',
+  aviso: emPiloto()
+    ? 'O piloto está em andamento em Boipeba, com o Instituto Vivá. Os números medidos aparecem ao lado das metas, que continuam marcadas como metas.'
+    : 'O projeto está em implantação com o Instituto Vivá, parceiro do Raízes em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram.',
   primario: { rotulo: 'Investir no projeto', href: contatoCom('investimento') },
   secundario: { rotulo: 'Explorar a ilha e o ciclo', href: URL_EXPLORAR },
   rotuloMarcadores: 'Meta da primeira fase',
@@ -435,6 +441,14 @@ export const fechamento = {
   secundario: { rotulo: 'Conhecer os parceiros', href: '#parceiros' },
 };
 
+/* As pessoas e os reconhecimentos vivem em ./equipe.js, compartilhados com a
+   página de investidores. */
+export const equipe = {
+  eyebrow: 'Equipe',
+  titulo: ['Quem está ', 'por trás do Raízes.'],
+  nota: 'Salvador, Bahia.',
+};
+
 export const rodape = {
   tagline: 'Do impacto ambiental à proteção da infância. Boipeba, Cairu, Bahia.',
   colunas: [
@@ -446,6 +460,7 @@ export const rodape = {
         { rotulo: 'Como funciona', href: '#como' },
         { rotulo: 'FAQ', href: '#faq' },
         { rotulo: 'App da família', href: URL_PAGINA_APP },
+        { rotulo: 'For investors (English)', href: URL_INVESTIDORES },
       ],
     },
     {
@@ -459,10 +474,10 @@ export const rodape = {
     },
     {
       titulo: 'Outros',
-      /* "Equipe" ainda não tem página e aponta para o contato. A política de
-         privacidade mora no app das famílias, que é quem coleta os dados. */
+      /* A política de privacidade mora no app das famílias, que é quem coleta
+         os dados. */
       links: [
-        { rotulo: 'Equipe', href: URL_CONTATO },
+        { rotulo: 'Equipe', href: '#equipe' },
         { rotulo: 'Contato', href: URL_CONTATO },
         { rotulo: 'UNICEF Brasil', href: 'https://www.unicef.org/brazil/', externo: true },
         { rotulo: 'Política de Privacidade', href: URL_PRIVACIDADE, externo: true },

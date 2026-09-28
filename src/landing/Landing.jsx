@@ -10,6 +10,8 @@ import { Infraestrutura } from './components/Infraestrutura';
 import { Galeria } from './components/Galeria';
 import { Feira } from './components/Feira';
 import { Faq } from './components/Faq';
+import { Equipe } from './components/Equipe';
+import { equipe } from './data/content';
 import { ProximoPasso } from './components/ProximoPasso';
 import { Rodape } from './components/Rodape';
 import '../estilos/site.css';
@@ -58,6 +60,7 @@ export function Landing() {
         <Infraestrutura />
         <Galeria />
         <Feira />
+        <Equipe eyebrow={equipe.eyebrow} titulo={equipe.titulo} nota={equipe.nota} />
         <Faq />
         <ProximoPasso />
       </main>
