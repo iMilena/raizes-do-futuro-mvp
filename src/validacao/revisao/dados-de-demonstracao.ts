@@ -98,7 +98,7 @@ const ROTEIRO: Roteiro[] = [
   },
   {
     hora: '10:22', coletor: JOAO, geohash: CUEIRA, material: 'vidro', pesoKg: 30,
-    pHash: FOTO_E, ocupacaoQuadro: 0.6, confianca: 0.86,
+    pHash: FOTO_E, ocupacaoQuadro: 0.6, confianca: 0.9,
     mostra: 'sequencia improvavel: 2 min depois da anterior do mesmo coletor',
   },
   {

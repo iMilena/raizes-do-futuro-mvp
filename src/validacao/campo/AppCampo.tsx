@@ -22,6 +22,7 @@ import { estimarOcupacaoDaImagem } from '../antifraude/ocupacao.js';
 import { Sincronizador } from '../sincronizacao/sincronizador.js';
 import { TransporteMemoria } from '../sincronizacao/transporte-memoria.js';
 import { lerPosicao, registrarColeta } from './registro-de-campo.js';
+import { CONFIG_PADRAO } from '../antifraude/deteccoes.js';
 import type { ClasseMaterial, SituacaoFila, Sinalizacao } from '../dominio/tipos.js';
 import TelaFoto from './telas/TelaFoto.js';
 import TelaMaterial from './telas/TelaMaterial.js';
@@ -187,7 +188,10 @@ export default function AppCampo() {
         pontoColetaId: PONTO_PADRAO,
         coletorPseudonimo: pseudonimo,
         posicao,
-      }, banco, identidade);
+      }, banco, identidade, {
+        // Um limiar só: o que deixa a tela em dúvida é o que manda para conferência.
+        configDeteccao: { ...CONFIG_PADRAO, confiancaMinima: classificador.limiar },
+      });
 
       setSinalizacoes(resultado.sinalizacoes);
       setPasso('pronto');
@@ -197,7 +201,7 @@ export default function AppCampo() {
       setSalvando(false);
     }
   }, [banco, identidade, foto, evidenciaFoto, material, sugestao, pesoTexto, pseudonimo,
-      atualizarResumo, sincronizar]);
+      classificador, atualizarResumo, sincronizar]);
 
   const limpar = useCallback(() => {
     setFoto(null);

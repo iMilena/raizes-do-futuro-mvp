@@ -27,6 +27,7 @@ import * as ort from 'onnxruntime-web/wasm';
 import { dimensoes, imagemParaTensor } from './preprocesso.js';
 import type { ParametrosPreprocesso } from './preprocesso.js';
 import { CLASSES_MATERIAL } from '../dominio/tipos.js';
+import { CONFIG_PADRAO } from '../antifraude/deteccoes.js';
 import type { ClasseMaterial } from '../dominio/tipos.js';
 
 export interface ManifestoModelo {
@@ -79,7 +80,7 @@ export class Classificador {
   }
 
   get limiar(): number {
-    return this.opcoes.limiar ?? this.manifesto?.limiar_confianca ?? 0.7;
+    return this.opcoes.limiar ?? this.manifesto?.limiar_confianca ?? CONFIG_PADRAO.confiancaMinima;
   }
 
   get versao(): string {

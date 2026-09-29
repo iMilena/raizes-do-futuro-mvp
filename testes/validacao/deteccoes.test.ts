@@ -5,6 +5,7 @@
    sistema a reação certa. Inclusive os casos em que a reação certa é NÃO
    sinalizar: falso positivo aqui vira desconfiança sobre o trabalho de alguém.
 --------------------------------------------------------------------------- */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   analisar, CONFIG_PADRAO, detectarConfiancaBaixa, detectarForaDoTerritorio,
@@ -253,6 +254,12 @@ describe('coerência entre foto e balança', () => {
 });
 
 describe('confiança do modelo e território', () => {
+  it('o limiar de conferência é o mesmo do manifesto do modelo publicado', () => {
+    const manifesto = JSON.parse(readFileSync(
+      new URL('../../public/modelo/classificador.json', import.meta.url), 'utf8')) as { limiar_confianca: number };
+    expect(CONFIG_PADRAO.confiancaMinima).toBe(manifesto.limiar_confianca);
+  });
+
   it('manda para revisão humana quando o modelo não teve certeza', () => {
     const baixa = { ...conteudoDeTeste().classificacao, confianca: 0.41 };
     const sinal = detectarConfiancaBaixa(conteudo({ classificacao: baixa }));

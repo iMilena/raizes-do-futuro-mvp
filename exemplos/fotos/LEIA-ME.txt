@@ -1,0 +1,31 @@
+FOTOS DE EXEMPLO PARA TESTAR A CAMADA DE IA
+
+Sete fotos para registrar no app de campo (/campo.html), nesta ordem, com o
+peso indicado. O roteiro completo está no Readme.txt da raiz do projeto.
+
+  arquivo                        peso   o que deve acontecer
+  1-garrafa-pet.jpg              2,5    "Parece Plástico PET", 100%. Passa limpa.
+  2-lata-aluminio.jpg            1,5    "Parece Alumínio", 100%.
+  3-papelao.jpg                  4      "Parece Papelão", 100%.
+  4-copo-vidro.jpg               6      "Parece Vidro", 100%.
+  5-embalagem-duvidosa.jpg       1      "Não tenho certeza. Pode ser Plástico PET",
+                                        cerca de 37%. Dispara CONFIANÇA BAIXA.
+  6-garrafa-pet-REPETIDA.jpg     2,5    Cópia exata da foto 1. Dispara FOTO
+                                        REAPROVEITADA (pHash) e PILHA RECONTADA.
+  7-lata-com-peso-errado.jpg     40     Uma lata só, com 40 kg digitados.
+                                        Dispara PESO INCOERENTE.
+
+Registradas em sequência rápida, as coletas 2 a 7 também recebem SEQUÊNCIA
+IMPROVÁVEL (menos de 3 minutos desde a coleta anterior do mesmo coletor).
+Isso está certo: é o detector funcionando.
+
+ORIGEM E LICENÇA
+
+As fotos 1 a 5 e 7 são do TrashNet (Gary Thung e Mindy Yang, Stanford, 2016,
+https://github.com/garythung/trashnet, licença MIT), um dos dois conjuntos
+públicos usados no treino do modelo. A foto 6 é cópia da 1.
+
+Todas saíram da parte de TESTE da divisão (semente 42, ver
+modelo/raizes_modelo/dados/montar.py): o modelo não as viu no treino. Não são
+fotos de Boipeba. O piloto em campo ainda não começou, e o modelo publicado foi
+treinado só com dados públicos.

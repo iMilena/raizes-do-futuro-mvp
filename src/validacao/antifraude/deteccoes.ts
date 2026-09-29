@@ -52,7 +52,12 @@ export interface ConfigDeteccao {
  * auditar a balança.
  */
 export const CONFIG_PADRAO: ConfigDeteccao = {
-  confiancaMinima: 0.7,
+  /* O mesmo número de `limiar_confianca` no manifesto do modelo
+     (public/modelo/classificador.json), que o pipeline escolhe para 95% de
+     precisão no que passa sem conferência. Com o modelo carregado, o app de
+     campo usa o valor do manifesto; este é o fallback, e um teste falha se os
+     dois divergirem. */
+  confiancaMinima: 0.87,
   limiarHamming: LIMIAR_HAMMING_PADRAO,
   janelaPilhaMin: 45,
   raioPilhaMetros: 200,

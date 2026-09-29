@@ -21,7 +21,7 @@ import { registrosDoExemplo } from '../validacao/revisao/dados-de-demonstracao.j
 export const DIA_EXEMPLO = '2026-09-14';
 
 /** A raiz publicada do lote de exemplo. Conferida por `investidores.test.ts`. */
-export const RAIZ_PUBLICADA = '0xb862705bfa9a6ef7323272e3e256a9940fa6054d30f261870ab29be45790093d';
+export const RAIZ_PUBLICADA = '0x04b31a2b32dd2110fc0ce9638089bd22616e9b7c22d56ef7313cc482189e9703';
 
 export function montarLoteExemplo(): LoteDiario {
   return montarLote(DIA_EXEMPLO, registrosDoExemplo(DIA_EXEMPLO));

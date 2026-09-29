@@ -25,14 +25,14 @@ A divisão de papéis é simples e não se sobrepõe:
 | Evidência e Merkle | [`src/validacao/dominio/`](src/validacao/dominio/), [`src/validacao/ancoragem/`](src/validacao/ancoragem/) | esquema, keccak256, árvore, prova de inclusão, ancoradora |
 | Fila offline | [`src/validacao/armazenamento/`](src/validacao/armazenamento/), [`src/validacao/sincronizacao/`](src/validacao/sincronizacao/) | IndexedDB e sincronização idempotente |
 | Painel de revisão | aba **Conferência** do painel, e [`revisao.html`](revisao.html) | a tela da coordenação, nos dois lugares |
-| Testes | [`testes/validacao/`](testes/validacao/), [`modelo/testes/`](modelo/testes/) | 203 em TypeScript, 19 em Python, mais fumaça de tela |
+| Testes | [`testes/validacao/`](testes/validacao/), [`modelo/testes/`](modelo/testes/) | 207 em TypeScript, 19 em Python, mais fumaça de tela |
 
 ## Como rodar
 
 ```bash
 npm install
 npm run dev              # painel (/), app de campo (/campo.html), revisão (/revisao.html)
-npm run test:validacao   # 203 testes de lógica, em Node, sem navegador
+npm run test:validacao   # 207 testes de lógica, em Node, sem navegador
 npm run checar-tipos     # TypeScript, sem emitir nada
 npm test                 # suíte antiga do MVP, intacta
 
@@ -134,6 +134,12 @@ classificadas sozinhas com 95,3% de precisão, e 46% vão para conferência huma
 É bastante fila, e é o número honesto de um modelo treinado só em dados públicos.
 A tabela de limiares em `metricas.json` mostra o custo de cada escolha, para a
 coordenação decidir o ponto entre fila e precisão.
+
+É um número só, com duas consequências: abaixo de 0,87 a tela diz "Não tenho
+certeza" e a coleta vai para conferência (detector `confianca_baixa`). O app de
+campo lê o valor do manifesto do modelo; `CONFIG_PADRAO.confiancaMinima` é o
+fallback, e `deteccoes.test.ts` falha se os dois divergirem. Correção humana do
+material dispensa a conferência por confiança: quem estava lá já olhou.
 
 **Inferência no navegador** (`npm run medir:inferencia`, Edge headless):
 

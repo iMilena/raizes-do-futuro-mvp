@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,7 +17,8 @@
     "test:validacao:assistir": "vitest",
     "checar-tipos": "tsc --noEmit",
     "medir:inferencia": "node testes/validacao/medir-inferencia.mjs",
-    "fumaca:telas": "node testes/validacao/fumaca-telas.mjs"
+    "fumaca:telas": "node testes/validacao/fumaca-telas.mjs",
+    "empacotar": "node scripts/empacotar-avaliacao.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",
