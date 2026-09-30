@@ -30,6 +30,8 @@
   & *::before,
   & *::after { box-sizing: border-box; }
   & :where(h1, h2, h3, p, figure) { margin: 0; }
+  /* O styles.css do painel pinta h2 e h3 com a cor do tema claro em toda rota. */
+  & :is(h1, h2, h3, h4) { color: inherit; }
   & button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
   & a { color: inherit; }
   & :focus-visible { outline: 2px solid var(--dawn); outline-offset: 3px; border-radius: 4px; }

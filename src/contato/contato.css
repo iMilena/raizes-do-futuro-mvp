@@ -14,6 +14,10 @@
   --line: rgba(207, 237, 217, .14);
   min-height: 100vh;
 
+  /* O styles.css do painel pinta h2 e h3 com a cor de texto do tema claro, e é
+     carregado em toda rota: sem isto, título sem cor própria some no fundo escuro. */
+  & :is(h1, h2, h3, h4) { color: inherit; }
+
   & *,
   & *::before,
   & *::after { box-sizing: border-box; margin: 0; padding: 0; }
