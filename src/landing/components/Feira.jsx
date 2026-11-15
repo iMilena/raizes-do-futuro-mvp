@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Foto } from './Foto';
-import { rendaDireta } from '../images';
+import { vilaAerea } from '../images';
 import { feira } from '../data/content';
 import { usePrefereMenosMovimento } from '../hooks/usePrefereMenosMovimento';
 
@@ -42,7 +42,7 @@ export function Feira() {
   return (
     <section className="break" ref={secao}>
       <div className="bg" ref={fundo}>
-        <Foto imagem={rendaDireta} sizes="100vw" />
+        <Foto imagem={vilaAerea} sizes="100vw" />
       </div>
       <div className="wrap">
         <q>{feira.citacao}</q>

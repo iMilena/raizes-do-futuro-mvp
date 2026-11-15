@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Foto } from './Foto';
 import { Revelar } from './Revelar';
 import { Eyebrow, Titulo } from './Pecas';
-import { pilaresComunidade } from '../images';
+import { mutiraoGrupo } from '../images';
 import { parceiros } from '../data/content';
 import { useVisivel } from '../hooks/useVisivel';
 
@@ -18,7 +18,7 @@ export function QuemOpera() {
     <section className="sec" id="parceiros">
       <div className="wrap ops">
         <figure ref={ref} className={`photo${visivel ? ' in' : ''}`}>
-          <Foto imagem={pilaresComunidade} sizes="(max-width: 900px) 100vw, 560px" />
+          <Foto imagem={mutiraoGrupo} sizes="(max-width: 900px) 100vw, 560px" />
           <figcaption>{parceiros.legendaFoto}</figcaption>
         </figure>
         <div>

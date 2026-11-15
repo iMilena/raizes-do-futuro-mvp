@@ -226,14 +226,14 @@ O cofre é um **multisig nativo do SPL Token, 2-de-3**, e cada liberação pode 
 
 ```bash
 cd onchain
-node liberar-bonus.mjs preparar --valor 60 --org viva --proposta 42
+node liberar-bonus.mjs preparar --valor 60 --org territorio --proposta 42
 # a saída é uma transação parcialmente assinada; mande para a outra organização
 node liberar-bonus.mjs assinar --org detrash --tx <base64>
 ```
 
 São duas etapas porque o multisig do SPL Token exige as duas assinaturas **na mesma transação** — não existe "o território assina hoje e a verificação amanhã" com estado num servidor nosso. O que viaja entre as organizações é a própria transação. O passo 2 **imprime o que está sendo assinado** antes de enviar: assinar às cegas um blob que chegou por mensagem transforma multisig em teatro.
 
-Verificado na devnet: R$ 30 saíram do cofre (585 → 555) para a conta da família (60 → 90), com `viva` (equipe de território) e `detrash` (verificação ambiental) assinando e `comunidade` não — [slot 479156986](https://explorer.solana.com/tx/4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX?cluster=devnet).
+Verificado na devnet: R$ 30 saíram do cofre (585 → 555) para a conta da família (60 → 90), com `territorio` (equipe de território) e `detrash` (verificação ambiental) assinando e `comunidade` não — [slot 479156986](https://explorer.solana.com/tx/4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX?cluster=devnet).
 
 ### Regra 4: saldo residual → ações coletivas
 

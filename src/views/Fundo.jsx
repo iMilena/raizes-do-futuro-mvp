@@ -340,7 +340,7 @@ function ExecutadasOnchain() {
                       1. Uma organização prepara e assina, em <code>onchain/</code>:
                     </p>
                     <HashChip
-                      texto={comandoLiberacao(p.valor, p.id, 'viva')}
+                      texto={comandoLiberacao(p.valor, p.id, 'territorio')}
                       rotulo="Copiar comando"
                       className="pn-chip-largo"
                     />

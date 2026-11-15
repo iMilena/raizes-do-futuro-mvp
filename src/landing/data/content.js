@@ -175,7 +175,7 @@ export const ciclo = {
       texto:
         'O material segue para reaproveitamento local. Os produtos são feitos por recicladores e famílias adultas parceiras, e cada um leva um QR code de rastreio.',
       tags: ['Reaproveitamento local', 'QR de rastreio'],
-      foto: 'rendaDireta',
+      foto: 'vilaAerea',
     },
     {
       indice: '05 · Receita',
@@ -202,7 +202,7 @@ export const ciclo = {
       texto:
         'Renda e bônus chegam às famílias e às crianças. A renda do trabalho é incondicional; o bônus do Fundo Infância é adicional.',
       tags: ['Renda direta', 'Bônus da infância'],
-      foto: 'oficinaEscola',
+      foto: 'criancasPraia',
     },
   ],
 };
@@ -338,7 +338,7 @@ export const pilares = {
 export const feira = {
   citacao:
     'Cada peça vai carregar um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
-  legenda: 'Feira da comunidade · Moreré, Boipeba',
+  legenda: 'Vila à beira-mar · Boipeba',
 };
 
 /* A galeria: as fotos reais do ciclo, uma ao lado da outra. `foto` é a
@@ -352,7 +352,7 @@ export const galeria = {
     { foto: 'criancaEscola', legenda: 'Na escola · Boipeba', forma: 'alto' },
     { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba' },
     { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg' },
-    { foto: 'oficinaEscola', legenda: 'Oficina na escola da ilha', forma: 'cheio' },
+    { foto: 'criancasPraia', legenda: 'Crianças na praia · Boipeba', forma: 'cheio' },
   ],
 };
 

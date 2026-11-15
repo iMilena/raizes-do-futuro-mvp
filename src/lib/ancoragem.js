@@ -42,7 +42,7 @@ export const comandoAncoragem = (hash, periodo) =>
    assinatura que volta.                                                     */
 
 /** Primeira organização prepara e assina parcialmente. */
-export const comandoLiberacao = (valor, propostaId, org = 'viva') =>
+export const comandoLiberacao = (valor, propostaId, org = 'territorio') =>
   `node liberar-bonus.mjs preparar --valor ${Number(valor).toFixed(2)} --org ${org} --proposta ${propostaId}`;
 
 /** Saldo residual do ciclo → ações coletivas (regra 4 do cofre). */

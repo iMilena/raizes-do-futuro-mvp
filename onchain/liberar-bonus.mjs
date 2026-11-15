@@ -19,7 +19,7 @@
    USO
 
      # 1) primeira organização prepara e assina parcialmente
-     node liberar-bonus.mjs preparar --valor 60 --org viva --proposta 42
+     node liberar-bonus.mjs preparar --valor 60 --org territorio --proposta 42
 
      # (a saída é um blob base64 — mande para a outra organização)
 
@@ -45,7 +45,7 @@ const ENDERECOS = path.join(AQUI, 'dados', 'enderecos.json');
 const REGISTRO = path.join(AQUI, 'dados', 'liberacoes.json');
 
 const ORGS = {
-  viva: { arquivo: 'signatario-viva.json', nome: 'Equipe de território', chave: 'equipeTerritorio' },
+  territorio: { arquivo: 'signatario-viva.json', nome: 'Equipe de território', chave: 'equipeTerritorio' },
   detrash: { arquivo: 'signatario-detrash.json', nome: 'Verificação ambiental', chave: 'verificacaoAmbiental' },
   comunidade: { arquivo: 'signatario-comunidade.json', nome: 'Representante Comunitário', chave: 'representanteComunitario' },
 };
@@ -89,13 +89,18 @@ async function saldo() {
 }
 
 /* --------------------------------------------------------------- preparar --- */
-async function preparar({ valor, org, proposta, destino }) {
+/* Nome antigo da organização, aceito para comandos já anotados. */
+const APELIDOS = { viva: 'territorio' };
+const orgPor = (o) => APELIDOS[o] ?? o;
+
+async function preparar({ valor, org: orgPedida, proposta, destino }) {
+  const org = orgPor(orgPedida);
   if (!valor || !org) {
-    console.error('uso: preparar --valor 60 --org viva [--proposta 42] [--destino <conta>]');
+    console.error('uso: preparar --valor 60 --org territorio [--proposta 42] [--destino <conta>]');
     process.exit(1);
   }
   const cfg = ORGS[org];
-  if (!cfg) { console.error(`org desconhecida: ${org} (use viva, detrash ou comunidade)`); process.exit(1); }
+  if (!cfg) { console.error(`org desconhecida: ${org} (use territorio, detrash ou comunidade)`); process.exit(1); }
 
   const e = endereços();
   const con = new Connection(RPC, 'confirmed');
@@ -157,7 +162,8 @@ async function preparar({ valor, org, proposta, destino }) {
 }
 
 /* ---------------------------------------------------------------- assinar --- */
-async function assinar({ org, tx: blob }) {
+async function assinar({ org: orgPedida, tx: blob }) {
+  const org = orgPor(orgPedida);
   if (!org || !blob || blob === true) {
     console.error('uso: assinar --org detrash --tx <base64>');
     process.exit(1);
@@ -236,7 +242,7 @@ try {
     console.log(`comandos: saldo | preparar | assinar
 
   node liberar-bonus.mjs saldo
-  node liberar-bonus.mjs preparar --valor 60 --org viva --proposta 42
+  node liberar-bonus.mjs preparar --valor 60 --org territorio --proposta 42
   node liberar-bonus.mjs assinar --org detrash --tx <base64>`);
   }
 } catch (e) {

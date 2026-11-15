@@ -1,6 +1,6 @@
 /* ---------------------------------------------------------------------------
-   A equipe, num lugar só: o site em português e a página de investidores em
-   inglês mostram as mesmas pessoas, cada uma no seu idioma.
+   A equipe, num lugar só. As fotos ficam em public/equipe/ (quadradas,
+   480 px, WebP).
 
    Nomes e papéis vêm da apresentação à banca (slide 1).
 
@@ -16,25 +16,25 @@
 export const PESSOAS = [
   {
     nome: 'Milena Lopes Calasans',
-    foto: null,
+    foto: '/equipe/milena.webp',
     papel: { pt: 'Desenvolvimento Web3', en: 'Web3 developer' },
     historico: { pt: '', en: '' },
   },
   {
     nome: 'Amanda Carolina Folly',
-    foto: null,
+    foto: '/equipe/amanda.webp',
     papel: { pt: 'Design e pitch', en: 'Design and pitch' },
     historico: { pt: '', en: '' },
   },
   {
     nome: 'Thalyta Silva dos Santos',
-    foto: null,
+    foto: '/equipe/thalyta.webp',
     papel: { pt: 'Pesquisa de campo', en: 'Field research' },
     historico: { pt: '', en: '' },
   },
   {
     nome: 'Maria Clara de O. Bastos',
-    foto: null,
+    foto: '/equipe/maria-clara.webp',
     papel: { pt: 'Desenvolvimento Web2/Web3', en: 'Web2/Web3 developer' },
     historico: { pt: '', en: '' },
   },

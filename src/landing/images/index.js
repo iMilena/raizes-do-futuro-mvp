@@ -12,8 +12,8 @@
 
 /* originais — fallback do <picture> */
 import coletaOriginal from './coleta-validacao.jpeg';
-import rendaOriginal from './renda-direta.jpeg';
-import pilaresOriginal from './pilares.jpeg';
+import vilaOriginal from './hero-aerial.jpg';
+import praiaOriginal from './criancas-boipeba.jpeg';
 import fundoOriginal from './fundo-infancia.png';
 import logoOriginal from './logo_raizes.png';
 
@@ -21,12 +21,11 @@ import logoOriginal from './logo_raizes.png';
 import coleta800 from './webp/coleta-validacao-800.webp';
 import coleta1200 from './webp/coleta-validacao-1200.webp';
 import coleta1600 from './webp/coleta-validacao-1600.webp';
-import renda800 from './webp/renda-direta-800.webp';
-import renda1200 from './webp/renda-direta-1200.webp';
-import renda1600 from './webp/renda-direta-1600.webp';
-import pilares600 from './webp/pilares-600.webp';
-import pilares900 from './webp/pilares-900.webp';
-import pilares1186 from './webp/pilares-1186.webp';
+import vila800 from './webp/hero-aerial-800.webp';
+import vila1200 from './webp/hero-aerial-1200.webp';
+import vila1600 from './webp/hero-aerial-1600.webp';
+import praia800 from './webp/criancas-boipeba-800.webp';
+import praia1298 from './webp/criancas-boipeba-1298.webp';
 import fundo335 from './webp/fundo-infancia-335.webp';
 import logo96 from './webp/logo_raizes-96.webp';
 import logo192 from './webp/logo_raizes-192.webp';
@@ -42,22 +41,22 @@ export const coletaValidacao = {
   alt: 'Mutirão de coleta em Boipeba: moradores reunidos na praia, sob os coqueiros, ao lado dos sacos de resíduo recolhidos.',
 };
 
-/** Feira da comunidade em Moreré: a ponta "Renda Direta" e a faixa de luz. */
-export const rendaDireta = {
-  fallback: rendaOriginal,
-  webp: srcset([[renda800, 800], [renda1200, 1200], [renda1600, 1600]]),
-  width: 1600,
-  height: 1200,
-  alt: 'Feira da comunidade em Boipeba, com as peças artesanais expostas na banca diante de um mural pintado.',
+/** Vista aérea de uma vila de Boipeba à beira-mar: a etapa "Circularidade" e a faixa de luz. */
+export const vilaAerea = {
+  fallback: vilaOriginal,
+  webp: srcset([[vila800, 800], [vila1200, 1200], [vila1600, 1600]]),
+  width: 1920,
+  height: 1280,
+  alt: 'Vista aérea de uma vila de Boipeba, com casas de telhado de barro entre a mata e o mar.',
 };
 
-/** Roda de mulheres da comunidade: quem opera o ciclo. */
-export const pilaresComunidade = {
-  fallback: pilaresOriginal,
-  webp: srcset([[pilares600, 600], [pilares900, 900], [pilares1186, 1186]]),
-  width: 1186,
-  height: 1600,
-  alt: 'Roda de mulheres da comunidade de Boipeba reunidas em formação, com cadernos e materiais de trabalho.',
+/** Crianças de Boipeba numa mesa à beira da praia: o destino do ciclo. */
+export const criancasPraia = {
+  fallback: praiaOriginal,
+  webp: srcset([[praia800, 800], [praia1298, 1298]]),
+  width: 1298,
+  height: 730,
+  alt: 'Crianças de Boipeba reunidas numa mesa de madeira à beira da praia, olhando um ouriço-do-mar.',
 };
 
 /** As duas meninas montando peças: a ponta "Fundo Infância". */
@@ -72,10 +71,6 @@ export const fundoInfancia = {
 /* ------------------------------------------------------------------------
    As fotos que a equipe enviou em setembro de 2026.
 ------------------------------------------------------------------------ */
-import oficinaOriginal from './oficina-escola.jpeg';
-import oficina800 from './webp/oficina-escola-800.webp';
-import oficina1200 from './webp/oficina-escola-1200.webp';
-import oficina1600 from './webp/oficina-escola-1600.webp';
 import balancaOriginal from './balanca-pesagem.jpeg';
 import balanca800 from './webp/balanca-pesagem-800.webp';
 import balanca1200 from './webp/balanca-pesagem-1200.webp';
@@ -92,16 +87,8 @@ import criancaOriginal from './crianca-escola.jpeg';
 import crianca600 from './webp/crianca-escola-600.webp';
 import crianca963 from './webp/crianca-escola-963.webp';
 
-/** Oficina na escola da ilha: a serpente de garrafas PET iluminada. */
-export const oficinaEscola = {
-  fallback: oficinaOriginal,
-  webp: srcset([[oficina800, 800], [oficina1200, 1200], [oficina1600, 1600]]),
-  width: 1600,
-  height: 1200,
-  alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em uma oficina.',
-};
-/** Para o fundo em CSS, onde um `<picture>` não cabe. */
-export const oficinaEscolaUrl = oficina1600;
+/** O fundo da seção final, em CSS. */
+export const criancasPraiaUrl = praia1298;
 
 /** A balança de mão marcando 6,54 kg. */
 export const balancaPesagem = {

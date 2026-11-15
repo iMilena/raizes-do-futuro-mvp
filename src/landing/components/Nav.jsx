@@ -89,7 +89,7 @@ export function Nav() {
         <a className="app" href={nav.app.href}>
           {nav.app.rotulo}
         </a>
-        <SeletorIdioma className="so-largo" />
+        <SeletorIdioma variante="compacto" className="so-largo" />
         <a className="btn btn-g" href={nav.painel.href}>
           {nav.painel.rotulo}
         </a>
