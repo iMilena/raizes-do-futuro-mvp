@@ -60,10 +60,10 @@ function DivisaoDoCofre() {
       </div>
       <div className="sigs">
         <div className="sig">
-          <small>Assinatura 1</small>Instituto Vivá
+          <small>Assinatura 1</small>Equipe de território
         </div>
         <div className="sig">
-          <small>Assinatura 2</small>DeTrash
+          <small>Assinatura 2</small>Verificação ambiental
         </div>
         <div className="sig">
           <small>Assinatura 3</small>Representante comunitário

@@ -216,7 +216,7 @@ export function cenaPesagem(m, ll) {
   return S;
 }
 
-/* ------------------------------------------------ roda do Vivá ---- */
+/* ------------------------------------------------ roda da comunidade */
 export function cenaRoda(m, ll) {
   const S = { ll, poi: 'viva', t: 0, status: '' };
   const ppl = [...Array(7)].map((_, i) => ({ a: (i / 7) * Math.PI * 2 + 0.3, sh: SHIRT[(i + 2) % SHIRT.length], sk: SKIN[i % 5] }));

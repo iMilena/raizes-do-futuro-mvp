@@ -147,7 +147,7 @@ export default function Coleta() {
               <div className="pn-drop">
                 <div className="t">Tirar foto ou anexar arquivo</div>
                 <div className="d">
-                  Foto e localização compõem a evidência da metodologia DeTrash. O hash é
+                  Foto e localização compõem a evidência da verificação ambiental. O hash é
                   calculado no aparelho e a imagem não sai dele.
                 </div>
                 <input
@@ -192,7 +192,7 @@ export default function Coleta() {
             acessorio={pendentes > 0 ? <Pill tom="warn">{pendentes} aguardando</Pill> : <Pill tom="ok">nada pendente</Pill>}
           />
           <CardNota>
-            A coleta vale renda a partir da validação. O hash aparece quando a DeTrash confere.
+            A coleta vale renda a partir da validação. O hash aparece quando a verificação confere.
           </CardNota>
 
           {state.coletas.length === 0 ? (

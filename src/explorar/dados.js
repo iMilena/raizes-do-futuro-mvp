@@ -4,7 +4,7 @@
    PRAIAS E COMUNIDADES: coordenadas aproximadas dos lugares reais de Boipeba.
 
    ATENÇÃO, POSIÇÕES ILUSTRATIVAS: `pesagem` (ponto de coleta), `viva`
-   (Instituto Vivá), `feira` e `escola` NÃO são os endereços reais. Foram
+   (roda da comunidade), `feira` e `escola` NÃO são os endereços reais. Foram
    postas perto da vila e de Moreré só para a animação do ciclo fazer sentido
    no mapa. Troque pelas coordenadas verdadeiras assim que a equipe confirmar
    ([latitude, longitude], em graus decimais). O `cofre` fica de propósito no
@@ -57,38 +57,38 @@ export const POIS = [
     et: '02 · Validação', title: 'Pesagem e prova com IA', local: 'Ponto de coleta · Velha Boipeba',
     foto: 'balancaPesagem', cap: 'Pesagem da coleta · Boipeba',
     alt: 'Balança de mão laranja marcando 6,54 kg de resíduo recolhido na praia.',
-    text: 'O material é pesado no ponto de coleta. O app de campo funciona offline, registra peso e foto, e um modelo de visão computacional sinaliza o que precisa de conferência antes de a DeTrash emitir o Relatório de Circularidade.',
-    num: ['4', 'detectores revisam cada coleta antes da validação'], tags: ['App offline', 'Visão computacional', 'DeTrash'],
+    text: 'O material é pesado no ponto de coleta. O app de campo funciona offline, registra peso e foto, e um modelo de visão computacional sinaliza o que precisa de conferência antes de a verificação ambiental emitir o Relatório de Circularidade.',
+    num: ['4', 'detectores revisam cada coleta antes da validação'], tags: ['App offline', 'Visão computacional', 'Verificação'],
     extra: 'detectores',
   },
   {
     id: 'viva', g: ['ciclo', 'comunidade'], n: '03', ll: L0.viva, zoom: 17, left: true,
-    et: '03 · Território', title: 'Instituto Vivá', local: 'Velha Boipeba',
+    et: '03 · Território', title: 'Equipe de território', local: 'Velha Boipeba',
     foto: 'pilaresComunidade', cap: 'Encontro comunitário · Boipeba',
     alt: 'Roda de mulheres da comunidade reunidas em formação, com cadernos e materiais de trabalho.',
-    text: 'Parceiro do Raízes com presença em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças. Vai ser a primeira das três assinaturas do cofre.',
+    text: 'A equipe do Raízes em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças. Vai ser a primeira das três assinaturas do cofre.',
     num: ['30+', 'famílias: meta da primeira fase'], tags: ['Assinatura 1', 'Mobilização'],
   },
   {
     id: 'feira', g: ['ciclo', 'comunidade'], n: '04', ll: L0.feira, zoom: 17, left: true,
     et: '04 · Circularidade e receita', title: 'Feira da comunidade', local: 'Moreré',
     foto: 'rendaDireta', cap: 'Feira da comunidade · Moreré',
-    alt: 'Feira da comunidade com peças artesanais expostas na banca diante do mural do Projeto Vivá.',
+    alt: 'Feira da comunidade com peças artesanais expostas na banca diante de um mural pintado.',
     text: 'O material vira produto nas mãos de recicladores e famílias adultas parceiras, cada peça com QR code de rastreio. O Relatório de Circularidade é vendido a turistas e empresas que investem na ilha.',
     num: ['2', 'fontes de receita: turismo e empresas'], tags: ['QR de rastreio', 'Turismo', 'Empresas'],
   },
   {
     id: 'cofre', g: ['ciclo'], n: '05', ll: L0.cofre, zoom: 15, chain: true,
     et: '05 · Governança', title: 'Cofre multisig', local: 'On-chain · Solana',
-    text: 'A cada venda, o contrato reparte o valor antes que alguém decida. Nenhuma organização controla o dinheiro sozinha.',
+    text: 'A cada venda, o contrato reparte o valor antes que alguém decida. Ninguém controla o dinheiro sozinho.',
     num: ['2-de-3', 'assinaturas exigidas em cada liberação'], tags: ['Multisig', 'Divisão automática'],
     extra: 'cofre',
   },
   {
     id: 'escola', g: ['ciclo', 'comunidade'], n: '06', ll: L0.escola, zoom: 17,
     et: '06 · Destino final', title: 'Fundo Infância', local: 'Escolas e unidades de saúde da ilha',
-    foto: 'oficinaEscola', cap: 'Oficina com o Instituto Vivá · escola da ilha',
-    alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em oficina com o Instituto Vivá.',
+    foto: 'oficinaEscola', cap: 'Oficina na escola da ilha',
+    alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em uma oficina.',
     text: 'O contrato vai liberar R$ 30 por criança, por mês, quando vacinação, matrícula e frequência escolar estão comprovadas. A renda do trabalho é incondicional; o bônus é adicional.',
     num: ['60', 'crianças: meta da primeira fase. Abaixo, um exemplo de mês'], tags: ['R$ 30 por criança', 'Vacinação', 'Matrícula', 'Frequência'],
     extra: 'criancas',

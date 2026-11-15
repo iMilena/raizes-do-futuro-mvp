@@ -51,8 +51,8 @@ export const hero = {
   subtitulo:
     'O lixo que as famílias recolherem das praias vai virar renda para elas e um bônus para os filhos, quando vacina, matrícula e escola estiverem em dia. Cada quilo vai ter prova, e cada real vai ser dividido por contrato.',
   aviso: emPiloto()
-    ? 'O piloto está em andamento em Boipeba, com o Instituto Vivá. Os números medidos aparecem ao lado das metas, que continuam marcadas como metas.'
-    : 'O projeto está em implantação com o Instituto Vivá, parceiro do Raízes em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram.',
+    ? 'O piloto está em andamento em Boipeba. Os números medidos aparecem ao lado das metas, que continuam marcadas como metas.'
+    : 'O projeto está em implantação em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram.',
   primario: { rotulo: 'Investir no projeto', href: contatoCom('investimento') },
   secundario: { rotulo: 'Explorar a ilha e o ciclo', href: URL_EXPLORAR },
   rotuloMarcadores: 'Meta da primeira fase',
@@ -85,7 +85,7 @@ export const manifesto = {
 export const impacto = {
   eyebrow: 'Metas da primeira fase',
   titulo: ['Onde o ciclo ', 'quer chegar primeiro.'],
-  lede: 'O Raízes do Futuro está em implantação em Boipeba, com o Instituto Vivá como parceiro no território. A coleta, a divisão da receita e os bônus ainda não começaram. Estas são as metas da primeira fase.',
+  lede: 'O Raízes do Futuro está em implantação em Boipeba. A coleta, a divisão da receita e os bônus ainda não começaram. Estas são as metas da primeira fase.',
   numeros: [
     { valor: 12, unidade: 't', rotulo: 'Toneladas de resíduo a coletar e validar' },
     { valor: 30, rotulo: 'Famílias que o projeto quer alcançar' },
@@ -109,23 +109,23 @@ export const coorte = {
 
 export const parceiros = {
   eyebrow: 'Quem vai operar o ciclo',
-  titulo: ['Três organizações, e ', 'nenhuma manda sozinha.'],
+  titulo: ['Três assinaturas, e ', 'nenhuma manda sozinha.'],
   lede: 'A governança não é promessa de slide: ela vai estar escrita no contrato que libera o dinheiro.',
   legendaFoto: 'Encontro comunitário · Boipeba',
   itens: [
     {
       n: '1',
       etiqueta: 'Território · Assinatura 1',
-      nome: 'Instituto Vivá',
+      nome: 'Equipe de território',
       texto:
-        'Parceiro do Raízes com presença em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças.',
+        'A equipe do Raízes em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças.',
     },
     {
       n: '2',
       etiqueta: 'Validação · Assinatura 2',
-      nome: 'DeTrash',
+      nome: 'Verificação ambiental',
       texto:
-        'Metodologia que vai validar a coleta e gerar o Relatório de Circularidade, com a evidência ancorada on-chain.',
+        'Processo do Raízes que vai validar a coleta e gerar o Relatório de Circularidade, com a evidência ancorada on-chain.',
     },
     {
       n: '3',
@@ -166,7 +166,7 @@ export const ciclo = {
       rotulo: 'Validação',
       titulo: 'Validação',
       texto:
-        'O registro em campo confirma origem e volume. A metodologia da DeTrash valida a coleta e gera um Relatório de Circularidade.',
+        'O registro em campo confirma origem e volume. A verificação ambiental valida a coleta e gera um Relatório de Circularidade.',
       tags: ['Registro em campo', 'Evidência on-chain'],
       arte: 'detectores',
     },
@@ -193,7 +193,7 @@ export const ciclo = {
       rotulo: 'Cofre',
       titulo: 'Cofre',
       texto:
-        'O valor entra num cofre multisig e é dividido automaticamente por código. Nenhuma organização controla o dinheiro sozinha.',
+        'O valor entra num cofre multisig e é dividido automaticamente por código. Ninguém controla o dinheiro sozinho.',
       tags: ['Multisig 2-de-3', 'Divisão automática'],
       arte: 'cofre',
     },
@@ -254,8 +254,8 @@ export const cofre = {
      com 2 de 3, e ver a terceira assinatura em aberto é o que mostra que ela
      não é enfeite. */
   assinaturas: [
-    { id: 'viva', rotulo: 'Instituto Vivá', sub: 'presença territorial', inicial: true },
-    { id: 'detrash', rotulo: 'DeTrash', sub: 'validação da coleta', inicial: true },
+    { id: 'viva', rotulo: 'Equipe de território', sub: 'presença em Boipeba', inicial: true },
+    { id: 'detrash', rotulo: 'Verificação ambiental', sub: 'validação da coleta', inicial: true },
     { id: 'comunidade', rotulo: 'Representante comunitário', sub: 'voz da comunidade', inicial: false },
   ],
   liberado: (n) => `Liberado por criança/mês. ${n} de 3 assinaturas reunidas e compromissos comprovados.`,
@@ -354,7 +354,7 @@ export const galeria = {
     { foto: 'criancaEscola', legenda: 'Na escola · Boipeba', forma: 'alto' },
     { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba' },
     { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg' },
-    { foto: 'oficinaEscola', legenda: 'Oficina com o Instituto Vivá · escola da ilha', forma: 'cheio' },
+    { foto: 'oficinaEscola', legenda: 'Oficina na escola da ilha', forma: 'cheio' },
   ],
 };
 
@@ -368,19 +368,19 @@ export const faq = {
     },
     {
       q: 'O projeto já começou?',
-      a: 'Ainda não. O Raízes do Futuro está em implantação, em parceria com o Instituto Vivá. A coleta, os pagamentos e os bônus ainda não começaram. Os números deste site são metas da primeira fase, e o painel e o app da família são demonstrações com dados de exemplo.',
+      a: 'Ainda não. O Raízes do Futuro está em implantação em Boipeba. A coleta, os pagamentos e os bônus ainda não começaram. Os números deste site são metas da primeira fase, e o painel e o app da família são demonstrações com dados de exemplo.',
     },
     {
       q: 'Por que blockchain é essencial para o projeto?',
-      a: 'A blockchain não é usada só para registrar dados: ela executa as regras do projeto. A cada venda, a receita é dividida automaticamente por código (60% renda direta, 25% Fundo Infância, 15% operação), e a liberação de qualquer bônus exige 2 de 3 assinaturas em um cofre multisig, garantindo que nenhuma organização controle o dinheiro sozinha.',
+      a: 'A blockchain não é usada só para registrar dados: ela executa as regras do projeto. A cada venda, a receita é dividida automaticamente por código (60% renda direta, 25% Fundo Infância, 15% operação), e a liberação de qualquer bônus exige 2 de 3 assinaturas em um cofre multisig, garantindo que ninguém controle o dinheiro sozinho.',
     },
     {
-      q: 'Qual o papel do Instituto Vivá?',
-      a: 'O Instituto Vivá é parceiro do Raízes do Futuro, com presença territorial em Boipeba. Quando o ciclo começar, vai mobilizar famílias e recicladores, validar presencialmente as comprovações de saúde e educação das crianças e ser um dos três signatários que autorizam cada liberação do cofre multisig do Fundo Infância.',
+      q: 'Quem atende as famílias em Boipeba?',
+      a: 'A equipe de território do Raízes do Futuro. Quando o ciclo começar, vai mobilizar famílias e recicladores, validar presencialmente as comprovações de saúde e educação das crianças e ser um dos três signatários que autorizam cada liberação do cofre multisig do Fundo Infância.',
     },
     {
       q: 'Como funciona o fluxo do projeto, do resíduo à criança?',
-      a: 'Moradores e turistas separam material reciclável, que catadores parceiros recolhem e pesam. A metodologia da DeTrash valida essa coleta e gera um Relatório de Circularidade, com evidência ancorada on-chain. Esse relatório vira receita, vendida a turistas e empresas, que entra num cofre multisig e é dividida automaticamente entre renda das famílias, Fundo Infância e operação.',
+      a: 'Moradores e turistas separam material reciclável, que catadores parceiros recolhem e pesam. A verificação ambiental do Raízes valida essa coleta e gera um Relatório de Circularidade, com evidência ancorada on-chain. Esse relatório vira receita, vendida a turistas e empresas, que entra num cofre multisig e é dividida automaticamente entre renda das famílias, Fundo Infância e operação.',
     },
     {
       q: 'Quem não tem filhos em casa também é beneficiado?',
@@ -388,7 +388,7 @@ export const faq = {
     },
     {
       q: 'Como funciona o Fundo Infância e o cofre multisig 2-de-3?',
-      a: 'Um Smart Contract libera bônus de R$ 30 por criança/mês quando vacinação, matrícula e frequência escolar são comprovadas. A liberação exige 2 de 3 assinaturas (Instituto Vivá, DeTrash e um representante comunitário). Se um compromisso não é cumprido no mês, o valor fica reservado, nunca é perdido.',
+      a: 'Um Smart Contract libera bônus de R$ 30 por criança/mês quando vacinação, matrícula e frequência escolar são comprovadas. A liberação exige 2 de 3 assinaturas (equipe de território, verificação ambiental e um representante comunitário). Se um compromisso não é cumprido no mês, o valor fica reservado, nunca é perdido.',
     },
     {
       q: 'As crianças participam da produção dos itens reciclados?',
@@ -404,7 +404,7 @@ export const faq = {
 export const proximoPasso = {
   eyebrow: 'O próximo passo',
   titulo: ['O ciclo está desenhado. ', 'Agora é começar.'],
-  lede: 'A tecnologia foi construída e o Instituto Vivá é parceiro em Boipeba. O que falta para começar é financiamento e quem compre o Relatório de Circularidade.',
+  lede: 'A tecnologia foi construída e o território já está mapeado em Boipeba. O que falta para começar é financiamento e quem compre o Relatório de Circularidade.',
   frentes: [
     {
       n: '01',

@@ -9,8 +9,8 @@ import { EMAIL_CONTATO, URL_PAINEL, URL_SITE, ehRotaInterna } from '../config';
 import './styles/login.css';
 
 const PAPEIS = [
-  'Instituto Vivá, equipe de território',
-  'DeTrash, validação da coleta',
+  'Equipe de território',
+  'Verificação ambiental',
   'Representante comunitário',
   'Catador ou família participante',
   'Investidor ou financiador',
@@ -203,7 +203,7 @@ export function Login({ onLogin }) {
                   <input
                     type="text"
                     autoComplete="organization"
-                    placeholder="Instituto Vivá, DeTrash, empresa parceira…"
+                    placeholder="Equipe Raízes, empresa parceira…"
                     value={form.organizacao}
                     onChange={campo('organizacao')}
                   />

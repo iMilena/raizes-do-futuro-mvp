@@ -38,8 +38,8 @@ export const PASSOS_TOUR = [
     texto: 'A IA sinaliza. Uma pessoa decide. Quatro detectores revisam cada coleta, e o que parece estranho vem para esta fila com o motivo explicado. Ninguém é punido automaticamente.',
   },
   {
-    tab: 'validacao', titulo: 'Validação do Vivá',
-    texto: 'O oráculo credenciado. Valida a coleta pela metodologia DeTrash, consolida os Relatórios de Circularidade e confere as comprovações de saúde e educação. Repare: validar uma comprovação não libera dinheiro, apenas cria uma proposta no cofre.',
+    tab: 'validacao', titulo: 'Validação',
+    texto: 'O oráculo credenciado. Valida a coleta pelos critérios de verificação do Raízes, consolida os Relatórios de Circularidade e confere as comprovações de saúde e educação. Repare: validar uma comprovação não libera dinheiro, apenas cria uma proposta no cofre.',
   },
   {
     tab: 'mercado', titulo: 'Mercado',
@@ -47,7 +47,7 @@ export const PASSOS_TOUR = [
   },
   {
     tab: 'fundo', titulo: 'Cofre 2-de-3',
-    texto: 'O coração do modelo: um cofre 2-de-3 na Solana. Para o bônus sair, dois entre Instituto Vivá, DeTrash e Representante Comunitário precisam assinar a proposta. Nenhuma organização move esse dinheiro sozinha. Mais abaixo, o explorador mostra cada transação com sua signature e slot.',
+    texto: 'O coração do modelo: um cofre 2-de-3 na Solana. Para o bônus sair, dois entre equipe de território, verificação ambiental e Representante Comunitário precisam assinar a proposta. Ninguém move esse dinheiro sozinho. Mais abaixo, o explorador mostra cada transação com sua signature e slot.',
   },
   {
     tab: 'carteira', titulo: 'Famílias e carteiras',

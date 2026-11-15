@@ -56,7 +56,7 @@ export const FORMS = {
   },
   relatorio: {
     t: 'Sobre a compra',
-    s: 'Cada relatório traz a evidência validada pela DeTrash e a receita já entra dividida no cofre 60/25/15.',
+    s: 'Cada relatório traz a evidência validada na verificação do Raízes e a receita já entra dividida no cofre 60/25/15.',
     f: [
       { id: 'tipo', l: 'Você é', type: 'pills', o: ['Empresa', 'Pousada ou hotel', 'Operador de turismo', 'Turista'] },
       { id: 'quer', l: 'Interesse', type: 'pills', o: ['Relatório de Circularidade', 'Peças da feira', 'Os dois'] },
@@ -76,7 +76,7 @@ export const FORMS = {
   },
   imprensa: {
     t: 'Sobre a pauta',
-    s: 'Podemos organizar entrevista com a equipe, com o Instituto Vivá e visita guiada à ilha.',
+    s: 'Podemos organizar entrevista com a equipe e visita guiada à ilha.',
     f: [
       { id: 'veiculo', l: 'Veículo', type: 'text', ph: 'Ex.: nome do jornal, canal ou podcast' },
       { id: 'formato', l: 'Formato', type: 'pills', o: ['Entrevista', 'Reportagem na ilha', 'Artigo', 'Podcast ou vídeo'] },

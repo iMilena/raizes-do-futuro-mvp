@@ -77,7 +77,7 @@ describe('decisão humana', () => {
     const decidido = decidir(registro(), PEDIDO_BOM);
     const trocado = decidir(decidido, {
       decisao: 'rejeitado',
-      autor: 'coordenacao-detrash',
+      autor: 'coordenacao-verificacao',
       justificativa: 'Reabri o caso: a pesagem da tarde já estava contada na entrega da manhã.',
       substituindo: true,
       agora: () => new Date('2026-09-15T09:00:00.000Z'),

@@ -5,7 +5,7 @@
    ── PRINCÍPIO ──────────────────────────────────────────────────────────────
    O app continua LOCAL-FIRST. Ele abre e funciona sem rede, sem Supabase e sem
    nada configurado — a demo em Boipeba não pode depender de sinal. A nuvem é
-   uma camada que, quando existe, faz o coletor no celular e o Instituto Vivá
+   uma camada que, quando existe, faz o coletor no celular e a equipe de território
    no notebook verem a mesma verdade.
 
    ── POR QUE DIFF E NÃO MAPA DE AÇÕES ───────────────────────────────────────
@@ -472,7 +472,7 @@ export function mesclar(local, remoto) {
  * Existe porque a primeira versão comparava só o número de transações — e
  * `NOVA_COLETA` **não gera transação** (ela só nasce na validação). Resultado: a
  * coleta que o coletor registrava no celular nunca chegava ao notebook do
- * Instituto Vivá, que é justamente o caso que a sincronização precisa cobrir.
+ * equipe de território, que é justamente o caso que a sincronização precisa cobrir.
  * Encontrado pelo teste de dois aparelhos.
  */
 export const impressao = e => !e ? '' : [

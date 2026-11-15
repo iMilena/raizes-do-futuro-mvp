@@ -3,7 +3,7 @@
 Implanta a versão **real e verificável** do Fundo Infância na Solana devnet, usando apenas programas oficiais da rede (SPL Token):
 
 - Token **cRED** (1 cRED = R$ 1,00, 2 casas decimais)
-- **Cofre multisig 2-de-3 nativo** — Instituto Vivá, DeTrash e Representante Comunitário
+- **Cofre multisig 2-de-3 nativo** — equipe de território, verificação ambiental e Representante Comunitário
 - Depósito de R$ 645,00 no cofre
 - **Liberação real de R$ 60,00** para a família de Maria, assinada por 2 dos 3 signatários
 
@@ -41,5 +41,5 @@ As chaves em `./chaves` são exclusivamente de teste (devnet — sem valor real)
 ## O que mostrar à banca
 
 - Link do **multisig** no explorer: prova de que o cofre exige 2-de-3
-- Link da **transação de liberação**: prova da transferência assinada por Vivá + DeTrash
+- Link da **transação de liberação**: prova da transferência assinada pela equipe de território + verificação ambiental
 - No app, painel verde na aba Cofre Multisig com saldos ao vivo

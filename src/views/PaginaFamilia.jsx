@@ -210,7 +210,7 @@ function Onboarding({ familia, onDone }) {
           <div className="passo-a-passo">
             <div><span><Icon name="lock" /></span><span>Só este celular conhece o seu PIN.</span></div>
             <div><span><Icon name="sem-olho" /></span><span>Ninguém do projeto consegue ver qual é, nem para te ajudar.</span></div>
-            <div><span><Icon name="maos" /></span><span>Se esquecer, o agente do Instituto Vivá destrava pessoalmente e você escolhe outro.</span></div>
+            <div><span><Icon name="maos" /></span><span>Se esquecer, o agente do Raízes destrava pessoalmente e você escolhe outro.</span></div>
           </div>
           <div className="conceito" style={{ marginTop: 10 }}>
             <Icon name="lamp" /> Nada de senhas complicadas de 12 palavras para decorar.
@@ -302,7 +302,7 @@ function Saque({ familia, onFechar }) {
       `Para: ${familia.resp}`,
       `Quando: ${new Date().toLocaleString('pt-BR')}`,
       'Taxa: R$ 0,00 (sem custo para a família)',
-      'Piloto de Boipeba, BA · Instituto Vivá',
+      'Piloto de Boipeba, BA · Raízes do Futuro',
     ].join('\n');
     try {
       if (navigator.share) {
@@ -394,7 +394,7 @@ const MOTIVOS = {
  * agente: sem registro, sem prazo, sem ninguém responsável por responder.
  *
  * O texto livre é OPCIONAL e a tela diz quem vai ler — pedir "conte o que
- * aconteceu" sem avisar que o Instituto Vivá lê é coletar dado por descuido.
+ * aconteceu" sem avisar que a equipe do Raízes lê é coletar dado por descuido.
  */
 function Contestar({ familia, tipo, alvoId, alvoDesc }) {
   const { state, dispatch } = useStore();
@@ -409,10 +409,10 @@ function Contestar({ familia, tipo, alvoId, alvoDesc }) {
     return (
       <div className={'contest-aviso ' + existente.status}>
         {existente.status === 'aberta' ? (
-          <><Icon name="relogio" /> <b>Você avisou que isso está errado.</b> O Instituto Vivá vai olhar e responder aqui.</>
+          <><Icon name="relogio" /> <b>Você avisou que isso está errado.</b> A equipe do Raízes vai olhar e responder aqui.</>
         ) : (
           <>
-            <Icon name="conversa" /> <b>Resposta do Instituto Vivá:</b> {existente.resposta}
+            <Icon name="conversa" /> <b>Resposta da equipe do Raízes:</b> {existente.resposta}
             {existente.status === 'resolvida' && (
               <div className="mini"><Icon name="check" /> marcado como resolvido</div>
             )}
@@ -446,7 +446,7 @@ function Contestar({ familia, tipo, alvoId, alvoDesc }) {
       <input id={'det-' + alvoId} value={detalhe} maxLength={300}
         onChange={e => setDetalhe(e.target.value)} placeholder="com suas palavras" />
       <p className="mini">
-        Quem lê é a equipe do <b>Instituto Vivá</b>, para poder corrigir.
+        Quem lê é a equipe do <b>Raízes do Futuro</b>, para poder corrigir.
       </p>
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button className="acao" style={{ flex: 1 }} disabled={!motivo}
@@ -457,10 +457,10 @@ function Contestar({ familia, tipo, alvoId, alvoDesc }) {
               motivo: MOTIVOS[tipo].find(([id]) => id === motivo)[1],
               detalhe,
             });
-            toast('Avisamos o Instituto Vivá: eles respondem aqui mesmo', 'info', 6000);
+            toast('Avisamos a equipe do Raízes: eles respondem aqui mesmo', 'info', 6000);
             setAberto(false);
           }}>
-          Avisar o Instituto Vivá
+          Avisar a equipe do Raízes
         </button>
         <button className="acao sec" onClick={() => setAberto(false)}>Cancelar</button>
       </div>
@@ -495,7 +495,7 @@ function SuasEntregas({ familia }) {
       <div className="card">
         {minhas.length === 0 && (
           <EstadoVazio titulo="Nenhuma entrega registrada no seu nome"
-            dica="Quando você entregar material, ele aparece aqui com o peso que foi anotado. Se entregou e não apareceu, avise o Instituto Vivá." />
+            dica="Quando você entregar material, ele aparece aqui com o peso que foi anotado. Se entregou e não apareceu, avise a equipe do Raízes." />
         )}
         {minhas.length > 0 && (
           <>
@@ -522,7 +522,7 @@ function SuasEntregas({ familia }) {
             ))}
             <p className="mini" style={{ marginTop: 10 }}>
               Confira o peso. Se algum número não bate com o que você entregou, toque
-              em <b>"Isso está errado?"</b>, alguém do Instituto Vivá responde aqui.
+              em <b>"Isso está errado?"</b>, alguém da equipe do Raízes responde aqui.
             </p>
           </>
         )}
@@ -645,7 +645,7 @@ function AjudaZap({ familia, onFechar }) {
 
   return (
     <div className="card" style={{ marginTop: 10 }}>
-      <b><Icon name="conversa" /> Instituto Vivá, atendimento pelo WhatsApp</b>
+      <b><Icon name="conversa" /> Equipe do Raízes, atendimento pelo WhatsApp</b>
       <div className="zap" style={{ marginTop: 8 }}>
         <div className="zap-msg familia">Oi! Como faço para enviar o comprovante da escola?</div>
         {!digitou
@@ -835,7 +835,7 @@ export default function PaginaFamilia({ standalone = false }) {
             <img className="fam-logo-entrada" src="./imagens/logo.png" alt="Raízes do Futuro" />
             <Mascote fala={
               !escolhida ? 'Oi! Escolha sua família para começar.'
-                : bloqueada ? 'Este celular está travado. Procure o agente do Instituto Vivá, ele destrava sem ver seu PIN.'
+                : bloqueada ? 'Este celular está travado. Procure o agente do Raízes, ele destrava sem ver seu PIN.'
                   : primeiraVez ? 'Primeira vez aqui! Escolha um PIN de 4 números só seu. Ele fica guardado neste celular.'
                     : 'Bem-vinda de volta! Digite seu PIN para entrar.'} />
             <div className="card">
@@ -1001,7 +1001,7 @@ export default function PaginaFamilia({ standalone = false }) {
 
       {logado && f?.carteira && (
         <button className="fab-ajuda" onClick={() => setAjuda(a => !a)}>
-          <Icon name="conversa" /> Falar com o Instituto Vivá
+          <Icon name="conversa" /> Falar com a equipe do Raízes
         </button>
       )}
 

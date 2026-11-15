@@ -16,7 +16,7 @@
    Exemplo:
      node ancorar-relatorio.mjs 3bb13611cde6b9f6... "Julho 2026 — quinzena 1"
 
-   O app mostra o hash pronto para copiar (aba Instituto Vivá → relatório →
+   O app mostra o hash pronto para copiar (aba Validação → relatório →
    "Ancorar"), e depois recebe de volta a assinatura que este script imprime.
 --------------------------------------------------------------------------- */
 import {
@@ -35,7 +35,7 @@ const [hash, periodo] = process.argv.slice(2);
 if (!hash || !/^[0-9a-f]{64}$/i.test(hash)) {
   console.error('\n❌ informe o SHA-256 do relatório (64 caracteres hexadecimais).');
   console.error('   uso: node ancorar-relatorio.mjs <sha256> "<período>"');
-  console.error('   o app mostra esse hash na aba Instituto Vivá, no relatório.\n');
+  console.error('   o app mostra esse hash na aba Validação, no relatório.\n');
   process.exit(1);
 }
 
@@ -92,7 +92,7 @@ try {
   console.log('   assinatura :', assinatura);
   console.log('   slot       :', detalhe?.slot ?? '(confirmando)');
   console.log('   explorer   :', explorer('tx', assinatura));
-  console.log('\n👉 Cole esta assinatura no app (Instituto Vivá → relatório → Ancorar) para');
+  console.log('\n👉 Cole esta assinatura no app (Validação → relatório → Ancorar) para');
   console.log('   o selo e o link aparecerem no explorador de transações.\n');
 
   const registro = {

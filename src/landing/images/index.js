@@ -42,13 +42,13 @@ export const coletaValidacao = {
   alt: 'Mutirão de coleta em Boipeba: moradores reunidos na praia, sob os coqueiros, ao lado dos sacos de resíduo recolhidos.',
 };
 
-/** Feira do Projeto Vivá em Moreré: a ponta "Renda Direta" e a faixa de luz. */
+/** Feira da comunidade em Moreré: a ponta "Renda Direta" e a faixa de luz. */
 export const rendaDireta = {
   fallback: rendaOriginal,
   webp: srcset([[renda800, 800], [renda1200, 1200], [renda1600, 1600]]),
   width: 1600,
   height: 1200,
-  alt: 'Feira da comunidade em Boipeba, com as peças artesanais expostas na banca diante do mural do Projeto Vivá.',
+  alt: 'Feira da comunidade em Boipeba, com as peças artesanais expostas na banca diante de um mural pintado.',
 };
 
 /** Roda de mulheres da comunidade: quem opera o ciclo. */
@@ -98,7 +98,7 @@ export const oficinaEscola = {
   webp: srcset([[oficina800, 800], [oficina1200, 1200], [oficina1600, 1600]]),
   width: 1600,
   height: 1200,
-  alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em oficina com o Instituto Vivá.',
+  alt: 'Crianças de uma escola de Boipeba erguem uma serpente iluminada feita de garrafas PET, em uma oficina.',
 };
 /** Para o fundo em CSS, onde um `<picture>` não cabe. */
 export const oficinaEscolaUrl = oficina1600;

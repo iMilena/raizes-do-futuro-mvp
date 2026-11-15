@@ -29,11 +29,11 @@ const PASSOS = [
   },
   {
     rot: 'Verificação',
-    narracao: 'A DeTrash confere a coleta pela metodologia dela. A validação vira uma transação na ' + REDE + ' — ninguém pode reescrever esse registro depois.',
+    narracao: 'A equipe do Raízes confere a coleta pelos critérios de verificação. A validação vira uma transação na ' + REDE + ' — ninguém pode reescrever esse registro depois.',
     tab: 'validacao', foco: 'validar-coletas', dur: 3600,
     acao: ({ dispatch, state, toast }) => {
       const c = [...state.coletas].reverse().find(c => c.status === 'pendente');
-      if (c) { dispatch({ type: 'VALIDAR_COLETA', id: c.id }); toast(`Coleta de ${c.kg} kg validada pela DeTrash`); }
+      if (c) { dispatch({ type: 'VALIDAR_COLETA', id: c.id }); toast(`Coleta de ${c.kg} kg validada`); }
     },
   },
   {
@@ -70,7 +70,7 @@ const PASSOS = [
   },
   {
     rot: 'Validação social',
-    narracao: 'O Instituto Vivá confere a comprovação com dupla checagem. Só o hash do documento vai à rede — nenhum dado da criança.',
+    narracao: 'A equipe de território confere a comprovação com dupla checagem. Só o hash do documento vai à rede — nenhum dado da criança.',
     tab: 'validacao', foco: 'comprovacoes', dur: 3800,
     acao: ({ dispatch, toast }) => {
       dispatch({ type: 'VALIDAR_CONDICAO', familiaId: FAMILIA_DEMO, condicaoId: CONDICAO_DEMO });
@@ -79,16 +79,16 @@ const PASSOS = [
   },
   {
     rot: 'Multisig 1 de 2',
-    narracao: 'O dinheiro não sai por decisão de uma pessoa. O cofre é 2-de-3: Instituto Vivá assina primeiro.',
+    narracao: 'O dinheiro não sai por decisão de uma pessoa. O cofre é 2-de-3: a equipe de território assina primeiro.',
     tab: 'fundo', foco: 'propostas', dur: 3600,
     acao: ({ dispatch, state, toast }) => {
       const p = state.propostas.find(p => p.status === 'aguardando' && p.familiaId === FAMILIA_DEMO && p.condicaoId === CONDICAO_DEMO);
-      if (p) { dispatch({ type: 'ASSINAR_PROPOSTA', propostaId: p.id, signatario: 'viva' }); toast('Instituto Vivá assinou (1/2)', 'info'); }
+      if (p) { dispatch({ type: 'ASSINAR_PROPOSTA', propostaId: p.id, signatario: 'viva' }); toast('Equipe de território assinou (1/2)', 'info'); }
     },
   },
   {
     rot: 'Multisig 2 de 2 — executa',
-    narracao: 'A DeTrash assina em seguida. Limiar atingido: o cofre executa sozinho e transfere o bônus. Nem o Instituto sozinho consegue desviar esse valor.',
+    narracao: 'A verificação ambiental assina em seguida. Limiar atingido: o cofre executa sozinho e transfere o bônus. Ninguém sozinho consegue desviar esse valor.',
     tab: 'fundo', foco: 'propostas', dur: 4200,
     acao: ({ dispatch, state, toast }) => {
       const p = state.propostas.find(p => p.status === 'aguardando' && p.familiaId === FAMILIA_DEMO && p.condicaoId === CONDICAO_DEMO);

@@ -152,7 +152,7 @@ try {
      pelo qual o canal da família precisou de desenho próprio. Sem credencial de
      teste este trecho é pulado, e o resumo diz que foi pulado.
      ------------------------------------------------------------------------ */
-  secao('5. O Instituto Vivá, em outro aparelho, vê a reclamação');
+  secao('5. A equipe de território, em outro aparelho, vê a reclamação');
   const { abrirSessao, avisoSemSessao, CHAVE_SESSAO } = await import('./ajuda/sessao.mjs');
   const SESSAO = await abrirSessao(cred);
   if (!SESSAO) {
@@ -185,7 +185,7 @@ try {
       ok(viu, 'a reclamação feita no celular da família CHEGOU ao aparelho da operação');
 
       if (viu) {
-        await op.ev('return __t.clicar("nav.pn-journey button", "Instituto Vivá")');
+        await op.ev('return __t.clicar("nav.pn-journey button", "Validação")');
         await espera(900);
         await op.ev(AJUDANTES + ' return 1;');
         ok(await op.ev('return __t.tem("Contestações das famílias")'), 'e aparece na tela de quem valida');

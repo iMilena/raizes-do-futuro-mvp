@@ -78,11 +78,11 @@ export const TRILHAS = [
     etapas: [
       ['Coleta registrada na praia', '14/09 · 08:12 · Praia da Cueira', 'Coletora C-017 entregou 18,6 kg de PET. O app registrou peso, local e foto mesmo sem internet.', ['Foto', '9f3a…c21e', 'hash calculado no aparelho, a imagem não sai dele']],
       ['Conferência da IA', '14/09 · 08:13', 'Os quatro detectores rodaram sem alerta: pilha, sequência, foto reaproveitada e peso. Confiança do modelo 0,94, acima do limiar de 0,75.', ['Parecer', 'IA-2026-0914-031', 'nenhuma sinalização']],
-      ['Validação DeTrash', '15/09', 'A metodologia DeTrash confirmou origem e volume e incluiu a coleta no Relatório de Circularidade.', ['Lote', '7bE4…41aC', 'só a raiz de Merkle e os totais vão para a cadeia']],
+      ['Verificação ambiental', '15/09', 'A verificação ambiental confirmou origem e volume e incluiu a coleta no Relatório de Circularidade.', ['Lote', '7bE4…41aC', 'só a raiz de Merkle e os totais vão para a cadeia']],
       ['Venda do relatório', '17/09 · Empresas (ESG)', 'Uma empresa parceira comprou o Relatório de Circularidade de setembro por R$ 2.500.', ['Venda', 'MK-0917-004', 'registrada no Mercado']],
       ['Divisão automática no contrato', '17/09', 'O contrato repartiu a venda antes de qualquer decisão humana: R$ 1.500 renda, R$ 625 Fundo Infância, R$ 375 operação.', ['Transação', '5KxQ…9Qe1', 'Solana devnet'], 'RECEITA'],
-      ['Comprovações da criança', '20/09 · Instituto Vivá', 'Vacinação, matrícula e frequência comprovadas presencialmente. O painel registra que a prova existe, nunca o documento.', ['Validação', 'VV-0920-118', 'dados pessoais ficam com o Vivá']],
-      ['Liberação 2-de-3', '21/09', 'Instituto Vivá e Representante comunitário assinaram. R$ 30 chegaram à carteira da família.', ['Transação', '3Hy8…pLq2', '2 de 3 assinaturas'], 'LIBERAÇÃO'],
+      ['Comprovações da criança', '20/09 · Equipe de território', 'Vacinação, matrícula e frequência comprovadas presencialmente. O painel registra que a prova existe, nunca o documento.', ['Validação', 'VV-0920-118', 'dados pessoais ficam com a equipe de território']],
+      ['Liberação 2-de-3', '21/09', 'Equipe de território e Representante comunitário assinaram. R$ 30 chegaram à carteira da família.', ['Transação', '3Hy8…pLq2', '2 de 3 assinaturas'], 'LIBERAÇÃO'],
       ['Na mão da família', '21/09 · Carteira da família', 'A família pode guardar ou sacar via Pix quando quiser. A conta é dela; a equipe não movimenta.', ['Carteira', 'UL7f…FnKi', 'família Maria de Lourdes']],
     ],
   },
@@ -92,7 +92,7 @@ export const TRILHAS = [
     rotulo: 'R$ 1.500 · renda da coleta',
     contexto: 'Renda da coleta · venda ESG de 17/09 · 60% para as famílias coletoras',
     etapas: [
-      ['Coletas validadas do lote', '01 a 15/09', 'As coletas da quinzena passaram pela conferência da IA e pela validação DeTrash.', ['Lote', '7bE4…41aC', 'raiz de Merkle do lote diário']],
+      ['Coletas validadas do lote', '01 a 15/09', 'As coletas da quinzena passaram pela conferência da IA e pela verificação ambiental.', ['Lote', '7bE4…41aC', 'raiz de Merkle do lote diário']],
       ['Venda do relatório', '17/09 · Empresas (ESG)', 'Uma empresa parceira comprou o Relatório de Circularidade de setembro por R$ 2.500.', ['Venda', 'MK-0917-004', 'registrada no Mercado']],
       ['Divisão automática no contrato', '17/09', 'O contrato separou 60% da venda para a renda direta, sem condição nenhuma.', ['Transação', '5KxQ…9Qe1', 'Solana devnet'], 'RECEITA'],
       ['Repasse às carteiras', '17/09', 'A renda foi dividida entre as famílias coletoras, na proporção dos quilos validados de cada uma.', ['Repasse', 'RD-0917-030', '30 carteiras']],

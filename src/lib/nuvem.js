@@ -167,7 +167,7 @@ export async function carregar() {
       ler('saldo_familia', 'select=*'),
       /* contestações: SEM ISTO o circuito não fecha entre aparelhos.
          A família deposita na nuvem (sem sessão, ver enviarContestacao), mas o
-         aparelho da operação nunca puxava — então o Instituto Vivá não via a
+         aparelho da operação nunca puxava — então a equipe de território não via a
          reclamação. Na demonstração parecia funcionar porque as duas telas
          dividem o mesmo estado local; em campo ela reclamava para o vazio. */
       /* opcionais: tabelas que podem nao existir se a migracao correspondente

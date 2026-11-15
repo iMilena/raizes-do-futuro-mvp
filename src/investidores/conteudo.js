@@ -43,9 +43,9 @@ export const hero = {
     'Families on Boipeba island, Bahia, collect recyclable waste from the beaches. Every weighed collection is checked by AI and by field partners, then anchored on Solana. Companies buy the verified tonnage as recycling credits, and a contract splits every payment: 60% to the families, 25% to a children’s fund, 15% to operations.',
   aviso: {
     implantacao:
-      'Status: deploying with Instituto Vivá, our partner on the island. Collection, payments and bonuses have not started yet. Every number on this page is a goal unless it says otherwise.',
+      'Status: deploying in Boipeba. Collection, payments and bonuses have not started yet. Every number on this page is a goal unless it says otherwise.',
     piloto:
-      'Status: the pilot is running in Boipeba with Instituto Vivá. Measured results appear next to each goal, and goals are still marked as goals.',
+      'Status: the pilot is running in Boipeba. Measured results appear next to each goal, and goals are still marked as goals.',
   },
   loi: { rotulo: 'Sign a letter of intent', href: '#loi' },
   material: 'Download investor brief',
@@ -84,13 +84,13 @@ export const ciclo = {
       n: '02',
       rotulo: 'Verification',
       titulo: 'Weighed, photographed, checked by AI',
-      texto: 'An offline field app records weight and photo. An on-device vision model and four fraud detectors flag what needs a human check before DeTrash validates the batch.',
+      texto: 'An offline field app records weight and photo. An on-device vision model and four fraud detectors flag what needs a human check before our team validates the batch.',
     },
     {
       n: '03',
       rotulo: 'Territory',
-      titulo: 'Instituto Vivá',
-      texto: 'Our partner on the island mobilizes families and collectors, and checks each child’s health and school records in person.',
+      titulo: 'Field team',
+      texto: 'Our team on the island mobilizes families and collectors, and checks each child’s health and school records in person.',
     },
     {
       n: '04',
@@ -102,7 +102,7 @@ export const ciclo = {
       n: '05',
       rotulo: 'Vault',
       titulo: '2-of-3 multisig',
-      texto: 'Every payment enters a multisig vault on Solana and is split by code before anyone decides. No single organization controls the money.',
+      texto: 'Every payment enters a multisig vault on Solana and is split by code before anyone decides. No single person controls the money.',
     },
     {
       n: '06',
@@ -115,20 +115,20 @@ export const ciclo = {
 
 export const governanca = {
   eyebrow: 'Governance',
-  titulo: ['Three organizations, ', 'none in control alone.'],
+  titulo: ['Three signatures, ', 'none in control alone.'],
   lede: 'Every release from the vault needs 2 of 3 signatures. The rule is enforced by the vault on-chain, not by a bylaw.',
   itens: [
     {
       n: '1',
       etiqueta: 'Territory · Signature 1',
-      nome: 'Instituto Vivá',
-      texto: 'Present in Boipeba. Mobilizes families and collectors and verifies children’s health and education records in person.',
+      nome: 'Field team',
+      texto: 'Raízes do Futuro’s team in Boipeba. Mobilizes families and collectors and verifies children’s health and education records in person.',
     },
     {
       n: '2',
       etiqueta: 'Validation · Signature 2',
-      nome: 'DeTrash',
-      texto: 'Its methodology validates the collection and issues the Circularity Report, with the evidence anchored on-chain.',
+      nome: 'Environmental verification',
+      texto: 'Our verification process validates the collection and issues the Circularity Report, with the evidence anchored on-chain.',
     },
     {
       n: '3',
@@ -149,13 +149,13 @@ export const tecnologia = {
     'Why Solana: fees of a fraction of a cent and confirmation in seconds, which makes R$ 30 monthly payments per child viable.',
   cofre: {
     titulo: 'The multisig vault, on devnet',
-    texto: 'Native SPL Token multisig. Threshold 2 of 3: Instituto Vivá, DeTrash and the community representative.',
+    texto: 'Native SPL Token multisig. Threshold 2 of 3: the field team, environmental verification and the community representative.',
     endereco: '6tBWXEPUNHBEAvLXY3RJ1ectEPHa7H87oLrP4xD4cPi4',
     href: explorer('address', '6tBWXEPUNHBEAvLXY3RJ1ectEPHa7H87oLrP4xD4cPi4'),
     extras: [
       {
         rotulo: 'A real 2-of-3 release',
-        detalhe: 'R$ 30 signed by Instituto Vivá and DeTrash. The third signer did not sign, and it still went through: the threshold is 2.',
+        detalhe: 'R$ 30 signed by two of the three keys. The third signer did not sign, and it still went through: the threshold is 2.',
         href: explorer('tx', '4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX'),
       },
       {
@@ -245,7 +245,7 @@ export const empresas = {
     titulo: 'How buying works',
     itens: [
       { n: '01', titulo: 'Sign a letter of intent', texto: 'Tonnes and period. Non-binding: it reserves your share of the first verified batches.' },
-      { n: '02', titulo: 'We collect and verify', texto: 'Batches are weighed, checked by AI and field partners, validated by DeTrash and anchored on Solana.' },
+      { n: '02', titulo: 'We collect and verify', texto: 'Batches are weighed, checked by AI and field partners, validated by our team and anchored on Solana.' },
       { n: '03', titulo: 'You receive the credits', texto: 'With the inclusion proofs for every collection behind them.' },
       { n: '04', titulo: 'Your payment is split by contract', texto: '60% to the families, 25% to the Children’s Fund, 15% to operations. Automatically.' },
     ],

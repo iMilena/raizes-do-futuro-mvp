@@ -4,7 +4,7 @@
 
    Cenário, igual ao do campo:
      · aparelho A é o celular do coletor, em Boipeba
-     · aparelho B é o notebook do Instituto Vivá
+     · aparelho B é o notebook da equipe de território
      · A registra uma coleta OFFLINE (a rede da ilha caiu)
      · B, online, valida outra coisa
      · A volta a ter sinal
@@ -89,7 +89,7 @@ try {
   };
 
   ok(await preparar(A, 'A'), 'aparelho A (celular do coletor) abriu');
-  ok(await preparar(B, 'B'), 'aparelho B (notebook do Vivá) abriu');
+  ok(await preparar(B, 'B'), 'aparelho B (notebook da equipe de território) abriu');
   ok(await A.ev('return JSON.parse(localStorage.getItem("raizes-mvp-v2")).transacoes.length > 0'),
     'A tem estado local (funciona antes de qualquer rede)');
 

@@ -36,7 +36,7 @@ function Rastreio({ produto, state, onFechar }) {
     ['Material recuperado', coleta
       ? `${coleta.kg} kg de ${coleta.material} · ${coleta.local} · ${coleta.data}${coleta.geo ? ` · ${coleta.geo.lat}, ${coleta.geo.lng}` : ''}`
       : 'coleta comunitária em Boipeba'],
-    ['Validação DeTrash', coleta?.signature
+    ['Verificação ambiental', coleta?.signature
       ? `assinatura ${trunc(coleta.signature, 8, 8)}`
       : 'evidência verificada pela metodologia'],
     ['Relatório de Circularidade', rel ? `${rel.periodo} · ${rel.kg} kg consolidados` : 'em consolidação'],
@@ -262,7 +262,7 @@ export default function Mercado() {
             <CardCabecalho titulo="Empresas (ESG)" />
             <CardNota>
               Financie resultados ambientais verificáveis.{' '}
-              <b>{(kgDisponivel / 1000).toFixed(2)} t já validadas pela DeTrash</b> e disponíveis
+              <b>{(kgDisponivel / 1000).toFixed(2)} t já validadas pela verificação ambiental</b> e disponíveis
               para relatório.
             </CardNota>
             <div style={{ marginTop: 16 }}>

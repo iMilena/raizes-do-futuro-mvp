@@ -18,8 +18,8 @@ export const SPLIT = { renda: 0.6, fundo: 0.25, operacao: 0.15 };
    exatamente onde alguém precisa ver DE QUEM se está esperando assinatura. Sigla
    segue a mesma decisão do menu, que trocou emoji por marca curta. */
 export const SIGNATARIOS = [
-  { id: 'viva', nome: 'Instituto Vivá', papel: 'Mobilização e validação social', iniciais: 'IV', endereco: null },
-  { id: 'detrash', nome: 'DeTrash', papel: 'Validação ambiental (metodologia)', iniciais: 'DT', endereco: null },
+  { id: 'viva', nome: 'Equipe de território', papel: 'Mobilização e validação social', iniciais: 'ET', endereco: null },
+  { id: 'detrash', nome: 'Verificação ambiental', papel: 'Validação da coleta', iniciais: 'VA', endereco: null },
   { id: 'comunidade', nome: 'Representante Comunitário', papel: 'Controle social do território', iniciais: 'RC', endereco: null },
 ];
 export const signatarioPor = id => SIGNATARIOS.find(s => s.id === id);
@@ -27,7 +27,7 @@ export const signatarioPor = id => SIGNATARIOS.find(s => s.id === id);
 export const TIPOS_TX = {
   'GÊNESE': { rot: 'Implantação do cofre multisig', cor: '#8a5cf6' },
   'RECEITA': { rot: 'Venda com split 60/25/15 automático', cor: '#1cabe2' },
-  'VALIDAÇÃO': { rot: 'Coleta validada (metodologia DeTrash)', cor: '#1b7a43' },
+  'VALIDAÇÃO': { rot: 'Coleta validada (verificação ambiental)', cor: '#1b7a43' },
   'CIRCULARIDADE': { rot: 'Relatório de Circularidade emitido', cor: '#0b7ba8' },
   'PROPOSTA': { rot: 'Proposta de transferência criada no cofre', cor: '#8a5cf6' },
   'ASSINATURA': { rot: 'Assinatura de signatário do cofre', cor: '#b3541e' },
@@ -56,7 +56,7 @@ export const FINALIDADES_PADRAO = [
   'prestar contas do piloto de forma agregada',
 ];
 export const TEXTO_TERMO = [
-  'Autorizo o Instituto Vivá a registrar, no sistema Raízes do Futuro, os dados',
+  'Autorizo a equipe do Raízes do Futuro a registrar, no sistema, os dados',
   'necessários para participar do piloto de Boipeba: as coletas realizadas pela',
   'minha família, a comprovação das condições de saúde e educação das crianças e',
   'a conta para receber o bônus.',
@@ -501,11 +501,11 @@ function seed() {
   };
 
   /* história registrada na cadeia (na ordem em que aconteceu) */
-  pushTx(state, 'GÊNESE', `Cofre multisig do Fundo Infância implantado na ${REDE}, limiar 2 de 3 (Instituto Vivá, DeTrash, Representante Comunitário)`, 0);
+  pushTx(state, 'GÊNESE', `Cofre multisig do Fundo Infância implantado na ${REDE}, limiar 2 de 3 (equipe de território, verificação ambiental, Representante Comunitário)`, 0);
   pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de Maria de Lourdes, sem dados pessoais on-chain`, 0);
   pushTx(state, 'CARTEIRA', `Carteira Decaf (${REDE}) conectada para família de José Raimundo, sem dados pessoais on-chain`, 0);
-  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 45 kg de Plástico PET, Praia de Cueira', 0);
-  pushTx(state, 'VALIDAÇÃO', 'Coleta validada (DeTrash): 60 kg de Vidro, Velha Boipeba', 0);
+  pushTx(state, 'VALIDAÇÃO', 'Coleta validada: 45 kg de Plástico PET, Praia de Cueira', 0);
+  pushTx(state, 'VALIDAÇÃO', 'Coleta validada: 60 kg de Vidro, Velha Boipeba', 0);
   pushTx(state, 'CIRCULARIDADE', 'Relatório de Circularidade emitido: 105 kg validados (Julho 2026, quinzena 1)', 0);
   for (const v of state.vendas) aplicarSplit(state, v);
 
@@ -515,10 +515,10 @@ function seed() {
   state.caixas.fundoLiberado += bonusMaria;
   state.familias[0].saldo += bonusMaria;
   state.familias[0].extrato.push({ ts: Date.now() - 86400000 * 5, desc: 'Bônus de julho, vacinação em dia', valor: bonusMaria });
-  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} para a conta Decaf de Maria de Lourdes (assinaturas: Instituto Vivá + DeTrash)`, bonusMaria);
+  pushTx(state, 'LIBERAÇÃO', `Cofre executou proposta: ${fmt(bonusMaria)} para a conta Decaf de Maria de Lourdes (assinaturas: equipe de território + verificação ambiental)`, bonusMaria);
 
-  pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo, Matrícula escolar validada pelo Instituto Vivá`, 0, { propostaId: 1 });
-  pushTx(state, 'ASSINATURA', 'Instituto Vivá assinou a proposta #1 (1 de 2 necessárias)', 0, { propostaId: 1, signatario: 'viva' });
+  pushTx(state, 'PROPOSTA', `Proposta #1 criada: ${fmt(BONUS_POR_CRIANCA * 3)} para José Raimundo, Matrícula escolar validada pela equipe de território`, 0, { propostaId: 1 });
+  pushTx(state, 'ASSINATURA', 'Equipe de território assinou a proposta #1 (1 de 2 necessárias)', 0, { propostaId: 1, signatario: 'viva' });
   pushTx(state, 'RESERVA', `Comprovação de Ana Cláudia validada, ${fmt(BONUS_POR_CRIANCA)} reservado (família ainda sem conta ${PROVIDER_CARTEIRA}); liberação retroativa garantida`, 0, { propostaId: 2 });
 
   return state;
@@ -542,7 +542,7 @@ function reducer(state, action) {
       const c = s.coletas.find(c => c.id === action.id);
       if (c && c.status === 'pendente') {
         c.status = 'validada';
-        const tx = pushTx(s, 'VALIDAÇÃO', `Coleta validada (DeTrash): ${c.kg} kg de ${c.material}, ${c.local}`, 0);
+        const tx = pushTx(s, 'VALIDAÇÃO', `Coleta validada: ${c.kg} kg de ${c.material}, ${c.local}`, 0);
         c.signature = tx.signature;
       }
       return s;
@@ -775,7 +775,7 @@ function reducer(state, action) {
       c.status = action.resolver ? 'resolvida' : 'respondida';
       const f = s.familias.find(f => f.id === c.familiaId);
       pushTx(s, 'CONTESTACAO',
-        `Contestação da família ${f?.codigo || c.familiaId} ${action.resolver ? 'resolvida' : 'respondida'} pelo Instituto Vivá`,
+        `Contestação da família ${f?.codigo || c.familiaId} ${action.resolver ? 'resolvida' : 'respondida'} pela equipe do Raízes`,
         0, { familiaId: c.familiaId, contestacaoId: c.id });
       return s;
     }
@@ -1044,7 +1044,7 @@ function reducer(state, action) {
           c.status = 'aguardando-assinaturas';
           s.propostas.push(p);
           const evid = c.evidHash ? `evidência sha256:${c.evidHash.slice(0, 12)}…` : 'hash off-chain';
-          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp}, ${c.tipo} validada pelo Instituto Vivá (${evid})`, 0, { propostaId: p.id });
+          pushTx(s, 'PROPOSTA', `Proposta #${p.id} criada: ${fmt(valor)} para ${f.resp}, ${c.tipo} validada pela equipe de território (${evid})`, 0, { propostaId: p.id });
         } else {
           c.status = 'validada-aguardando';
           p.status = 'reservada';

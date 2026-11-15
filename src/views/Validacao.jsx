@@ -135,7 +135,7 @@ function Ancoragem({ relatorio }) {
  * O que as famílias contestaram, e o que a operação respondeu.
  *
  * Existe porque contestação sem alguém responsável por responder é caixa de
- * reclamação fechada. Fica na aba do Instituto Vivá, que é quem valida: o mesmo
+ * reclamação fechada. Fica na aba Validação, da equipe que valida: o mesmo
  * lugar onde o erro foi cometido é onde ele se corrige.
  *
  * Quando é peso de coleta ainda não validada, a correção é ali mesmo: pedir para
@@ -315,15 +315,15 @@ export default function Validacao() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho area="Operação · Instituto Vivá" titulo="A comprovação é presencial. O painel só guarda o resultado.">
-        O Instituto Vivá é quem transforma uma coleta em evidência e uma comprovação em dinheiro
+      <TelaCabecalho area="Operação · Equipe de território" titulo="A comprovação é presencial. O painel só guarda o resultado.">
+        A equipe de território é quem transforma uma coleta em evidência e uma comprovação em dinheiro
         proposto. <b>Nada é liberado por uma pessoa sozinha.</b>
       </TelaCabecalho>
 
       <Grade colunas="5-8">
         {/* ---------------- 1 · coletas ---------------- */}
         <Secao className={focoColetas + focoRel}>
-          <RotuloSecao>1 · Coletas aguardando validação DeTrash</RotuloSecao>
+          <RotuloSecao>1 · Coletas aguardando verificação ambiental</RotuloSecao>
           <Card>
             {/* O botão abaixo é o caminho antigo: um clique, sem evidência anexada.
                 Continua aqui porque a operação trabalha com ele hoje e aposentá-lo é
@@ -353,7 +353,7 @@ export default function Validacao() {
                   <Pill tom="warn">pendente</Pill>
                 </div>
                 <Botao style={{ marginTop: 12 }} onClick={() => validarColeta(c)}>
-                  Validar pelos critérios DeTrash
+                  Validar pelos critérios de verificação
                 </Botao>
               </div>
             ))}
@@ -467,9 +467,9 @@ export default function Validacao() {
           </Card>
 
           <Nota tipo="i" icone="shield">
-            <b>Governança.</b> Cada comprovação passa por dois agentes do Instituto Vivá; a
-            liberação do dinheiro exige <b>2 de 3 assinaturas</b> no cofre (Instituto Vivá,
-            DeTrash e Representante Comunitário); auditoria trimestral por parceiro externo; a
+            <b>Governança.</b> Cada comprovação passa por dois agentes da equipe de território; a
+            liberação do dinheiro exige <b>2 de 3 assinaturas</b> no cofre (equipe de território,
+            verificação ambiental e Representante Comunitário); auditoria trimestral por parceiro externo; a
             família tem canal de recurso com resposta em até 15 dias.
           </Nota>
         </Secao>

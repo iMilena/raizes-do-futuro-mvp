@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    RAÍZES DO FUTURO — implantação real na Solana DEVNET
    Cria: token cRED (2 casas = centavos), cofre com MULTISIG NATIVO 2-de-3
-   (Instituto Vivá, DeTrash, Representante Comunitário), deposita R$ 645,00
+   (equipe de território, verificação ambiental, Representante Comunitário), deposita R$ 645,00
    no cofre e executa a liberação de R$ 60,00 para a família de Maria
    assinada por 2 dos 3 signatários — tudo verificável no explorer.
 
@@ -74,8 +74,8 @@ const main = async () => {
     2,
   );
   console.log('  multisig (2-de-3):', multisig.toBase58());
-  console.log('   • Instituto Vivá        ', viva.publicKey.toBase58());
-  console.log('   • DeTrash               ', detrash.publicKey.toBase58());
+  console.log('   • Equipe de território  ', viva.publicKey.toBase58());
+  console.log('   • Verificação ambiental ', detrash.publicKey.toBase58());
   console.log('   • Rep. Comunitário      ', comunidade.publicKey.toBase58());
 
   console.log('\n4/6 · Contas de token (cofre e família)');
@@ -89,7 +89,7 @@ const main = async () => {
   console.log('  tx:', explorer('tx', sigDeposito));
 
   console.log('\n6/6 · LIBERAÇÃO REAL: R$ 60,00 para a família de Maria');
-  console.log('  exige 2 de 3 assinaturas → assinando com Instituto Vivá + DeTrash…');
+  console.log('  exige 2 de 3 assinaturas → assinando com equipe de território + verificação ambiental…');
   const sigBonus = await transfer(
     conexao, pagador,
     cofre.address, contaMaria.address,
@@ -109,8 +109,8 @@ const main = async () => {
     mint: mint.toBase58(),
     multisig: { endereco: multisig.toBase58(), limiar: '2 de 3' },
     signatarios: {
-      institutoViva: viva.publicKey.toBase58(),
-      deTrash: detrash.publicKey.toBase58(),
+      equipeTerritorio: viva.publicKey.toBase58(),
+      verificacaoAmbiental: detrash.publicKey.toBase58(),
       representanteComunitario: comunidade.publicKey.toBase58(),
     },
     contas: { cofre: cofre.address.toBase58(), familiaMaria: contaMaria.address.toBase58() },

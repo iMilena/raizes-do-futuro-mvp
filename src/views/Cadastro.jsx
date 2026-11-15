@@ -15,7 +15,7 @@ import './cadastro.css';
 /* ---------------------------------------------------------------------------
    Cadastro de famílias: o que faltava para o piloto crescer de dentro do app.
 
-   As famílias existiam só na seed: não havia como o Instituto Vivá incluir a
+   As famílias existiam só na seed: não havia como a equipe de território incluir a
    décima quinta família sem editar código. Esta tela fecha isso.
 
    ── UMA DECISÃO DE ORDEM ──────────────────────────────────────────────────

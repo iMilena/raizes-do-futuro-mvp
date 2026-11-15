@@ -17,7 +17,7 @@ import './carteira.css';
 
 const STATUS = {
   pendente: ['warn', 'enviar comprovação'],
-  comprovada: ['wait', 'em validação no Instituto Vivá'],
+  comprovada: ['wait', 'em validação pela equipe de território'],
   'aguardando-assinaturas': ['warn', 'aguardando assinaturas (2 de 3)'],
   liberada: ['ok', 'bônus recebido'],
   'validada-aguardando': ['wait', 'validado, reservado'],
@@ -301,7 +301,7 @@ function Onboarding({ familia, onDone }) {
           </div>
           <Nota tipo="i" icone="lock">
             Custódia simplificada da {PROVIDER_CARTEIRA}: a chave fica protegida pelo provedor e é recuperável com
-            celular + agente Vivá. O PIN não é guardado em texto, só a marca de que foi definido.
+            celular + agente do Raízes. O PIN não é guardado em texto, só a marca de que foi definido.
           </Nota>
           <Botao style={{ marginTop: 14 }} disabled={!pinOk || conectando} onClick={conectar}>
             {conectando ? 'Conectando…' : `Conectar com ${PROVIDER_CARTEIRA}`}
@@ -356,7 +356,7 @@ export default function Carteira() {
 
   const enviar = c => {
     dispatch({ type: 'ENVIAR_COMPROVACAO', familiaId: f.id, condicaoId: c.id });
-    toast('Comprovação enviada ao Instituto Vivá');
+    toast('Comprovação enviada à equipe de território');
   };
 
   const cabecalho = (

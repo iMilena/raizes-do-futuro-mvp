@@ -51,7 +51,7 @@ siga o [README do modelo](modelo/README.md), que termina gravando
 A mesma tela vive em dois lugares, e o componente é um só
 ([PainelRevisao.tsx](src/validacao/revisao/PainelRevisao.tsx)):
 
-- **aba "Conferência"** do painel da operação, ao lado de "Instituto Vivá". É o
+- **aba "Conferência"** do painel da operação, ao lado de "Validação". É o
   caminho normal: quem revisa já trabalha no painel.
 - **[revisao.html](revisao.html)**, página própria, para abrir direto sem o
   painel em volta.
@@ -333,7 +333,7 @@ Coisas que este módulo não resolve, e que é melhor estarem escritas:
 - **O painel lê o banco local do navegador em que está aberto.** É o suficiente
   para demonstração e para revisar no mesmo aparelho, e vira a base compartilhada
   na mesma troca de uma linha que liga o transporte ao Supabase, descrita acima.
-- **Convivem dois caminhos de validação.** A aba "Instituto Vivá" do painel tem o
+- **Convivem dois caminhos de validação.** A aba "Validação" do painel tem o
   botão antigo, de um clique e sem evidência anexada, que é justamente o que este
   módulo substitui. Ele continua lá porque aposentá-lo é decisão de operação, com
   gente treinada nele, e porque enquanto o transporte for em memória os dois não

@@ -79,7 +79,7 @@ export default function OnchainDevnet() {
 
       <div style={{ marginTop: 16 }}>
         <Nota tipo="i" icone="check">
-          A liberação acima foi <b>assinada de verdade</b> por Instituto Vivá e DeTrash, e
+          A liberação acima foi <b>assinada de verdade</b> por duas das três chaves do cofre, e
           executada pelo programa SPL Token. Os links abrem no Solana Explorer para auditoria.
           As telas seguintes demonstram a jornada operacional completa.
         </Nota>

@@ -21,7 +21,7 @@ import './fundo.css';
 
 const STATUS = {
   pendente: ['warn', 'aguardando comprovação'],
-  comprovada: ['wait', 'em validação (Vivá)'],
+  comprovada: ['wait', 'em validação (território)'],
   'aguardando-assinaturas': ['warn', 'aguardando assinaturas'],
   liberada: ['ok', 'liberado'],
   'validada-aguardando': ['wait', 'reservado'],
@@ -111,7 +111,7 @@ function CardProposta({ proposta, familia }) {
                 <span className="pn-hint">não foi necessário</span>
               ) : podeAssinarComo(s.id) ? (
                 <Botao tom="ghost" pequeno onClick={() => assinar(s)}>
-                  Assinar como {s.nome.split(' ')[0]}
+                  Assinar como {s.nome}
                 </Botao>
               ) : (
                 /* Com sessão aberta, só aparece o botão da SUA organização.
@@ -123,7 +123,7 @@ function CardProposta({ proposta, familia }) {
                   className="pn-hint"
                   title="Só a organização registrada no seu papel pode assinar por ela"
                 >
-                  aguardando {s.nome.split(' ')[0]}
+                  aguardando {s.nome}
                 </span>
               )}
             </div>
@@ -517,7 +517,7 @@ function FechamentoCiclo() {
                 className="pn-inp"
                 value={form.participantes}
                 onChange={e => setForm({ ...form, participantes: e.target.value })}
-                placeholder="ex.: 14 famílias, Instituto Vivá, escola municipal"
+                placeholder="ex.: 14 famílias, equipe de território, escola municipal"
               />
             </Campo>
             <div className="pn-acoes-linha">
@@ -564,8 +564,8 @@ export default function Fundo() {
   const REGRAS = [
     <>receita entra com split 60/25/15 automático</>,
     <>
-      bônus de {fmt(BONUS_POR_CRIANCA)}/criança/mês exige validação do Instituto Vivá{' '}
-      <b>e {state.cofre.limiar} de 3 assinaturas</b>: nenhuma organização move o dinheiro sozinha
+      bônus de {fmt(BONUS_POR_CRIANCA)}/criança/mês exige validação da equipe de território{' '}
+      <b>e {state.cofre.limiar} de 3 assinaturas</b>: ninguém move o dinheiro sozinho
     </>,
     <>condição não cumprida deixa o valor <b>reservado</b>, liberável retroativamente no semestre</>,
     <>saldo residual do ciclo vai para ações coletivas de saúde e educação definidas com a comunidade</>,
@@ -573,7 +573,7 @@ export default function Fundo() {
 
   return (
     <div className="pn-screen">
-      <TelaCabecalho area={`Governança · Cofre 2-de-3 · ${REDE}`} titulo="Nenhuma organização mexe no dinheiro sozinha.">
+      <TelaCabecalho area={`Governança · Cofre 2-de-3 · ${REDE}`} titulo="Ninguém mexe no dinheiro sozinho.">
         Toda liberação do Fundo Infância exige duas de três assinaturas. A comunidade tem uma
         delas. <b>Isso está no contrato, não numa promessa.</b>
       </TelaCabecalho>
@@ -650,7 +650,7 @@ export default function Fundo() {
         {pendentes.length === 0 ? (
           <Vazio
             titulo="Nenhuma proposta pendente"
-            dica="Valide uma comprovação na aba Instituto Vivá para o cofre criar uma proposta de transferência."
+            dica="Valide uma comprovação na aba Validação para o cofre criar uma proposta de transferência."
           />
         ) : (
           pendentes.map(p => <CardProposta key={p.id} proposta={p} familia={familiaDe(p.familiaId)} />)

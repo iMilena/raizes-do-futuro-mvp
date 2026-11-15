@@ -2,7 +2,7 @@
 
 Protótipo digital do projeto **Raízes do Futuro** (Youth Challenge Blockchain — UNICEF Brasil).
 
-Demonstra o ciclo completo: **Coleta → Validação DeTrash → Relatório de Circularidade → Receita (turistas + empresas) → Cofre multisig 2-de-3 (Fundo Infância) → Conta Decaf da família → Pix**, incluindo o **onboarding gamificado das famílias** — sem seed phrase, sem jargão.
+Demonstra o ciclo completo: **Coleta → Verificação ambiental → Relatório de Circularidade → Receita (turistas + empresas) → Cofre multisig 2-de-3 (Fundo Infância) → Conta Decaf da família → Pix**, incluindo o **onboarding gamificado das famílias** — sem seed phrase, sem jargão.
 
 ## Como rodar (VS Code)
 
@@ -41,7 +41,7 @@ máquina: classificação do material no próprio aparelho, hash perceptual da f
 | Transações | `signature` base58 de 88 chars + `slot` incremental | mesmo formato do explorador da Solana; cada signature carrega a da anterior, formando a cadeia auditável |
 | Endereços | pubkey base58 de 44 chars | idem |
 | Cofre do Fundo Infância | **multisig 2-de-3 (padrão Squads)** | nenhuma organização move o dinheiro sozinha |
-| Signatários | **Instituto Vivá**, **DeTrash**, **Representante Comunitário** | validação social, verificação ambiental e voz da comunidade |
+| Signatários | **Equipe de território**, **Verificação ambiental**, **Representante Comunitário** | validação social, verificação ambiental e voz da comunidade |
 | Stablecoin | **BRZ/cRED** (1 = R$ 1) | a família nunca vê o valor oscilar |
 | Carteira da família | **Decaf** (`provider: 'Decaf'`, `rede: 'Solana'`) | custódia simplificada: celular + PIN de 4 números, **sem seed phrase** |
 
@@ -49,7 +49,7 @@ máquina: classificação do material no próprio aparelho, hash perceptual da f
 
 ```
 comprovação enviada pela família (foto, off-chain)
-   → Instituto Vivá valida            → tx VALIDAÇÃO
+   → equipe de território valida      → tx VALIDAÇÃO
    → cofre cria uma proposta          → tx PROPOSTA        (status: aguardando)
    → signatário 1 assina              → tx ASSINATURA      (1/2)
    → signatário 2 assina              → tx ASSINATURA      (2/2) → limiar atingido
@@ -66,7 +66,7 @@ Tipos de transação no explorador: `RECEITA`, `VALIDAÇÃO`, `PROPOSTA`, `ASSIN
 |---|---|
 | **📊 Dashboard** | Indicadores vs. metas do piloto, gráfico de kg por semana (barras) e receita por fonte (donut) — SVG puro. Botão **▶ Ver o ciclo completo** |
 | **🧹 Coletor** | Registra ações de coleta (material, kg, local) |
-| **✅ Instituto Vivá** | Valida coletas (metodologia DeTrash), emite Relatórios de Circularidade e valida comprovações — que passam a **criar propostas no cofre** |
+| **✅ Validação** | Valida coletas (verificação ambiental), emite Relatórios de Circularidade e valida comprovações — que passam a **criar propostas no cofre** |
 | **🛒 Mercado** | Turista compra produto reciclado; empresa compra crédito/relatório ESG. Cada venda dispara a **animação do split 60/25/15** com contadores animados |
 | **🔗 Cofre Multisig** | Saldo e endereço do cofre, **painel de propostas** com os 3 signatários e botão "Assinar como […]", animação de execução ao atingir 2/3, e **explorador de transações** (tipo, descrição, signature truncada, slot) com modal de detalhes |
 | **📝 Cadastro** | Inclui família no piloto (nome, crianças, código pseudônimo) com o **consentimento no mesmo formulário**, e abre os **compromissos de cada mês** em lote |
@@ -84,11 +84,11 @@ Mobile-first e com **zero jargão cripto** — nunca aparece "wallet", "token", 
 - **Compromissos do mês** como cards, com "📎 Enviar foto do comprovante"
 - **Onboarding gamificado** para família sem conta: o mascote **Tuca, caranguejo de Boipeba 🦀**, com balões de fala, guia 4 missões sequenciais — *Escolher onde guardar → Meu PIN → Meus compromissos → Como retirar* — com barra de progresso, estrela a cada missão, confete em CSS puro e o badge **Família Raízes do Futuro 🏅** no fim. Cada missão explica um conceito em uma frase
 - **Suas entregas**: cada coleta no nome dela, com peso, data e situação — e o convite a conferir
-- **"Isso está errado?"** em cada registro, com resposta do Instituto Vivá no próprio app
+- **"Isso está errado?"** em cada registro, com resposta da equipe do Raízes no próprio app
 - **Meta de poupança** definida por ela, que nunca bloqueia o saque
 - **Voz do Tuca** (opcional) e **letra maior**, para quem lê ou vê com dificuldade
 - Aviso honesto de **sem internet**: o saldo continua certo, e o que ela fizer sobe quando o sinal voltar
-- Botão flutuante **💬 Falar com o Instituto Vivá**, com opção de **ligar** e de ser avisada no WhatsApp quando o bônus cair
+- Botão flutuante **💬 Falar com a equipe do Raízes**, com opção de **ligar** e de ser avisada no WhatsApp quando o bônus cair
 
 ## Tour de primeira visita (painel)
 
@@ -103,7 +103,7 @@ Na primeira vez que alguém abre o painel, um **tour de 9 passos** aparece sozin
 
 No Dashboard, **▶ Ver o ciclo completo** executa a jornada inteira em 13 passos automáticos (~50 s), trocando de aba sozinho, destacando o elemento ativo e narrando cada etapa num card fixo:
 
-> ponto de partida → coleta → verificação DeTrash → relatório → receita → split 60/25/15 → comprovação da família → validação social → multisig 1 de 2 → multisig 2 de 2 (executa) → bônus na conta Decaf → retirada pelo Pix → ciclo completo
+> ponto de partida → coleta → verificação ambiental → relatório → receita → split 60/25/15 → comprovação da família → validação social → multisig 1 de 2 → multisig 2 de 2 (executa) → bônus na conta Decaf → retirada pelo Pix → ciclo completo
 
 O primeiro passo já dá `RESET`, então a gravação pode ser repetida quantas vezes for preciso e sempre parte do mesmo estado.
 
@@ -164,7 +164,7 @@ O projeto vende verificabilidade — e a família era a única que não podia ve
 
 **Suas entregas** mostra data, material, peso e situação de cada coleta no nome dela, com o total entregue e o total já conferido. E cada registro — entrega ou compromisso — tem **"Isso está errado?"**.
 
-O circuito fecha: a contestação vira pendência na aba do Instituto Vivá (o mesmo lugar onde o erro foi cometido), a operação pode **corrigir o peso ali mesmo** se a coleta ainda não foi validada, responde em linguagem simples, e a resposta aparece no app da família.
+O circuito fecha: a contestação vira pendência na aba Validação (o mesmo lugar onde o erro foi cometido), a operação pode **corrigir o peso ali mesmo** se a coleta ainda não foi validada, responde em linguagem simples, e a resposta aparece no app da família.
 
 Regras que valem a pena saber:
 
@@ -229,9 +229,9 @@ node liberar-bonus.mjs preparar --valor 60 --org viva --proposta 42
 node liberar-bonus.mjs assinar --org detrash --tx <base64>
 ```
 
-São duas etapas porque o multisig do SPL Token exige as duas assinaturas **na mesma transação** — não existe "a Vivá assina hoje e a DeTrash amanhã" com estado num servidor nosso. O que viaja entre as organizações é a própria transação. O passo 2 **imprime o que está sendo assinado** antes de enviar: assinar às cegas um blob que chegou por mensagem transforma multisig em teatro.
+São duas etapas porque o multisig do SPL Token exige as duas assinaturas **na mesma transação** — não existe "o território assina hoje e a verificação amanhã" com estado num servidor nosso. O que viaja entre as organizações é a própria transação. O passo 2 **imprime o que está sendo assinado** antes de enviar: assinar às cegas um blob que chegou por mensagem transforma multisig em teatro.
 
-Verificado na devnet: R$ 30 saíram do cofre (585 → 555) para a conta da família (60 → 90), com `viva` e `detrash` assinando e `comunidade` não — [slot 479156986](https://explorer.solana.com/tx/4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX?cluster=devnet).
+Verificado na devnet: R$ 30 saíram do cofre (585 → 555) para a conta da família (60 → 90), com `viva` (equipe de território) e `detrash` (verificação ambiental) assinando e `comunidade` não — [slot 479156986](https://explorer.solana.com/tx/4vuXwbsTSviC8yNvGYtQ67waArcNAapawwDmZnQQmStJQhsMEx5U5GS4uEGxGmX6FVucK9MdweBom8Ryk6hZfAEX?cluster=devnet).
 
 ### Regra 4: saldo residual → ações coletivas
 
@@ -253,7 +253,7 @@ cd onchain
 node ancorar-relatorio.mjs <sha256> "<período>"
 ```
 
-O script usa a mesma conta pagadora do `implantar-devnet.mjs`, grava o histórico em `onchain/dados/ancoragens.json` e imprime o link do explorer. No app: aba **Instituto Vivá** → relatório → *ancorar na Solana devnet*.
+O script usa a mesma conta pagadora do `implantar-devnet.mjs`, grava o histórico em `onchain/dados/ancoragens.json` e imprime o link do explorer. No app: aba **Validação** → relatório → *ancorar na Solana devnet*.
 
 ### Exemplo já ancorado
 

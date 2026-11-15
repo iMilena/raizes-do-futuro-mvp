@@ -12,8 +12,8 @@ Como fechar isso:
 
 | Papel | Organização | `signatario` | Quem cria a senha |
 |---|---|---|---|
-| `gestor` | Instituto Vivá | `viva` | a pessoa do Vivá |
-| `validador` | DeTrash | `detrash` | a pessoa da DeTrash |
+| `gestor` | Equipe de território (Raízes) | `viva` | a pessoa da equipe de território |
+| `validador` | Verificação ambiental (Raízes) | `detrash` | a pessoa da verificação ambiental |
 | `coletor` | Comunidade | `null` (não assina) | a representante |
 
 **Cada pessoa cria a própria senha e você não a conhece.** O caminho: você cria o usuário no Supabase com uma senha provisória, a pessoa entra e troca. Enquanto não trocar, a garantia não está de pé.

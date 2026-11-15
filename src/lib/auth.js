@@ -9,7 +9,7 @@
 
    O QUE ESTE MÓDULO NÃO FAZ
    Não autentica família. A família entra no app dela com PIN e não tem conta:
-   quem tem credencial é a operação (coletor, Instituto Vivá, gestor), no
+   quem tem credencial é a operação (coletor, equipe de território, gestor), no
    aparelho de trabalho. Dar login e senha para a mãe em Boipeba seria transferir
    a ela o custo de um problema nosso.
 

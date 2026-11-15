@@ -1,12 +1,12 @@
 # Dados compartilhados entre aparelhos (Supabase) ☁️
 
-Por padrão o app guarda tudo no navegador de cada pessoa. Isso serve para demonstrar, mas **não serve para operar**: o coletor registra no celular e o Instituto Vivá, no notebook, não vê nada.
+Por padrão o app guarda tudo no navegador de cada pessoa. Isso serve para demonstrar, mas **não serve para operar**: o coletor registra no celular e a equipe de território, no notebook, não vê nada.
 
 ## Por que o desenho mudou
 
 A primeira versão salvava o estado inteiro do app como um único JSON numa linha (`create table estado`), versionado por um contador. Dois problemas impediam uso real:
 
-**Um aparelho apagava o trabalho do outro.** O coletor registra uma coleta enquanto o Vivá valida outra. Ambos leram a mesma versão, ambos gravam o estado completo, e quem gravar por último sobrescreve — a coleta do primeiro simplesmente desaparece. Não é caso raro: é o dia normal de dois usuários.
+**Um aparelho apagava o trabalho do outro.** O coletor registra uma coleta enquanto a equipe de território valida outra. Ambos leram a mesma versão, ambos gravam o estado completo, e quem gravar por último sobrescreve — a coleta do primeiro simplesmente desaparece. Não é caso raro: é o dia normal de dois usuários.
 
 **O registro auditável ficava dentro do blob.** Uma gravação atrasada podia apagar transações já registradas. Um histórico que pode ser sobrescrito não é histórico — e é justamente ele que sustenta a proposta do projeto.
 
@@ -41,7 +41,7 @@ Sem esse arquivo, o app funciona 100% local — a sincronização é opcional po
 
 Vocês tratam saúde e escolaridade de criança. Por isso o esquema foi desenhado para não conter nada que precise de proteção — mesmo agora que o acesso é autenticado, essa disciplina continua valendo:
 
-- `familias.codigo` é **pseudônimo** (`BOI-014`), não nome. O mapeamento código → pessoa fica fora deste banco, no cadastro do Instituto Vivá.
+- `familias.codigo` é **pseudônimo** (`BOI-014`), não nome. O mapeamento código → pessoa fica fora deste banco, no cadastro da equipe de território.
 - Comprovantes existem só como **hash SHA-256**. O arquivo nunca sai do aparelho da família (ver `src/evidencia.js`).
 - Não há CPF, endereço, data de nascimento, nome de criança ou diagnóstico em nenhuma coluna.
 
@@ -76,8 +76,8 @@ Nenhum código pode fazer isso por você, e é assim que deve ser:
 
 ```sql
 insert into papeis (user_id, papel, nome, organizacao, signatario) values
-  ('<uuid-1>', 'gestor',    'Nome da pessoa', 'Instituto Vivá', 'viva'),
-  ('<uuid-2>', 'validador', 'Nome da pessoa', 'DeTrash',        'detrash'),
+  ('<uuid-1>', 'gestor',    'Nome da pessoa', 'Equipe de território', 'viva'),
+  ('<uuid-2>', 'validador', 'Nome da pessoa', 'Verificação ambiental', 'detrash'),
   ('<uuid-3>', 'coletor',   'Nome da pessoa', 'Comunidade',      null);
 ```
 

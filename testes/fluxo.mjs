@@ -34,8 +34,8 @@ let s = estadoInicial();
 const LIMIAR = s.cofre.limiar;
 
 ok(LIMIAR === 2 && s.cofre.signatarios !== undefined || LIMIAR === 2, 'cofre com limiar 2');
-ok(SIGNATARIOS.map(x => x.nome).join('|') === 'Instituto Vivá|DeTrash|Representante Comunitário',
-  'signatários: Instituto Vivá, DeTrash, Representante Comunitário');
+ok(SIGNATARIOS.map(x => x.nome).join('|') === 'Equipe de território|Verificação ambiental|Representante Comunitário',
+  'signatários: equipe de território, verificação ambiental, Representante Comunitário');
 ok(SIGNATARIOS.every(x => x.endereco && x.endereco.length === 44), 'cada signatário tem endereço base58 de 44 chars');
 ok(s.cofre.endereco.length === 44 && s.cofre.programa.length === 44, 'cofre e programa multisig com endereços de 44 chars');
 ok(s.transacoes.length > 5, `${s.transacoes.length} transações na seed`);

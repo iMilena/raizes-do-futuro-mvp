@@ -117,13 +117,13 @@ export default function Rastreio({ codigo }) {
             </Etapa>
           )) : (
             <Etapa icone="🧹" titulo={t('Recolhido na ilha de Boipeba')}>
-              <div className="mini">{t('material do estoque já verificado pela DeTrash')}</div>
+              <div className="mini">{t('material do estoque já verificado')}</div>
             </Etapa>
           )}
 
-          <Etapa icone="✅" titulo={t('Verificado pela DeTrash')}>
+          <Etapa icone="✅" titulo={t('Verificado')}>
             <div className="mini">
-              {t('A pesagem e a origem foram conferidas pela metodologia da DeTrash antes de virar produto.')}
+              {t('A pesagem e a origem foram conferidas na verificação ambiental antes de virar produto.')}
             </div>
             {coletas[0]?.signature && (
               <div className="hash">{t('registro')}: {trunc(coletas[0].signature, 10, 10)}</div>

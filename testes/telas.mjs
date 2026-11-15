@@ -25,7 +25,7 @@ const TELAS = [
   ['painel-trilha', '#/painel', 'Trilha de prova'],
   ['painel-cofre', '#/painel', 'Cofre 2-de-3'],
   ['painel-mercado', '#/painel', 'Mercado'],
-  ['painel-validacao', '#/painel', 'Validação do Vivá'],
+  ['painel-validacao', '#/painel', 'Validação'],
   ['explorar', '#/explorar', null],
   ['contato', '#/contato', null],
   ['app-familia', '#/familia', null],

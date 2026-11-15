@@ -11,7 +11,7 @@
 
    POR QUE EM DUAS ETAPAS
    O multisig nativo do SPL Token exige as M assinaturas na MESMA transação.
-   Não existe "a Vivá assina hoje e a DeTrash amanhã" com estado no servidor: o
+   Não existe "o território assina hoje e a verificação amanhã" com estado no servidor: o
    que viaja entre as duas organizações é a própria transação parcialmente
    assinada. É por isso que o fluxo é preparar → passar adiante → assinar e
    enviar. Isso não é contorno; é como um 2-de-3 honesto funciona.
@@ -45,8 +45,8 @@ const ENDERECOS = path.join(AQUI, 'dados', 'enderecos.json');
 const REGISTRO = path.join(AQUI, 'dados', 'liberacoes.json');
 
 const ORGS = {
-  viva: { arquivo: 'signatario-viva.json', nome: 'Instituto Vivá', chave: 'institutoViva' },
-  detrash: { arquivo: 'signatario-detrash.json', nome: 'DeTrash', chave: 'deTrash' },
+  viva: { arquivo: 'signatario-viva.json', nome: 'Equipe de território', chave: 'equipeTerritorio' },
+  detrash: { arquivo: 'signatario-detrash.json', nome: 'Verificação ambiental', chave: 'verificacaoAmbiental' },
   comunidade: { arquivo: 'signatario-comunidade.json', nome: 'Representante Comunitário', chave: 'representanteComunitario' },
 };
 

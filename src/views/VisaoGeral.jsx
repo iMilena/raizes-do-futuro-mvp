@@ -128,11 +128,11 @@ function Sankey({ irPara, t }) {
       aria-label={`${t('Fluxo do mês')}: ${kg(D.kg)} kg → ${brl(T)} → ${brl(D.renda)}, ${brl(D.infancia)}, ${brl(D.operacao)}`}
     >
       {faixa('a', x0 + nw, 20, kgH * (D.turismo / T), x1, s1y, hT, 'var(--c-neutral)', 1, `<b>${t('Peças para turistas')}</b>${t('Material validado transformado em peças')}: ${brl(D.turismo)}`, 'mercado', t('Turismo'))}
-      {faixa('b', x0 + nw, 20 + kgH * (D.turismo / T), kgH * (D.esg / T), x1, s2y, hE, 'var(--c-neutral)', 1, `<b>${t('Relatórios para empresas')}</b>${t('Evidência DeTrash vendida como relatório ESG')}: ${brl(D.esg)}`, 'mercado', t('Empresas (ESG)'))}
+      {faixa('b', x0 + nw, 20 + kgH * (D.turismo / T), kgH * (D.esg / T), x1, s2y, hE, 'var(--c-neutral)', 1, `<b>${t('Relatórios para empresas')}</b>${t('Evidência validada vendida como relatório ESG')}: ${brl(D.esg)}`, 'mercado', t('Empresas (ESG)'))}
       {faixa('c', x1 + nw, s1y, hT, x2, cy, hT, 'var(--c-neutral)', 1, `<b>${brl(D.turismo)}</b>${t('entram no cofre já com a divisão por contrato')}`, 'fundo', t('Turismo para o cofre'))}
       {faixa('e', x1 + nw, s2y, hE, x2, cy + hT, hE, 'var(--c-neutral)', 1, `<b>${brl(D.esg)}</b>${t('entram no cofre já com a divisão por contrato')}`, 'fundo', t('Empresas para o cofre'))}
       {faixasDestino}
-      {no('n0', x0, 20, kgH, 'var(--t2)', 'coleta', `<b>${kg(D.kg)} kg ${t('validados')}</b>${t('Coletas conferidas pela IA e validadas pela DeTrash')}`, t('Resíduo validado'))}
+      {no('n0', x0, 20, kgH, 'var(--t2)', 'coleta', `<b>${kg(D.kg)} kg ${t('validados')}</b>${t('Coletas conferidas pela IA e validadas pela equipe')}`, t('Resíduo validado'))}
       {no('n1', x1, s1y, hT, 'var(--t2)', 'mercado', `<b>${t('Turismo')}</b>${t('peças rastreadas por QR')}`, t('Turismo'))}
       {no('n2', x1, s2y, hE, 'var(--t2)', 'mercado', `<b>${t('Empresas')}</b>${t('Relatórios de Circularidade')}`, t('Empresas (ESG)'))}
       {no('n3', x2, cy, hC, 'var(--gold)', 'fundo', `<b>${t('Cofre 2-de-3')}</b>${brl(T)} ${t('recebidos e divididos')}`, t('Cofre 2-de-3'))}
@@ -180,8 +180,8 @@ function FilaDeHoje({ irPara, t }) {
   const condPend = condicoes.filter((c) => c.status === 'pendente' || c.status === 'validada-aguardando').length;
   const propostas = state.propostas.filter((p) => p.status === 'aguardando');
   const linhas = [
-    [coletasPend, `${coletasPend} ${t('coleta(s) aguardando validação')}`, t('Validação do Instituto Vivá'), 'validacao', coletasPend ? ['warn', t('Validar')] : ['ok', t('Em dia')]],
-    [condPend, `${condPend} ${t('comprovação(ões) de crianças')}`, t('Validação presencial do Vivá'), 'validacao', condPend ? ['info', t('Validar')] : ['ok', t('Em dia')]],
+    [coletasPend, `${coletasPend} ${t('coleta(s) aguardando validação')}`, t('Validação da equipe de território'), 'validacao', coletasPend ? ['warn', t('Validar')] : ['ok', t('Em dia')]],
+    [condPend, `${condPend} ${t('comprovação(ões) de crianças')}`, t('Validação presencial'), 'validacao', condPend ? ['info', t('Validar')] : ['ok', t('Em dia')]],
     [
       propostas.length,
       propostas.length ? `${t('Proposta no cofre aguardando assinatura')}` : t('Nenhuma proposta no cofre'),
@@ -257,7 +257,7 @@ export default function VisaoGeral({ irPara }) {
           {t('famílias e bônus para')} <em>{TOTAIS.emDia} {t('das')} {TOTAIS.criancas} {t('crianças.')}</em>
         </h1>
         <p className="lead">
-          {t('O projeto ainda não começou: esta tela é uma demonstração, com dados de exemplo. Quando o ciclo começar, cada número vai vir de uma prova: a coleta validada pela DeTrash, a venda registrada no Mercado e a divisão executada pelo contrato na Solana.')}
+          {t('O projeto ainda não começou: esta tela é uma demonstração, com dados de exemplo. Quando o ciclo começar, cada número vai vir de uma prova: a coleta validada, a venda registrada no Mercado e a divisão executada pelo contrato na Solana.')}
         </p>
         <div className="vg-row">
           <button type="button" className="pn-btn" onClick={() => irPara('trilha')}>
@@ -284,10 +284,10 @@ export default function VisaoGeral({ irPara }) {
       </header>
 
       <div className="vg-g4">
-        <Kpi rotulo={t('Resíduo validado')} valor={TOTAIS.toneladas} unidade="t" delta={<>{kg(D.kg)} kg {t('em setembro')}, <b className="up">+{pctKg}%</b> {t('sobre agosto')}</>} fonte={t('Validado pela DeTrash')} />
+        <Kpi rotulo={t('Resíduo validado')} valor={TOTAIS.toneladas} unidade="t" delta={<>{kg(D.kg)} kg {t('em setembro')}, <b className="up">+{pctKg}%</b> {t('sobre agosto')}</>} fonte={t('Validado na verificação ambiental')} />
         <Kpi rotulo={t('Receita do mês')} valor={brl(D.receita)} delta={`${t('Turismo')} ${brl(D.turismo)} · ${t('Empresas')} ${brl(D.esg)}`} fonte={t('Vendas registradas no Mercado')} />
         <Kpi rotulo={t('Renda para as famílias')} valor={brl(D.renda)} delta={`${t('em setembro')} · ${TOTAIS.familias} ${t('famílias')} · ${t('60% da receita, sem condições')}`} fonte={t('Pago pelo contrato na Solana')} chave />
-        <Kpi rotulo={t('Crianças com bônus')} valor={`${TOTAIS.emDia} ${t('de')} ${TOTAIS.criancas}`} delta={`${Math.round((TOTAIS.emDia / TOTAIS.criancas) * 100)}% ${t('com saúde e escola em dia')}`} fonte={t('Comprovado pelo Instituto Vivá')} />
+        <Kpi rotulo={t('Crianças com bônus')} valor={`${TOTAIS.emDia} ${t('de')} ${TOTAIS.criancas}`} delta={`${Math.round((TOTAIS.emDia / TOTAIS.criancas) * 100)}% ${t('com saúde e escola em dia')}`} fonte={t('Comprovado pela equipe de território')} />
       </div>
 
       <div className={`pn-card pad pn-flow${focoFluxo ? ' ' + focoFluxo : ''}`}>
@@ -306,7 +306,7 @@ export default function VisaoGeral({ irPara }) {
           <Sankey irPara={irPara} t={t} />
         </div>
         <div className="flow-m">
-          <div className="vg-det"><span>{t('Resíduo validado')}<small>{t('conferido pela IA e pela DeTrash')}</small></span><b>{kg(D.kg)} kg</b></div>
+          <div className="vg-det"><span>{t('Resíduo validado')}<small>{t('conferido pela IA e pela equipe')}</small></span><b>{kg(D.kg)} kg</b></div>
           <div className="vg-det"><span>{t('Turismo')}<small>{t('peças com QR')}</small></span><b>{brl(D.turismo)}</b></div>
           <div className="vg-det"><span>{t('Empresas (ESG)')}<small>{t('Relatórios de Circularidade')}</small></span><b>{brl(D.esg)}</b></div>
           <div className="vg-det"><span>{t('Cofre 2-de-3')}<small>{t('divide na entrada')}</small></span><b>{brl(D.receita)}</b></div>
@@ -324,7 +324,7 @@ export default function VisaoGeral({ irPara }) {
       <div className="vg-g21">
         <div className={`pn-card pad${focoGraf ? ' ' + focoGraf : ''}`}>
           <h2 className="vg-t">{t('Quilos validados por semana')}</h2>
-          <p className="vg-sub">{t('Só entra aqui o que a DeTrash validou. Coleta pendente ou recusada fica de fora.')}</p>
+          <p className="vg-sub">{t('Só entra aqui o que foi validado. Coleta pendente ou recusada fica de fora.')}</p>
           <Barras t={t} />
           <div className="vg-legend" style={{ marginTop: 16 }}>
             <span><b style={{ background: 'var(--c-neutral)' }} />{t('Agosto')}</span>

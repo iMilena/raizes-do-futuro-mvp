@@ -10,7 +10,7 @@
 export const topo = {
   selo: { destaque: 'Grátis', texto: 'App das famílias · Boipeba' },
   titulo: ['O Raízes na palma da ', 'mão.'],
-  sub: 'No Raízes Família, cada família vê o dinheiro das suas entregas, acompanha o bônus dos filhos e fala com a agente do Instituto Vivá. É simples, tem letra grande e lê as informações em voz alta.',
+  sub: 'No Raízes Família, cada família vê o dinheiro das suas entregas, acompanha o bônus dos filhos e fala com a agente do Raízes. É simples, tem letra grande e lê as informações em voz alta.',
   primario: 'Abrir e instalar o app',
   secundario: 'Como instalar',
   chips: [
@@ -29,7 +29,7 @@ export const recursos = {
   cartoes: [
     { icone: 'sacola', titulo: 'O dinheiro de cada entrega', texto: 'Peso, material, local, a foto de prova e quem validou. O que é trabalho aparece separado do bônus.' },
     { icone: 'filhos', titulo: 'O bônus dos filhos', texto: 'Vacina, matrícula e frequência em dia. Quando algo atrasa, o valor fica guardado, sem se perder.' },
-    { icone: 'conversa', titulo: 'Ajuda de perto', texto: 'Fala com a agente do Instituto Vivá, pede saque assistido e tira dúvidas sem sair de casa.' },
+    { icone: 'conversa', titulo: 'Ajuda de perto', texto: 'Fala com a agente do Raízes, pede saque assistido e tira dúvidas sem sair de casa.' },
     { icone: 'camera', titulo: 'Registrar entrega com foto', texto: 'Tira a foto mesmo sem sinal. O app guarda e envia sozinho quando a internet voltar.' },
     { icone: 'escudo', titulo: 'Pedir revisão', texto: 'Não concorda com uma entrega? Toca em "Não concordo" e uma pessoa da equipe olha de novo.' },
     { icone: 'extrato', titulo: 'Extrato para comprovar renda', texto: 'O extrato do mês sai em PDF ou em áudio. Além disso: agenda de mutirões e ouvidoria independente.' },
@@ -68,7 +68,7 @@ export const instalar = {
       id: 'agente',
       rotulo: 'Com a agente',
       passos: [
-        ['Leve o celular', 'No encontro ou na visita, a agente do Instituto Vivá instala com você.'],
+        ['Leve o celular', 'No encontro ou na visita, a agente do Raízes instala com você.'],
         ['Receba o código', 'Ela gera um código de entrada que vale só uma vez, na hora.'],
         ['Crie o seu PIN', 'São 4 números que só você sabe. Ninguém do projeto pede esse número.'],
         ['Sem celular?', 'A agente atende a família pelo app dela e entrega o extrato em mãos.'],
@@ -95,12 +95,12 @@ export const privacidade = {
       'Se vacina, matrícula e frequência estão em dia, sem documentos',
     ],
   },
-  golpe: ['Cuidado com golpe.', ' Ninguém do Raízes do Futuro ou do Instituto Vivá pede o seu PIN, senha ou código por mensagem. Na dúvida, fale com a agente pessoalmente.'],
+  golpe: ['Cuidado com golpe.', ' Ninguém do Raízes do Futuro pede o seu PIN, senha ou código por mensagem. Na dúvida, fale com a agente pessoalmente.'],
 };
 
 export const agentes = {
-  legenda: 'A agente do Instituto Vivá usa o mesmo app para atender quem não tem celular.',
-  eyebrow: 'Para a equipe do Vivá',
+  legenda: 'A agente do Raízes usa o mesmo app para atender quem não tem celular.',
+  eyebrow: 'Para a equipe de território',
   titulo: ['Um modo agente, ', 'para o trabalho de campo.'],
   itens: [
     { icone: 'cadastrar', texto: 'Cadastrar família, com o termo de consentimento lido em voz alta' },
@@ -117,16 +117,16 @@ export const faq = {
     ['O app é pago?', 'Não. O app é grátis e não tem anúncios. Ele abre pelo navegador e fica na tela inicial do celular.'],
     ['Por que não está na Play Store?', 'Nesta fase de teste, o app é instalado pelo navegador, que é grátis e funciona em Android e iPhone. A versão da Play Store vem depois, publicada pela organização do projeto.'],
     ['E se eu não tiver internet?', 'O app abre sem internet e mostra o último saldo salvo. As entregas e os pedidos ficam guardados no celular e são enviados sozinhos quando o sinal voltar.'],
-    ['Preciso ter conta de e-mail?', 'Não. A entrada é pelo número de telefone, com um código da agente do Vivá ou por SMS. Depois, você usa um PIN de 4 números.'],
+    ['Preciso ter conta de e-mail?', 'Não. A entrada é pelo número de telefone, com um código da agente do Raízes ou por SMS. Depois, você usa um PIN de 4 números.'],
     ['Quem pode ver os meus dados?', 'No servidor, a família aparece só como um código. Nome, fotos e documentos ficam no seu celular. A equipe vê as entregas e os compromissos para validar os pagamentos, e você pode retirar a autorização quando quiser.'],
-    ['Meu celular é antigo. Funciona?', 'O app foi feito para celular simples. Se tiver dificuldade, a agente do Instituto Vivá instala com você ou atende a sua família pelo app dela.'],
+    ['Meu celular é antigo. Funciona?', 'O app foi feito para celular simples. Se tiver dificuldade, a agente do Raízes instala com você ou atende a sua família pelo app dela.'],
   ],
 };
 
 export const final = {
   eyebrow: 'Raízes Família',
   titulo: ['Pronto para ', 'começar?'],
-  lede: 'Abra o app no celular e entre com o código que a agente do Instituto Vivá entregou para você.',
+  lede: 'Abra o app no celular e entre com o código que a agente do Raízes entregou para você.',
   primario: 'Abrir e instalar o app',
   secundario: 'Falar com a equipe',
   fixo: 'Abrir o app',

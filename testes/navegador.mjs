@@ -339,16 +339,16 @@ try {
   secao('2. Cofre multisig — assinaturas 2-de-3');
   ok(await ev('return __t.clicar("nav.pn-journey button", "Cofre 2-de-3")'), 'abre a aba do cofre');
   await espera(350);
-  ok(await ev('return __t.tem("Nenhuma organização mexe no dinheiro sozinha")'), 'título novo do cofre');
+  ok(await ev('return __t.tem("Ninguém mexe no dinheiro sozinho")'), 'título novo do cofre');
   ok(await ev('return /proposta #\\d+/.test(__t.txt())'), 'proposta de exemplo da seed aparece');
   ok(await ev('return __t.conta(".pn-signatario") === 3'), '3 signatários listados');
-  ok(await ev('return __t.tem("Instituto Vivá") && __t.tem("DeTrash") && __t.tem("Representante Comunitário")'), 'os 3 nomes corretos');
+  ok(await ev('return __t.tem("Equipe de território") && __t.tem("Verificação ambiental") && __t.tem("Representante Comunitário")'), 'os 3 nomes corretos');
   ok(await ev('return __t.conta(".pn-signatario.assinou") === 1'), '1 assinatura já coletada na seed');
   ok(await ev('return __t.tem("1 de 2 assinaturas")'), 'contador mostra 1 de 2');
-  ok(await ev('return __t.tem("Assinar como DeTrash")'), 'botão "Assinar como [nome]" presente');
+  ok(await ev('return __t.tem("Assinar como Verificação ambiental")'), 'botão "Assinar como [nome]" presente');
   ok(await ev('return __t.conta(".pn-avatar") === 3'), 'os 3 signatários têm avatar/chip');
 
-  await ev('return __t.clicar(".pn-signatario button", "Assinar como DeTrash")');
+  await ev('return __t.clicar(".pn-signatario button", "Assinar como Verificação ambiental")');
   await espera(700);
   ok(await ev('return __t.tem("cofre executou a transferência")'), 'ao atingir 2/3 executa com animação');
   ok(await ev('return __t.conta(".pn-proposta.executando") === 1'), 'card recebe a classe de execução');
@@ -429,7 +429,7 @@ try {
      família na seção 8). */
 
   /* ---------- 5. coleta e validação ---------- */
-  secao('5. Coletor → Instituto Vivá');
+  secao('5. Coletor → Validação');
   await ev('return __t.clicar("nav.pn-journey button", "Coleta")');
   await espera(300);
   await ev('return __t.preencher(".pn-card input", "Seu Zé", 0)');
@@ -441,10 +441,10 @@ try {
   ok(await ev('return __t.tem("Coleta de 31 kg enviada")'), 'toast "Coleta enviada ✔"');
   ok(await ev('return __t.tem("Seu Zé")'), 'coleta aparece na tabela');
 
-  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação")');
   await espera(350);
   ok(await ev('return __t.tem("31 kg")'), 'coleta pendente listada para validação');
-  await ev('return __t.clicar(".pn-item-validar button", "Validar pelos critérios DeTrash")');
+  await ev('return __t.clicar(".pn-item-validar button", "Validar pelos critérios de verificação")');
   await espera(500);
   ok(await ev('return __t.tem("Transação registrada no slot")'), 'toast global "Transação registrada no slot N"');
   await ev('return __t.clicar(".pn-btn", "Consolidar coletas validadas")');
@@ -460,9 +460,9 @@ try {
   await espera(450);
   ok(await ev('return __t.tem("em validação")'), 'condição passa a "em validação"');
 
-  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação")');
   await espera(400);
-  ok(await ev('return /Consulta pediátrica|Frequência escolar/.test(__t.txt())'), 'comprovação aparece para validação no Vivá');
+  ok(await ev('return /Consulta pediátrica|Frequência escolar/.test(__t.txt())'), 'comprovação aparece para validação');
   ok(await ev('return __t.tem("Livre no cofre para novas propostas")'), 'mostra saldo livre do cofre');
   await ev('return __t.clicar(".pn-item-validar button", "criar proposta no cofre")');
   await espera(500);
@@ -546,7 +546,7 @@ try {
   ok(await ev('return __t.conta(".compromisso") >= 1'), 'compromissos como cards');
   ok(await ev('return __t.tem("Enviar foto do comprovante")'), 'botão de envio de foto');
   ok(await ev('return __t.tem("Extrato")'), 'seção de extrato');
-  ok(await ev('return __t.tem("Falar com o Instituto Vivá")'), 'botão flutuante de ajuda');
+  ok(await ev('return __t.tem("Falar com a equipe do Raízes")'), 'botão flutuante de ajuda');
   ok(await ev('return __t.tem("Bônus de julho")'), 'extrato em linguagem simples ("Bônus de julho — vacinação em dia")');
   ok(await ev('return !__t.tem("Fundo Infância")'), 'extrato não usa o jargão do programa');
 
@@ -636,11 +636,11 @@ try {
   ok(await ev('return __t.tem("Retirada pelo Pix")'), 'extrato registra a retirada em linguagem simples');
 
   /* ---------- 9. ajuda ---------- */
-  secao('9. Ajuda — Instituto Vivá (WhatsApp simulado)');
+  secao('9. Ajuda — equipe do Raízes (WhatsApp simulado)');
   ok(await ev('return __t.clicar(".fab-ajuda") === true'), 'botão flutuante abre a conversa');
   await espera(400);
   ok(await ev('return __t.conta(".zap") === 1'), 'conversa simulada aparece');
-  ok(await ev('return __t.tem("Instituto Vivá, atendimento")'), 'identifica o atendimento');
+  ok(await ev('return __t.tem("Equipe do Raízes, atendimento")'), 'identifica o atendimento');
   ok(await ev('return __t.conta(".zap-msg.digitando") === 1'), 'mostra o agente digitando');
   await espera(1700);
   ok(await ev('return __t.conta(".zap-msg.digitando") === 0'), 'resposta chega e o "digitando" sai');
@@ -845,7 +845,7 @@ try {
   /* ---------- 14a. ancoragem do relatório na Solana devnet ---------- */
   secao('14a. Ancoragem do relatório na Solana devnet');
   await irPara(ALVO + '/#/painel');
-  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação")');
   await espera(900);
   ok(await ev('return __t.tem("não ancorado")'), 'relatório da seed aparece como não ancorado');
   /* O rótulo e o hash deixaram de morar na mesma linha de texto: agora são a
@@ -968,7 +968,7 @@ try {
   ok(await ev('return __t.conta("nav.pn-journey") === 0'), 'sem painel da operação (é página de turista)');
   ok(await ev(`return __t.tem(${JSON.stringify(codigo)})`), 'mostra o código da peça');
   ok(await ev('return __t.tem("A jornada deste material")'), 'apresenta a jornada');
-  ok(await ev('return __t.tem("Verificado pela DeTrash")'), 'diz quem verificou');
+  ok(await ev('return __t.tem("Verificado")'), 'diz quem verificou');
   ok(await ev('return __t.tem("Para onde foi o seu dinheiro")'), 'mostra para onde foi o dinheiro');
   ok(await ev('return __t.conta(".divisao-linha") === 3'), 'divisão em 3 destinos (60/25/15)');
   ok(await ev('return __t.tem("R$ 48,00")'), '60% de R$ 80 = R$ 48,00 para quem coletou');
@@ -1268,7 +1268,7 @@ try {
   ok(!ctBase.temResposta, 'e ainda sem resposta');
 
   /* o outro lado do circuito: a operação vê e responde */
-  await ev('return __t.clicar("nav.pn-journey button", "Validação do Vivá")');
+  await ev('return __t.clicar("nav.pn-journey button", "Validação")');
   await espera(800);
   await ev(HELPERS + ' return 1;');
   ok(await ev('return __t.tem("Contestações das famílias")'), 'a operação vê as contestações');
@@ -1304,7 +1304,7 @@ try {
   await ev('return __t.clicar(".fam-entrada button.acao")');
   await espera(900);
   await ev(HELPERS + ' return 1;');
-  ok(await ev('return __t.tem("Resposta do Instituto Vivá")'), 'a família recebe a resposta no app dela');
+  ok(await ev('return __t.tem("Resposta da equipe do Raízes")'), 'a família recebe a resposta no app dela');
   ok(await ev('return __t.tem("62 kg")'), 'com o conteúdo da resposta');
   ok(await ev('return __t.tem("marcado como resolvido")'), 'e o circuito fecha marcado como resolvido');
 

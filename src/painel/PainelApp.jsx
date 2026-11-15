@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { StoreProvider, useStore, fmt, trunc } from '../estado/store.jsx';
+import { StoreProvider, useStore, fmt, trunc, signatarioPor } from '../estado/store.jsx';
 import * as auth from '../lib/auth.js';
 import * as nuvem from '../lib/nuvem.js';
 import { IdiomaProvider, useIdioma, TRADUZIDAS } from '../lib/i18n.jsx';
@@ -76,7 +76,7 @@ const TELAS = [
   { id: 'trilha', icone: 'trilha', rotulo: 'Trilha de prova', grupo: 'Visão geral' },
   { id: 'coleta', icone: 'bag', rotulo: 'Coleta', grupo: 'Operação' },
   { id: 'conferencia', icone: 'ia', rotulo: 'Conferência da IA', grupo: 'Operação' },
-  { id: 'validacao', icone: 'viva', rotulo: 'Validação do Vivá', grupo: 'Operação' },
+  { id: 'validacao', icone: 'viva', rotulo: 'Validação', grupo: 'Operação' },
   { id: 'mercado', icone: 'mercado', rotulo: 'Mercado', grupo: 'Operação' },
   { id: 'fundo', icone: 'cofre', rotulo: 'Cofre 2-de-3', grupo: 'Governança' },
   { id: 'familias', icone: 'casa', rotulo: 'Famílias e carteiras', grupo: 'Famílias' },
@@ -231,7 +231,7 @@ function Notificacoes({ setTab }) {
       });
     }
     const coletasPend = state.coletas.filter(c => c.status === 'pendente').length;
-    if (coletasPend) l.push({ tab: 'validacao', cor: 'atencao', tit: `${coletasPend} coleta(s) aguardando validação`, sub: 'Instituto Vivá' });
+    if (coletasPend) l.push({ tab: 'validacao', cor: 'atencao', tit: `${coletasPend} coleta(s) aguardando validação`, sub: 'Equipe de território' });
     const cond = state.familias.flatMap(f => (f.condicoes || []).map(c => ({ ...c, f })));
     const aguardando = cond.filter(c => c.status === 'validada-aguardando').length;
     if (aguardando) l.push({ tab: 'validacao', cor: 'atencao', tit: `${aguardando} condição(ões) validada(s) sem repasse`, sub: 'precisa de proposta no cofre' });
@@ -336,11 +336,11 @@ function Perfil() {
               <div className="perfil-linha"><span>Organização</span><b>{papel.organizacao || 'não informada'}</b></div>
               <div className="perfil-linha">
                 <span>Assina no cofre</span>
-                <b>{papel.signatario ? `sim, como ${papel.signatario}` : 'não'}</b>
+                <b>{papel.signatario ? `sim, como ${signatarioPor(papel.signatario)?.nome || papel.signatario}` : 'não'}</b>
               </div>
               <p className="perfil-nota" style={{ marginTop: 11 }}>
-                A base só aceita a sua assinatura em nome de <b>{papel.signatario || 'nenhuma organização'}</b>.
-                Por isso o 2-de-3 exige duas organizações de verdade.
+                A base só aceita a sua assinatura em nome de <b>{signatarioPor(papel.signatario)?.nome || papel.signatario || 'nenhum signatário'}</b>.
+                Por isso o 2-de-3 exige duas pessoas de verdade.
               </p>
               <button className="acao sec bloco" onClick={sair}>Sair da sessão</button>
             </>
@@ -629,14 +629,12 @@ function Painel({ tab, setTab }) {
                 A Rede Recy saiu desta faixa: o FundoInfancia.sol foi escrito no
                 padrão dela e auditado, mas NÃO está implantado (o cabeçalho do
                 contrato diz isso em letras maiúsculas), e não há proxy na
-                Sepolia. Logo de parceiro ao lado de Vivá, DeTrash e Solana lê
+                Sepolia. Logo de parceiro ao lado da Solana lê
                 como integração ativa — e a submissão afirma o contrário. Quando
                 o proxy existir, o logo volta.
                 Caminhos relativos: o absoluto `/logos/…` quebra se o MVP for
                 publicado sob subcaminho (GitHub Pages). */}
             <div className="pn-footer-logos">
-              <img src="./logos/Viva.png" alt="Instituto Vivá" title="Instituto Vivá: presença territorial e validação social" />
-              <img src="./logos/Detrash.png" alt="DeTrash" title="DeTrash: metodologia de validação ambiental" />
               <img src="./logos/SOL-logo.png" alt="Solana" title="Solana: cofre multisig 2-de-3 na devnet" />
             </div>
             <div className="pn-fbtns">

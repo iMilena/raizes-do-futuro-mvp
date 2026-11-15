@@ -32,7 +32,7 @@ export function BarrasKgSemana({ coletas }) {
   const [ativo, setAtivo] = useState(null);
 
   if (dados.length === 0) {
-    return <EstadoVazio icone="" titulo="Nenhuma coleta validada ainda" dica="Valide uma coleta na aba Instituto Vivá para ver o gráfico." />;
+    return <EstadoVazio icone="" titulo="Nenhuma coleta validada ainda" dica="Valide uma coleta na aba Validação para ver o gráfico." />;
   }
 
   const L = 40, T = 12, A = 150, larg = 100 / dados.length;
