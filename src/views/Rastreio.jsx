@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore, fmt, trunc, vendaPorRastreio, SPLIT, BONUS_POR_CRIANCA } from '../estado/store.jsx';
 import { EstadoVazio, QrCode } from '../componentes/ui.jsx';
 import { useIdioma } from '../lib/i18n.jsx';
+import { SeletorIdioma } from '../componentes/SeletorIdioma.jsx';
 
 /* ---------------------------------------------------------------------------
    Página pública de rastreio — o que o turista vê ao escanear o QR do produto.
@@ -31,19 +32,6 @@ function Etapa({ n, icone, titulo, children, ultima }) {
   );
 }
 
-/* Seletor próprio: a página é standalone, sem o cabeçalho do painel. */
-function IdiomaTurista() {
-  const { idioma, trocar } = useIdioma();
-  return (
-    <div className="idioma" role="group" aria-label="Idioma / Language">
-      {['pt', 'en'].map(l => (
-        <button key={l} className={idioma === l ? 'on' : ''} onClick={() => trocar(l)}
-          aria-pressed={idioma === l} lang={l}>{l === 'pt' ? 'PT' : 'EN'}</button>
-      ))}
-    </div>
-  );
-}
-
 export default function Rastreio({ codigo }) {
   const { state } = useStore();
   const { t, idioma } = useIdioma();
@@ -59,7 +47,7 @@ export default function Rastreio({ codigo }) {
             <div className="fam-marca">🌱 Raízes do Futuro</div>
             <div className="fam-sub">{t('Rastreio de produto')} · Boipeba, {t('Bahia, Brasil')}</div>
           </div>
-          <IdiomaTurista />
+          <SeletorIdioma />
         </div>
         <div className="rastreio-corpo">
           <EstadoVazio icone="🔍"
@@ -93,7 +81,7 @@ export default function Rastreio({ codigo }) {
           <div className="fam-marca">🌱 Raízes do Futuro</div>
           <div className="fam-sub">{t('A história desta peça')} · Boipeba, {t('Bahia, Brasil')}</div>
         </div>
-        <IdiomaTurista />
+        <SeletorIdioma />
       </div>
 
       <div className="rastreio-corpo">

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { logoRaizesUrl } from '../landing/images';
 import { useContagem } from '../landing/hooks/useContagem';
-import { URL_CONTATO, URL_INVESTIDORES, URL_PAGINA_APP, URL_PAINEL, URL_SITE } from '../config.js';
+import { URL_CONTATO, URL_PAGINA_APP, URL_PAINEL, URL_SITE } from '../config.js';
+import { SeletorIdioma } from '../componentes/SeletorIdioma.jsx';
 import { CICLO, POIS } from './dados.js';
 import { criarMapa } from './mapa.js';
 import { criarSom } from './som.js';
@@ -333,10 +334,7 @@ export function Explorar() {
           <a className="h-link" href={`${URL_CONTATO}?tipo=investimento`}>
             Investir
           </a>
-          {/* Atalho para quem avalia: a página em inglês, sem o mapa. */}
-          <a className="h-link" href={URL_INVESTIDORES} lang="en">
-            Investors · EN
-          </a>
+          <SeletorIdioma className="acima-700" />
         </div>
       </header>
 

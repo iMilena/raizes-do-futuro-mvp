@@ -45,10 +45,6 @@ export const URL_CONTATO = '#/contato';
 /** Experiência "Explorar a ilha": o mapa de Boipeba com o ciclo animado. */
 export const URL_EXPLORAR = '#/explorar';
 
-/** A página única em inglês para investidores e para o júri da Colosseum.
-    É este o link que vai na submissão: abre direto nela, sem passar pelo mapa. */
-export const URL_INVESTIDORES = '#/investors';
-
 /** O código-fonte, público. A seção de tecnologia aponta para cá. */
 export const URL_REPOSITORIO = 'https://github.com/iMilena/raizes-do-futuro-mvp';
 

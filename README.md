@@ -187,16 +187,18 @@ As travas contra virar tutela estão no **desenho**, não no discurso, e cada um
 - **Não sobe para a nuvem.** "Guardar para o remédio da minha filha" é dado de saúde — a meta fica no aparelho, como o PIN.
 - **Apagar é um toque**, sem confirmação moral.
 
-## Português e inglês 🌐
+## Português, inglês e espanhol 🌐
 
-Seletor PT/EN no cabeçalho. **Português é sempre o padrão** — é um projeto brasileiro, e o inglês é camada de leitura para fora. Nada de adivinhar pelo idioma do navegador: um avaliador brasileiro com Windows em inglês cairia numa tradução parcial sem pedir.
+Seletor **PT · EN · ES** em todas as páginas: no menu do site, no cabeçalho do mapa e do painel, na página de rastreio e no canto da tela no contato, na entrada e no app da família. **Português é sempre o padrão**; a escolha fica salva no navegador e também pode vir no endereço (`?lang=en` ou `?lang=es`). O antigo endereço da página para investidores (`#/investors`) agora abre o site em inglês.
 
-Traduzido por inteiro:
+**O site inteiro é traduzido**: site, mapa, contato, entrada, app da família, todas as telas do painel e a página de rastreio. O código continua escrito em português; a tradução acontece na própria página:
 
-- **A página pública de rastreio** (`#/rastreio/CÓDIGO`) — quem escaneia o QR da peça em Boipeba é turista, e boa parte é estrangeira. É a única tela com leitor em inglês *real*, e o seletor fica nela mesma, porque quem chega pelo QR não passa pelo painel.
-- **O casco do painel e o Dashboard** — é o que um avaliador internacional abre primeiro.
+- `src/lib/idioma.js` troca cada texto visível (e `placeholder`, `title`, `aria-label`, `alt`) pelo do dicionário, inclusive o que aparece depois, e guarda o original para voltar ao português ou trocar de idioma sem traduzir uma tradução. Números entram como `{0}`, `{1}`: "30 famílias" encontra "{0} famílias". O que não passa pela página (rótulos desenhados no mapa, `confirm`, `prompt`) usa `traduzir()`.
+- `src/lib/traducoes/en.json` e `es.json`: os dicionários, um texto em português por chave. Só são baixados quando alguém escolhe EN ou ES.
+- `node scripts/i18n/extrair.mjs` lê todo o código e lista os textos; com `--faltam` mostra o que ainda não tem tradução. Em desenvolvimento, `window.__idiomaFaltas` lista o que apareceu na tela sem tradução.
+- `testes/validacao/idioma.test.ts` confere que os dois dicionários têm as mesmas chaves e não perdem nenhum `{0}`.
 
-**Não traduzido, de propósito:** o app da família (quem usa é a mãe em Boipeba) e as telas de operação (quem opera é a equipe local). Meia tradução silenciosa é pior que tradução nenhuma — o avaliador clica, cai em português no meio do fluxo e conclui que o resto foi feito com o mesmo descuido. Por isso o seletor **avisa na tela** quando a aba aberta só existe em português, em vez de deixar a pessoa descobrir sozinha.
+Ficam em português o que é imagem (as capturas de tela do app dentro dos celulares) e os nomes próprios.
 
 ### PIN da família
 
@@ -298,7 +300,9 @@ src/
     nuvem.js         cliente do esquema compartilhado (Supabase)
     sincronizacao.js fila offline-first entre aparelho e nuvem
     auth.js          sessão, papel e permissões da operação
-    i18n.jsx         seletor e strings PT/EN
+    i18n.jsx         idioma atual para os componentes (useIdioma)
+    idioma.js        tradução da página inteira (PT, EN, ES)
+    traducoes/       en.json e es.json
     preferencias.js  letra grande, voz do Tuca etc. (guardadas no aparelho)
     voz.js           Web Speech — números por extenso, sem emoji
   estilos/

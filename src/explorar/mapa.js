@@ -14,6 +14,7 @@
    apagar o que o motor ligou.
 --------------------------------------------------------------------------- */
 
+import { traduzir } from '../lib/idioma.js';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { BARCOS, CICLO, FLUXO_DA_ETAPA, ILHA, L0, LIMITES, POIS, PRAIAS_COM_COLETA } from './dados.js';
@@ -194,7 +195,7 @@ export function criarMapa({ mapaEl, mundoEl, nuvensEl, bordaEl, contadorEl, redu
           fc.fillStyle = f.col || '#fbf5e3';
           fc.shadowColor = 'rgba(0,0,0,.8)';
           fc.shadowBlur = 6;
-          fc.fillText(f.txt, p.x + 48 * s, p.y - 14 * s - f.t * 22);
+          fc.fillText(traduzir(f.txt), p.x + 48 * s, p.y - 14 * s - f.t * 22);
           fc.restore();
         }
         fc.globalAlpha = 1;

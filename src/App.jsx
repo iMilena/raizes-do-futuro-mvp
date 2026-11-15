@@ -1,5 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Landing } from './landing';
+import { SeletorIdioma } from './componentes/SeletorIdioma.jsx';
+import { definirIdioma, idiomaAtual } from './lib/idioma.js';
 
 
 /* ---------------------------------------------------------------------------
@@ -26,8 +28,6 @@ const Contato = lazy(() => import('./contato/Contato.jsx'));
 const Login = lazy(() => import('./login/Login').then((m) => ({ default: m.Login })));
 const Explorar = lazy(() => import('./explorar/Explorar.jsx'));
 const AppFamilia = lazy(() => import('./app-familia/AppFamilia.jsx'));
-/* A página em inglês para investidores: é o link da submissão à Colosseum. */
-const Investidores = lazy(() => import('./investidores/Investidores.jsx'));
 
 /**
  * Ponte enquanto o pedaço do painel chega.
@@ -93,6 +93,7 @@ export default function App() {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Login onLogin={async () => { window.location.hash = '#/painel'; }} />
+        <SeletorIdioma variante="flutuante" />
       </Suspense>
     );
   }
@@ -101,6 +102,7 @@ export default function App() {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Contato rota={rota} />
+        <SeletorIdioma variante="flutuante" />
       </Suspense>
     );
   }
@@ -111,24 +113,24 @@ export default function App() {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <Explorar />
+        <SeletorIdioma variante="flutuante" className="abaixo-700 no-topo" />
       </Suspense>
     );
   }
 
-  /* `#/investors` abre direto a página, sem passar pelo mapa. `#/investidores`
-     é o mesmo endereço, para quem digitar em português. */
+  /* A antiga página em inglês para investidores saiu: o site inteiro agora tem
+     inglês e espanhol. Quem chega pelo endereço antigo (era o link da
+     submissão à Colosseum) cai no site, já em inglês. */
   if (pagina === 'investors' || pagina === 'investidores') {
-    return (
-      <Suspense fallback={<FundoDoSite />}>
-        <Investidores />
-      </Suspense>
-    );
+    if (idiomaAtual() === 'pt') definirIdioma('en');
+    return <Landing />;
   }
 
   if (pagina === 'app') {
     return (
       <Suspense fallback={<FundoDoSite />}>
         <AppFamilia />
+        <SeletorIdioma variante="flutuante" />
       </Suspense>
     );
   }

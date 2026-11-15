@@ -1,3 +1,4 @@
+import { traduzir } from '../lib/idioma.js';
 import { useEffect, useState } from 'react';
 import {
   useStore, fmt, trunc, BONUS_POR_CRIANCA, REDE, MOEDA, PROVIDER_CARTEIRA,
@@ -52,7 +53,7 @@ function Consentimento({ familia }) {
   };
 
   const revogar = () => {
-    const motivo = prompt('Motivo da revogação (opcional):') ?? '';
+    const motivo = prompt(traduzir('Motivo da revogação (opcional):')) ?? '';
     dispatch({ type: 'REVOGAR_CONSENTIMENTO', familiaId: familia.id, motivo });
     toast('Consentimento revogado: os dados desta família param de ser compartilhados', 'alerta', 6000);
   };
@@ -196,7 +197,7 @@ function DestravarPin({ familia }) {
           : 'O PIN fica só no celular da família: ninguém do projeto consegue vê-lo.'}
       </span>
       <Botao tom="ghost" pequeno onClick={() => {
-        if (!confirm('Apagar o PIN desta família? Ela definirá um novo no próximo acesso.')) return;
+        if (!confirm(traduzir('Apagar o PIN desta família? Ela definirá um novo no próximo acesso.'))) return;
         dispatch({ type: 'DESTRAVAR_PIN', familiaId: familia.id });
         toast('PIN apagado: a família define um novo no próximo acesso', 'info');
       }}>

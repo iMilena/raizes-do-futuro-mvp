@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
+import { iniciarIdioma } from './lib/idioma.js';
 import './estilos/fontes.js'; // Fraunces, Manrope e IBM Plex Mono, servidas daqui
 
 /* Nem o estado da operação nem o CSS do painel entram aqui.
@@ -10,6 +11,9 @@ import './estilos/fontes.js'; // Fraunces, Manrope e IBM Plex Mono, servidas daq
    inteiro — folha de estilo e reducer incluídos — para desenhar uma página que
    não usa nada disso. O `body { margin: 0 }` que vinha junto ficou em
    `index.html`, inline, porque vale para todas as rotas. */
+
+/* Português, inglês ou espanhol: a escolha salva (ou ?lang=) vale desde a primeira pintura. */
+iniciarIdioma();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

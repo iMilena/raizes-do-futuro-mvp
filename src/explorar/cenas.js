@@ -14,6 +14,7 @@
      contar()          +1 no contador de itens recolhidos da cena
 --------------------------------------------------------------------------- */
 
+import { traduzir } from '../lib/idioma.js';
 import { L0, FLUXOS } from './dados.js';
 import { SKIN, SHIRT, coin, drawCart, lerp, person, rnd, rr, sack, trash, zone } from './desenho.js';
 
@@ -422,7 +423,7 @@ export function desenharFluxos(m, c, z, alpha, tempo, hi) {
       c.fillStyle = `rgba(${f.col},1)`;
       c.shadowColor = 'rgba(0,0,0,.9)';
       c.shadowBlur = 6;
-      c.fillText(f.lbl.toUpperCase(), meio.x, meio.y - 8);
+      c.fillText(traduzir(f.lbl).toUpperCase(), meio.x, meio.y - 8);
     }
     c.restore();
     if (i < 2 && z >= 13.6) {

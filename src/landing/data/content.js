@@ -17,7 +17,7 @@
    2-de-3) são as previstas no contrato.
 --------------------------------------------------------------------------- */
 
-import { URL_CONTATO, URL_EXPLORAR, URL_INVESTIDORES, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
+import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
 import { emPiloto } from '../../status.js';
 
 /** Link para a página de contato com o assunto já escolhido. */
@@ -35,8 +35,6 @@ export const navItems = [
 
 export const nav = {
   app: { rotulo: 'App da família', href: URL_PAGINA_APP },
-  /* A página em inglês para investidores e para o júri da Colosseum. */
-  investidores: { rotulo: 'EN · Investors', href: URL_INVESTIDORES },
   painel: { rotulo: 'Entrar no painel', href: URL_PAINEL },
   contato: { rotulo: 'Falar com a equipe', curto: 'Contato', href: URL_CONTATO },
 };
@@ -460,7 +458,6 @@ export const rodape = {
         { rotulo: 'Como funciona', href: '#como' },
         { rotulo: 'FAQ', href: '#faq' },
         { rotulo: 'App da família', href: URL_PAGINA_APP },
-        { rotulo: 'For investors (English)', href: URL_INVESTIDORES },
       ],
     },
     {

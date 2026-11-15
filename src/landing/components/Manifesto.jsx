@@ -3,6 +3,7 @@ import { Revelar } from './Revelar';
 import { Eyebrow, Seta } from './Pecas';
 import { manifesto } from '../data/content';
 import { usePrefereMenosMovimento } from '../hooks/usePrefereMenosMovimento';
+import { useIdioma } from '../../lib/i18n.jsx';
 
 const palavras = (texto) => texto.split(/\s+/).filter(Boolean);
 
@@ -18,10 +19,14 @@ const palavras = (texto) => texto.split(/\s+/).filter(Boolean);
 export function Manifesto() {
   const ref = useRef(null);
   const reduzir = usePrefereMenosMovimento();
+  /* A frase é traduzida inteira antes de virar palavras: traduzir palavra
+     por palavra daria outra frase. */
+  const { idioma, t } = useIdioma();
 
   const [antes, meio, depois] = useMemo(
-    () => [palavras(manifesto.antes), palavras(manifesto.destaque), palavras(manifesto.depois)],
-    []
+    () => [palavras(t(manifesto.antes)), palavras(t(manifesto.destaque)), palavras(t(manifesto.depois))],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [idioma]
   );
 
   useEffect(() => {
@@ -51,7 +56,7 @@ export function Manifesto() {
       window.removeEventListener('resize', aoRolar);
       cancelAnimationFrame(quadro);
     };
-  }, [reduzir]);
+  }, [reduzir, idioma]);
 
   /* O destaque é um só trecho em itálico: as palavras dele ficam dentro de um
      mesmo <span class="k">, para o leitor de tela ler a frase corrida. */
@@ -67,7 +72,7 @@ export function Manifesto() {
         <Revelar>
           <Eyebrow>{manifesto.eyebrow}</Eyebrow>
         </Revelar>
-        <p className="big" ref={ref}>
+        <p className="big" ref={ref} translate="no">
           {antes.map(span)}
           <span className="k">{meio.map(span)}</span>
           {depois.map(span)}

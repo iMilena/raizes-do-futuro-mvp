@@ -58,3 +58,4 @@ public/modelo/*.json
 # O `-fp32` continua de fora: o manifesto não o carrega.
 !public/modelo/classificador.onnx
 !public/modelo/classificador.json
+scripts/i18n/textos.json

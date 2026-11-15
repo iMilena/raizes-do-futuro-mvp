@@ -1,8 +1,10 @@
+import { traduzir } from '../lib/idioma.js';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore, fmt, trunc, signatarioPor } from '../estado/store.jsx';
 import * as auth from '../lib/auth.js';
 import * as nuvem from '../lib/nuvem.js';
-import { IdiomaProvider, useIdioma, TRADUZIDAS } from '../lib/i18n.jsx';
+import { IdiomaProvider, useIdioma } from '../lib/i18n.jsx';
+import { SeletorIdioma } from '../componentes/SeletorIdioma.jsx';
 import { ToastProvider, useToast } from '../componentes/ui.jsx';
 import { DemoProvider, DemoNarrador } from '../componentes/demo.jsx';
 import { TourPainel, tourVisto, encerrarTour, alvoDoPasso } from '../componentes/tour.jsx';
@@ -375,34 +377,7 @@ function Perfil() {
 }
 
 /* --------------------------------------------------------- idioma ------- */
-/**
- * Seletor PT/EN que AVISA quando a tela aberta não tem versão em inglês.
- *
- * Sem esse aviso, o avaliador clica em EN, cai em português no meio de um fluxo
- * e conclui que a tradução foi feita com descuido. Dizer o que está e o que não
- * está traduzido custa uma linha e evita essa leitura.
- */
-function SeletorIdioma({ tab }) {
-  const { idioma, trocar, t } = useIdioma();
-  const parcial = idioma === 'en' && !TRADUZIDAS.includes(tab);
-  return (
-    <div className="idioma-wrap">
-      <div className="idioma" role="group" aria-label="Idioma / Language">
-        {['pt', 'en'].map(l => (
-          <button key={l} className={idioma === l ? 'on' : ''} onClick={() => trocar(l)}
-            aria-pressed={idioma === l} lang={l}>
-            {l === 'pt' ? 'PT' : 'EN'}
-          </button>
-        ))}
-      </div>
-      {parcial && (
-        <span className="idioma-aviso" title={t('As telas de operação são usadas pela equipe local. O Dashboard e a página pública de rastreio têm versão completa em inglês.')}>
-          {t('Esta tela existe apenas em português')}
-        </span>
-      )}
-    </div>
-  );
-}
+/* PT · EN · ES: o painel inteiro tem os três idiomas (ver lib/idioma.js). */
 
 /* Navegação sequencial da jornada, no rodapé de cada tela. A ordem de TELAS é
    a ordem do ciclo, então "anterior" e "próxima" são a etapa de fato. */
@@ -453,7 +428,7 @@ function Painel({ tab, setTab }) {
   const alvo = tourAberto ? alvoDoPasso(tourIdx) : null;
 
   const resetar = () => {
-    if (confirm('Restaurar dados iniciais da demo?')) {
+    if (confirm(traduzir('Restaurar dados iniciais da demo?'))) {
       dispatch({ type: 'RESET' });
       toast('Demo restaurada ao estado inicial', 'info');
     }
@@ -562,7 +537,7 @@ function Painel({ tab, setTab }) {
           <SeletorModo />
           <BuscaGlobal setTab={setTab} />
           <div className="top-acoes">
-            <SeletorIdioma tab={tab} />
+            <SeletorIdioma />
             <SeletorTema />
             <button
               type="button"
