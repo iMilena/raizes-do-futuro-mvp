@@ -29,19 +29,19 @@ com o original (fallback), o `srcset` em WebP e as dimensões, e é o componente
 
 | Descritor em `index.js` | Onde aparece                                              |
 | ----------------------- | --------------------------------------------------------- |
-| `coletaValidacao`       | Herói, ponta "Coleta e Validação" e o fundo desfocado da porta do painel |
-| `fundoInfancia`         | Ponta "Fundo Infância"                                     |
+| `pesagemSacos`          | Capa (o arco), etapa da pesagem, galeria e o ponto "Território" no mapa |
+| `coletaValidacao`       | "Quem opera o ciclo", etapa "Coleta e Validação", galeria, fundo da seção final, contato, app da família e o ponto da coleta no mapa |
+| `balancaPesagem`        | Etapa "Saúde e educação", galeria e o ponto da pesagem no mapa |
 | `vilaAerea`             | Etapa "Circularidade", a faixa de luz que vira o dia e o ponto da feira no mapa |
-| `mutiraoGrupo`          | Galeria, "Quem opera o ciclo", página de contato e o ponto "Território" no mapa |
-| `criancasPraia`         | Etapa "Saúde e educação", galeria, fundo da seção final e o ponto "Fundo Infância" no mapa |
 | `logoRaizes`            | Marca no topo, no rodapé, no contato e na porta do painel  |
 
 `hero-boipeba.jpeg` e `logo_footer.png` continuam na pasta mas **não são
 exportados de propósito**: um `export` sem uso arrasta a foto inteira para dentro
 do bundle. Basta reimportá-los em `index.js` se voltarem a ser usados.
 
-As fotos ligadas a organizações parceiras que deixaram o projeto (mural, camisetas
-e espaço de outra instituição) foram retiradas do site.
+As fotos ligadas a organizações parceiras que deixaram o projeto foram retiradas
+do site e apagadas da pasta. Hoje o site usa só as fotos de coleta e pesagem
+enviadas pela equipe, a vista aérea da vila e a marca.
 
 ## Texto alternativo
 

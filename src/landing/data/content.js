@@ -65,7 +65,7 @@ export const hero = {
     texto: 'Quando os compromissos estiverem em dia, o bônus vai chegar à família.',
     itens: ['Vacina', 'Matrícula', 'Frequência'],
   },
-  altFoto: 'Criança de Boipeba na sala de aula faz um coração com as mãos',
+  altFoto: 'Crianças e adultos abrem os sacos de resíduo recolhidos enquanto a coleta é pesada numa balança de mão.',
 };
 
 export const manifesto = {
@@ -202,7 +202,7 @@ export const ciclo = {
       texto:
         'Renda e bônus chegam às famílias e às crianças. A renda do trabalho é incondicional; o bônus do Fundo Infância é adicional.',
       tags: ['Renda direta', 'Bônus da infância'],
-      foto: 'criancasPraia',
+      foto: 'balancaPesagem',
     },
   ],
 };
@@ -348,11 +348,9 @@ export const galeria = {
   eyebrow: 'Boipeba, de perto',
   titulo: ['A ilha e as pessoas ', 'com quem o ciclo vai acontecer.'],
   fotos: [
-    { foto: 'mutiraoGrupo', legenda: 'Mutirão de limpeza · Boipeba', forma: 'largo' },
-    { foto: 'criancaEscola', legenda: 'Na escola · Boipeba', forma: 'alto' },
-    { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba' },
-    { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg' },
-    { foto: 'criancasPraia', legenda: 'Crianças na praia · Boipeba', forma: 'cheio' },
+    { foto: 'coletaValidacao', legenda: 'Mutirão de coleta · Boipeba', forma: 'largo' },
+    { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg', forma: 'alto' },
+    { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba', forma: 'largo' },
   ],
 };
 

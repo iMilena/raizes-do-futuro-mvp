@@ -21,14 +21,10 @@ const destino = join(origem, 'webp');
 const FOTOS = [
   { arquivo: 'coleta-validacao.jpeg', larguras: [800, 1200, 1600] },
   { arquivo: 'hero-aerial.jpg', larguras: [800, 1200, 1600] },
-  { arquivo: 'criancas-boipeba.jpeg', larguras: [800, 1298] },
-  { arquivo: 'fundo-infancia.png', larguras: [335, 670] },
   { arquivo: 'logo_raizes.png', larguras: [96, 192] },
   /* as fotos enviadas pela equipe em setembro de 2026 */
   { arquivo: 'balanca-pesagem.jpeg', larguras: [800, 1200, 1600] },
   { arquivo: 'pesagem-sacos.jpeg', larguras: [800, 1200, 1428] },
-  { arquivo: 'mutirao-grupo.jpeg', larguras: [800, 1200, 1600] },
-  { arquivo: 'crianca-escola.jpeg', larguras: [600, 963] },
   /* capturas do app Raízes Família, para os celulares da página #/app */
   { arquivo: 'app-capa.png', larguras: [540] },
   { arquivo: 'app-inicio.png', larguras: [540] },
