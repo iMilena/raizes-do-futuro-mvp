@@ -1,0 +1,5 @@
+{
+  "redirects": [
+    { "source": "/trend-detective", "destination": "/trend-detective/", "permanent": true }
+  ]
+}

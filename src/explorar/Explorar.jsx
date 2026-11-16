@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { logoRaizesUrl } from '../landing/images';
 import { useContagem } from '../landing/hooks/useContagem';
-import { URL_CONTATO, URL_PAGINA_APP, URL_PAINEL, URL_SITE } from '../config.js';
+import { URL_CONTATO, URL_PAGINA_APP, URL_PAINEL, URL_SITE, URL_TREND } from '../config.js';
 import { SeletorIdioma } from '../componentes/SeletorIdioma.jsx';
 import { CICLO, POIS } from './dados.js';
 import { criarMapa } from './mapa.js';
@@ -327,6 +327,9 @@ export function Explorar() {
           </a>
           <a className="h-link hide-m" href={URL_PAGINA_APP}>
             App da família
+          </a>
+          <a className="h-link hide-m" href={URL_TREND}>
+            Trend Detective
           </a>
           <a className="h-link hide-m" href={URL_PAINEL}>
             Painel

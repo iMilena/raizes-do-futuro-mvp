@@ -89,6 +89,9 @@ export function Nav() {
         <a className="app" href={nav.app.href}>
           {nav.app.rotulo}
         </a>
+        <a className="app" href={nav.clima.href}>
+          {nav.clima.rotulo}
+        </a>
         <SeletorIdioma variante="compacto" className="so-largo" />
         <a className="btn btn-g" href={nav.painel.href}>
           {nav.painel.rotulo}
@@ -119,6 +122,9 @@ export function Nav() {
         ))}
         <a href={nav.app.href} onClick={fechar}>
           {nav.app.rotulo}
+        </a>
+        <a href={nav.clima.href} onClick={fechar}>
+          {nav.clima.rotulo}
         </a>
         <SeletorIdioma className="no-menu" />
         <a href={nav.painel.href} onClick={fechar}>

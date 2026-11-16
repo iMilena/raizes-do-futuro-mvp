@@ -87,7 +87,7 @@
   /* ---------------------------------------------------------------- NAV -- */
   & .nav {
     position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
-    width: min(1240px, 100% - 28px); display: flex; align-items: center; gap: 6px;
+    width: min(1380px, 100% - 28px); display: flex; align-items: center; gap: 6px;
     padding: 9px 9px 9px 18px; border-radius: 999px; border: 1px solid transparent;
     transition: background .4s, border-color .4s;
   }
@@ -442,7 +442,7 @@
   & .way .go { margin-top: 20px; font-weight: 700; font-size: 14px; color: var(--mint); display: flex; align-items: center; gap: 8px; }
   & .way .go svg { stroke: currentColor; fill: none; stroke-width: 2; }
   & .close { padding: clamp(120px, 15vw, 200px) 0; text-align: center; overflow: hidden; }
-  & .close .bg { position: absolute; inset: 0; background: url("../images/webp/criancas-boipeba-1298.webp") center / cover; opacity: .28; filter: saturate(.8); }
+  & .close .bg { position: absolute; inset: 0; background: url("../images/webp/coleta-validacao-1600.webp") center / cover; opacity: .28; filter: saturate(.8); }
   & .close::after { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 70% at 50% 50%, rgba(4, 16, 13, .4), var(--bg0) 85%); }
   & .close .wrap { position: relative; z-index: 1; }
   & .close h2 {
@@ -496,8 +496,9 @@
   }
 
   /* ---------------------------------------------------------- RESPONSIVO -- */
-  /* com "App da família" no menu, os links deixam de caber antes de 1240 px */
-  @media (max-width: 1240px) {
+  /* com "App da família" e "Trend Detective" no menu, os links deixam de caber
+     antes de 1400 px; abaixo disso tudo vai para o menu de tela cheia */
+  @media (max-width: 1400px) {
     & .links { display: none; }
     & .burger { display: grid; }
     & .nav .btn-g { display: none; }

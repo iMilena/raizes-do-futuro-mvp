@@ -1,6 +1,6 @@
 import { Foto } from './Foto';
 import { Seta } from './Pecas';
-import { criancaEscola } from '../images';
+import { pesagemSacos } from '../images';
 import { hero } from '../data/content';
 
 /**
@@ -54,7 +54,7 @@ export function Capa() {
 
         <div className="palco fu" style={{ animationDelay: '.15s' }}>
           <div className="arco">
-            <Foto imagem={criancaEscola} alt={hero.altFoto} sizes="(max-width: 900px) 90vw, 480px" prioridade />
+            <Foto imagem={pesagemSacos} alt={hero.altFoto} sizes="(max-width: 900px) 90vw, 480px" prioridade />
           </div>
           <div className="coracao" aria-hidden="true">
             <svg viewBox="0 0 24 24">

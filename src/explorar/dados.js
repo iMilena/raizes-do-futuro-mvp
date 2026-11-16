@@ -64,8 +64,8 @@ export const POIS = [
   {
     id: 'viva', g: ['ciclo', 'comunidade'], n: '03', ll: L0.viva, zoom: 17, left: true,
     et: '03 · Território', title: 'Equipe de território', local: 'Velha Boipeba',
-    foto: 'mutiraoGrupo', cap: 'Mutirão comunitário · Boipeba',
-    alt: 'Moradores, voluntários e crianças comemoram de braços erguidos ao lado dos sacos de resíduo recolhidos no mutirão.',
+    foto: 'pesagemSacos', cap: 'Pesagem de material reciclável · Boipeba',
+    alt: 'Crianças e adultos abrem os sacos de resíduo recolhidos enquanto a coleta é pesada numa balança de mão.',
     text: 'A equipe do Raízes em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças. Vai ser a primeira das três assinaturas do cofre.',
     num: ['30+', 'famílias: meta da primeira fase'], tags: ['Assinatura 1', 'Mobilização'],
   },
@@ -87,8 +87,6 @@ export const POIS = [
   {
     id: 'escola', g: ['ciclo', 'comunidade'], n: '06', ll: L0.escola, zoom: 17,
     et: '06 · Destino final', title: 'Fundo Infância', local: 'Escolas e unidades de saúde da ilha',
-    foto: 'criancasPraia', cap: 'Crianças de Boipeba',
-    alt: 'Crianças de Boipeba reunidas numa mesa de madeira à beira da praia, olhando um ouriço-do-mar.',
     text: 'O contrato vai liberar R$ 30 por criança, por mês, quando vacinação, matrícula e frequência escolar estão comprovadas. A renda do trabalho é incondicional; o bônus é adicional.',
     num: ['60', 'crianças: meta da primeira fase. Abaixo, um exemplo de mês'], tags: ['R$ 30 por criança', 'Vacinação', 'Matrícula', 'Frequência'],
     extra: 'criancas',
