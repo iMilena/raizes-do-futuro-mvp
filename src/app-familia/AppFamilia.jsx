@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { Foto } from '../landing/components/Foto';
 import { Revelar } from '../landing/components/Revelar';
-import { coletaValidacao, logoRaizes } from '../landing/images';
+import { vilaAerea, logoRaizes } from '../landing/images';
 import telaCapa from '../landing/images/webp/app-capa-540.webp';
 import telaInicio from '../landing/images/webp/app-inicio-540.webp';
 import {
@@ -368,7 +368,7 @@ export function AppFamilia() {
         <section className="sec agentes" id="agentes">
           <div className="wrap agente">
             <Revelar como="figure" className="foto">
-              <Foto imagem={coletaValidacao} sizes="(max-width: 980px) 100vw, 540px" />
+              <Foto imagem={vilaAerea} sizes="(max-width: 980px) 100vw, 540px" />
               <figcaption>{agentes.legenda}</figcaption>
             </Revelar>
             <div>

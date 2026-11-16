@@ -1,10 +1,10 @@
 import { Foto } from './Foto';
 import { Seta } from './Pecas';
-import { pesagemSacos } from '../images';
+import { baiaBoipeba } from '../images';
 import { hero } from '../data/content';
 
 /**
- * A capa: o texto à esquerda e, à direita, a criança da escola de Boipeba numa
+ * A capa: o texto à esquerda e, à direita, a baía de Boipeba numa
  * janela em arco, com o coração batendo ao lado e o cartão do Fundo Infância.
  * Segue `raizes-capa-crianca.html`, no tema escuro, que é o do site.
  *
@@ -54,7 +54,7 @@ export function Capa() {
 
         <div className="palco fu" style={{ animationDelay: '.15s' }}>
           <div className="arco">
-            <Foto imagem={pesagemSacos} alt={hero.altFoto} sizes="(max-width: 900px) 90vw, 480px" prioridade />
+            <Foto imagem={baiaBoipeba} sizes="(max-width: 900px) 90vw, 480px" prioridade />
           </div>
           <div className="coracao" aria-hidden="true">
             <svg viewBox="0 0 24 24">
