@@ -66,7 +66,6 @@ export const hero = {
     texto: 'Quando os compromissos estiverem em dia, o bônus vai chegar à família.',
     itens: ['Vacina', 'Matrícula', 'Frequência'],
   },
-  altFoto: 'Crianças e adultos abrem os sacos de resíduo recolhidos enquanto a coleta é pesada numa balança de mão.',
 };
 
 export const manifesto = {
@@ -110,7 +109,7 @@ export const parceiros = {
   eyebrow: 'Quem vai operar o ciclo',
   titulo: ['Três assinaturas, e ', 'nenhuma manda sozinha.'],
   lede: 'A governança não é promessa de slide: ela vai estar escrita no contrato que libera o dinheiro.',
-  legendaFoto: 'Encontro comunitário · Boipeba',
+  legendaFoto: 'Vila à beira-mar · Boipeba',
   itens: [
     {
       n: '1',
@@ -141,7 +140,7 @@ export const ciclo = {
   titulo: ['Um ciclo fechado, do resíduo à ', 'proteção da infância.'],
   lede: 'Coleta validada vira evidência auditável, evidência vira receita, receita vira renda e proteção da infância, dividida por código.',
   /* `foto` é a chave de uma foto em ../images; `arte` é o desenho do cartão
-     sem foto. As sete etapas são as sete marcas da barra de progresso. */
+     sem foto (opcional). As sete etapas são as sete marcas da barra de progresso. */
   etapas: [
     {
       indice: '01 · Origem',
@@ -150,7 +149,6 @@ export const ciclo = {
       texto:
         'Moradores e turistas separam material reciclável. Moradores participam de ações de coleta pela ilha.',
       tags: ['PET', 'Alumínio', 'Vidro'],
-      foto: 'coletaValidacao',
     },
     {
       indice: '02 · Território',
@@ -158,7 +156,6 @@ export const ciclo = {
       titulo: 'Coleta',
       texto: 'Catadores e pontos de coleta parceiros recolhem e pesam o material recolhido na ilha.',
       tags: ['Pesagem', 'Ponto parceiro'],
-      foto: 'pesagemSacos',
     },
     {
       indice: '03 · Prova',
@@ -203,7 +200,6 @@ export const ciclo = {
       texto:
         'Renda e bônus chegam às famílias e às crianças. A renda do trabalho é incondicional; o bônus do Fundo Infância é adicional.',
       tags: ['Renda direta', 'Bônus da infância'],
-      foto: 'balancaPesagem',
     },
   ],
 };
@@ -340,19 +336,6 @@ export const feira = {
   citacao:
     'Cada peça vai carregar um QR code que mostra de onde veio o material e para onde foi o dinheiro da venda.',
   legenda: 'Vila à beira-mar · Boipeba',
-};
-
-/* A galeria: as fotos reais do ciclo, uma ao lado da outra. `foto` é a
-   chave em ../images; `forma` diz quanto da grade a foto ocupa: `largo` duas
-   colunas, `alto` duas linhas (a foto em pé), `cheio` a linha inteira. */
-export const galeria = {
-  eyebrow: 'Boipeba, de perto',
-  titulo: ['A ilha e as pessoas ', 'com quem o ciclo vai acontecer.'],
-  fotos: [
-    { foto: 'coletaValidacao', legenda: 'Mutirão de coleta · Boipeba', forma: 'largo' },
-    { foto: 'balancaPesagem', legenda: 'Na balança · 6,54 kg', forma: 'alto' },
-    { foto: 'pesagemSacos', legenda: 'Pesagem de material reciclável · Boipeba', forma: 'largo' },
-  ],
 };
 
 export const faq = {

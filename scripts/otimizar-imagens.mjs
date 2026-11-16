@@ -19,12 +19,9 @@ const destino = join(origem, 'webp');
 /* Larguras pedidas por foto: o suficiente para 1x e 2x no maior uso de cada
    uma, sem gerar arquivo que ninguém baixa. */
 const FOTOS = [
-  { arquivo: 'coleta-validacao.jpeg', larguras: [800, 1200, 1600] },
+  { arquivo: 'hero-boipeba.jpeg', larguras: [739] },
   { arquivo: 'hero-aerial.jpg', larguras: [800, 1200, 1600] },
   { arquivo: 'logo_raizes.png', larguras: [96, 192] },
-  /* as fotos enviadas pela equipe em setembro de 2026 */
-  { arquivo: 'balanca-pesagem.jpeg', larguras: [800, 1200, 1600] },
-  { arquivo: 'pesagem-sacos.jpeg', larguras: [800, 1200, 1428] },
   /* capturas do app Raízes Família, para os celulares da página #/app */
   { arquivo: 'app-capa.png', larguras: [540] },
   { arquivo: 'app-inicio.png', larguras: [540] },

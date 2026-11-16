@@ -47,16 +47,12 @@ export const POIS = [
   {
     id: 'coleta', g: ['ciclo'], n: '01', ll: L0.cueira, zoom: 16.5,
     et: '01 · Coleta', title: 'Mutirão nas praias', local: 'Praia da Cueira e Tassimirim',
-    foto: 'coletaValidacao', cap: 'Mutirão de coleta · Boipeba',
-    alt: 'Moradores reunidos na praia, sob os coqueiros, ao lado dos sacos de resíduo recolhidos.',
     text: 'Moradores e turistas separam o reciclável. Coletores parceiros percorrem as praias recolhendo PET, alumínio e vidro que chegam com a maré e com o turismo.',
     num: ['12 t', 'de resíduo: meta da primeira fase'], tags: ['PET', 'Alumínio', 'Vidro'],
   },
   {
     id: 'pesagem', g: ['ciclo'], n: '02', ll: L0.pesagem, zoom: 17,
     et: '02 · Validação', title: 'Pesagem e prova com IA', local: 'Ponto de coleta · Velha Boipeba',
-    foto: 'balancaPesagem', cap: 'Pesagem da coleta · Boipeba',
-    alt: 'Balança de mão laranja marcando 6,54 kg de resíduo recolhido na praia.',
     text: 'O material é pesado no ponto de coleta. O app de campo funciona offline, registra peso e foto, e um modelo de visão computacional sinaliza o que precisa de conferência antes de a verificação ambiental emitir o Relatório de Circularidade.',
     num: ['4', 'detectores revisam cada coleta antes da validação'], tags: ['App offline', 'Visão computacional', 'Verificação'],
     extra: 'detectores',
@@ -64,8 +60,6 @@ export const POIS = [
   {
     id: 'viva', g: ['ciclo', 'comunidade'], n: '03', ll: L0.viva, zoom: 17, left: true,
     et: '03 · Território', title: 'Equipe de território', local: 'Velha Boipeba',
-    foto: 'pesagemSacos', cap: 'Pesagem de material reciclável · Boipeba',
-    alt: 'Crianças e adultos abrem os sacos de resíduo recolhidos enquanto a coleta é pesada numa balança de mão.',
     text: 'A equipe do Raízes em Boipeba. Vai mobilizar famílias e recicladores e validar presencialmente as comprovações de saúde e educação das crianças. Vai ser a primeira das três assinaturas do cofre.',
     num: ['30+', 'famílias: meta da primeira fase'], tags: ['Assinatura 1', 'Mobilização'],
   },

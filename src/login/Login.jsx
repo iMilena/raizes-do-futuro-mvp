@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Marca } from '../landing/components/Marca';
 import { Foto } from '../landing/components/Foto';
 import { Chevron, SetaDireita, SetaEsquerda } from '../landing/icons/Icons';
-import { coletaValidacao } from '../landing/images';
+import { baiaBoipeba } from '../landing/images';
 import { useAviso } from '../landing/hooks/useAviso';
 import { abrirEmail, copiarMensagem, montarCorpo } from '../lib/mensagem';
 import { EMAIL_CONTATO, URL_PAINEL, URL_SITE, ehRotaInterna } from '../config';
@@ -123,7 +123,7 @@ export function Login({ onLogin }) {
   return (
     <div className="entrada">
       <div className="entrada-fundo" aria-hidden="true">
-        <Foto imagem={coletaValidacao} alt="" sizes="100vw" prioridade />
+        <Foto imagem={baiaBoipeba} alt="" sizes="100vw" prioridade />
       </div>
       <div className="entrada-grao" aria-hidden="true" />
 

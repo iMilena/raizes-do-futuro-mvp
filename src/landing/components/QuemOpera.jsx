@@ -2,12 +2,12 @@ import { useRef } from 'react';
 import { Foto } from './Foto';
 import { Revelar } from './Revelar';
 import { Eyebrow, Titulo } from './Pecas';
-import { coletaValidacao } from '../images';
+import { vilaAerea } from '../images';
 import { parceiros } from '../data/content';
 import { useVisivel } from '../hooks/useVisivel';
 
 /**
- * "Quem opera o ciclo": a foto do encontro comunitário fica presa (sticky) ao
+ * "Quem opera o ciclo": a foto da vila fica presa (sticky) ao
  * lado dos três cartões de assinatura enquanto eles passam.
  */
 export function QuemOpera() {
@@ -18,7 +18,7 @@ export function QuemOpera() {
     <section className="sec" id="parceiros">
       <div className="wrap ops">
         <figure ref={ref} className={`photo${visivel ? ' in' : ''}`}>
-          <Foto imagem={coletaValidacao}sizes="(max-width: 900px) 100vw, 560px" />
+          <Foto imagem={vilaAerea} sizes="(max-width: 900px) 100vw, 560px" />
           <figcaption>{parceiros.legendaFoto}</figcaption>
         </figure>
         <div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Foto } from '../landing/components/Foto';
-import { logoRaizes, coletaValidacao } from '../landing/images';
+import { logoRaizes, baiaBoipeba } from '../landing/images';
 import { URL_EXPLORAR, URL_SITE } from '../config.js';
 import { CONTATO } from './config.js';
 import { ASSUNTOS, FORMS, PROXIMO, PROXIMO_PADRAO, ROTULO } from './formularios.js';
@@ -316,7 +316,7 @@ export function Contato({ rota }) {
       <div className="layout">
         <aside className="side">
           <div className="bg">
-            <Foto imagem={coletaValidacao} sizes="(max-width: 980px) 100vw, 48vw" prioridade />
+            <Foto imagem={baiaBoipeba} sizes="(max-width: 980px) 100vw, 48vw" prioridade />
           </div>
           <div className="eyebrow">Falar com a equipe</div>
           <h1>

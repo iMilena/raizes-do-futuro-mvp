@@ -96,9 +96,11 @@ function Etapa({ e, i }) {
       <small>{e.indice}</small>
       <h3>{e.titulo}</h3>
       <p>{e.texto}</p>
-      <div className="art" aria-hidden="true">
-        {ARTES[e.arte]}
-      </div>
+      {e.arte && (
+        <div className="art" aria-hidden="true">
+          {ARTES[e.arte]}
+        </div>
+      )}
       {tags}
     </article>
   );
