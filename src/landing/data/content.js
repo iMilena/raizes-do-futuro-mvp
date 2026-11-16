@@ -17,7 +17,7 @@
    2-de-3) são as previstas no contrato.
 --------------------------------------------------------------------------- */
 
-import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE } from '../../config.js';
+import { URL_CONTATO, URL_EXPLORAR, URL_PAGINA_APP, URL_PAINEL, URL_PRIVACIDADE, URL_TREND } from '../../config.js';
 import { emPiloto } from '../../status.js';
 
 /** Link para a página de contato com o assunto já escolhido. */
@@ -35,6 +35,7 @@ export const navItems = [
 
 export const nav = {
   app: { rotulo: 'App da família', href: URL_PAGINA_APP },
+  clima: { rotulo: 'Trend Detective', href: URL_TREND },
   painel: { rotulo: 'Entrar no painel', href: URL_PAINEL },
   contato: { rotulo: 'Falar com a equipe', curto: 'Contato', href: URL_CONTATO },
 };

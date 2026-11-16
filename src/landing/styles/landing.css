@@ -87,7 +87,7 @@
   /* ---------------------------------------------------------------- NAV -- */
   & .nav {
     position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
-    width: min(1240px, 100% - 28px); display: flex; align-items: center; gap: 6px;
+    width: min(1380px, 100% - 28px); display: flex; align-items: center; gap: 6px;
     padding: 9px 9px 9px 18px; border-radius: 999px; border: 1px solid transparent;
     transition: background .4s, border-color .4s;
   }
@@ -496,8 +496,9 @@
   }
 
   /* ---------------------------------------------------------- RESPONSIVO -- */
-  /* com "App da família" no menu, os links deixam de caber antes de 1240 px */
-  @media (max-width: 1240px) {
+  /* com "App da família" e "Trend Detective" no menu, os links deixam de caber
+     antes de 1400 px; abaixo disso tudo vai para o menu de tela cheia */
+  @media (max-width: 1400px) {
     & .links { display: none; }
     & .burger { display: grid; }
     & .nav .btn-g { display: none; }

@@ -39,6 +39,9 @@ export const URL_PRIVACIDADE = `${URL_APP}/privacidade`;
 /** A página que apresenta o app às famílias, à equipe e a parceiros. */
 export const URL_PAGINA_APP = '#/app';
 
+/** Island Trend Detective (NASA Space Apps 2026): página estática em public/trend-detective/. */
+export const URL_TREND = '/trend-detective/';
+
 /** Página "Falar com a equipe". Aceita `?tipo=` para chegar com o assunto escolhido. */
 export const URL_CONTATO = '#/contato';
 
