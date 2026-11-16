@@ -302,6 +302,10 @@ $("search").addEventListener("submit", async e => {
 });
 $("go-boipeba").addEventListener("click", goBoipeba);
 
+/* ---------- scroll cue fades once the page starts moving towards the case study ---------- */
+const markScrolled = () => document.body.classList.toggle("scrolled", scrollY > 60);
+addEventListener("scroll", markScrolled, { passive: true }); markScrolled();
+
 /* ---------- start: hero visible, drawer closed, globe spinning ---------- */
 initMap();
 if (map) map.setPadding(padding());

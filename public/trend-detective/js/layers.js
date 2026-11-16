@@ -71,8 +71,8 @@ $("app").insertAdjacentHTML("beforeend", `
   <div id="over-controls">
     <h3><label for="opacity">Overlay opacity</label></h3>
     <div class="range-row"><input id="opacity" type="range" min="0" max="1" step="0.05" value="${S.opacity}"><output id="opacity-val" for="opacity"></output></div>
-    <h3><label for="lstep">Play steps by</label></h3>
-    <select id="lstep"></select>
+    <h3 id="lb-step">Play steps by</h3>
+    <div class="seg" role="group" aria-labelledby="lb-step" id="lstep"></div>
     <p class="about" id="about"></p>
   </div>
   <p class="about">Images from NASA GIBS (<a href="https://gibs.earthdata.nasa.gov/">gibs.earthdata.nasa.gov</a>), layer list checked against the
@@ -123,9 +123,16 @@ function ui() {
   $("legend").classList.toggle("hide", !L);
   if (!L) return;
   const s = S.date[L.key], m = meta(L);
-  const opts = L.period === "P1M" ? [["month", "Month"], ["year", "Year (same month)"]] : [["day", "Day"], ["month", "Month"], ["year", "Year (same day)"]];
+  // step chips: rebuilt only when the layer's period changes, so focus stays put while choosing
+  const opts = L.period === "P1M" ? [["month", "Month", ""], ["year", "Year", "same month"]] : [["day", "Day", ""], ["month", "Month", ""], ["year", "Year", "same day"]];
   if (!opts.some(o => o[0] === S.step)) S.step = "month";
-  $("lstep").innerHTML = opts.map(([v, t]) => `<option value="${v}"${v === S.step ? " selected" : ""}>${t}</option>`).join("");
+  const steps = $("lstep");
+  if (steps.dataset.period !== L.period) {
+    steps.dataset.period = L.period;
+    steps.style.gridTemplateColumns = `repeat(${opts.length}, minmax(0, 1fr))`;
+    steps.innerHTML = opts.map(([v, t, sub]) => chip("step", v, t, sub)).join("");
+  }
+  steps.querySelectorAll("[data-step]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.step === S.step)));
   $("about").textContent = L.about + ` Available ${nice(L, first(L))} to ${nice(L, last(L))}.`;
   // timeline
   const r = $("t-range");
@@ -144,13 +151,13 @@ function ui() {
 const setDate = s => { const L = byKey[S.overlay]; if (!L) return; S.date[L.key] = snap(L, s); apply(); };
 $("layers").addEventListener("click", e => {
   const b = e.target.closest("button.chip"); if (!b) return;
+  if (b.dataset.step) { S.step = b.dataset.step; ui(); return; }   // only changes how play moves, no new tiles
   if (b.dataset.base) S.base = b.dataset.base;
   if (b.dataset.over) { stop(); S.overlay = b.dataset.over; }
   apply();
 });
 $("labels-on").addEventListener("change", e => { S.labels = e.target.checked; apply(); });
 $("opacity").addEventListener("input", e => { S.opacity = +e.target.value; apply(); });
-$("lstep").addEventListener("change", e => { S.step = e.target.value; });
 // while dragging only the label moves; tiles load when the thumb is released (or on each arrow key)
 $("t-range").addEventListener("input", e => { const L = byKey[S.overlay]; if (L) $("t-now").textContent = short(L, snap(L, dateAtMonth(L, +e.target.value))); });
 $("t-range").addEventListener("change", e => { const L = byKey[S.overlay]; if (!L) return; stop(); setDate(dateAtMonth(L, +e.target.value)); });

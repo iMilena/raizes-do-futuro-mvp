@@ -37,6 +37,9 @@ button{font:inherit;color:inherit}
 .icon-btn:hover,.close:hover{color:var(--text);border-color:var(--line-strong)}
 .close svg.i{width:15px;height:15px;stroke-width:2.4}
 select,input[type=number],input[type=search]{color-scheme:dark}
+/* the native option list ignores the glass panel: give it the dark surface explicitly (Windows draws it white otherwise) */
+select option{background:#0f171c;color:var(--text)}
+select option:checked{background:#1f3a2e;color:var(--text)}
 input[type=range]{accent-color:var(--brand)}
 
 /* ---------- globe shell ---------- */
@@ -70,7 +73,7 @@ body.drawer-open .maplibregl-ctrl-bottom-right{right:452px}
 .top-actions .btn svg.i{width:16px;height:16px}
 
 /* ---------- hero (first view) ---------- */
-.hero{position:fixed;z-index:5;left:40px;bottom:156px;max-width:440px;transition:opacity .4s,transform .4s,visibility 0s}
+.hero{position:fixed;z-index:5;left:40px;bottom:192px;max-width:440px;transition:opacity .4s,transform .4s,visibility 0s}
 .hero::before{content:"";position:absolute;inset:-80px -120px -60px -80px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,rgba(5,8,11,.72),rgba(5,8,11,0))}
 .hero.hide{opacity:0;transform:translateY(12px);pointer-events:none;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
 .hero h1{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1.05;letter-spacing:-.5px;margin:12px 0 14px}
@@ -98,7 +101,6 @@ body.drawer-open .maplibregl-ctrl-bottom-right{right:452px}
 .range-row{display:flex;align-items:center;gap:10px}
 .range-row input{flex:1;min-width:0}
 .range-row output{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:38px;text-align:right}
-.layers select{width:100%;height:38px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:0 10px;font:inherit;font-size:13px}
 .about{font-size:12px;color:var(--muted);margin:12px 0 0;line-height:1.5}
 
 /* ---------- result drawer ---------- */
@@ -184,6 +186,18 @@ body.drawer-open .timeline{left:calc((100vw - 452px) / 2)}
 .map-legend .scale img{display:block;width:100%;height:auto}
 .map-legend .src{font-size:11px;color:var(--muted);margin:6px 0 0}
 
+/* ---------- scroll cue: tells people the case study is below the globe ---------- */
+.scroll-cue{position:fixed;z-index:8;left:50%;bottom:76px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;min-height:36px;padding:0 12px 0 16px;
+  border-radius:999px;background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line);
+  color:var(--text);font-size:12.5px;font-weight:600;text-decoration:none;white-space:nowrap;
+  transition:opacity .3s,left .35s cubic-bezier(.2,.8,.2,1),bottom .3s,border-color .2s}
+.scroll-cue:hover{border-color:var(--line-strong)}
+.scroll-cue svg.i{width:16px;height:16px;color:var(--brand);animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+#app:has(.timeline.hide) .scroll-cue{bottom:16px}
+body.drawer-open .scroll-cue{left:calc((100vw - 452px) / 2)}
+body.scrolled .scroll-cue{opacity:0;pointer-events:none}
+
 /* ---------- markers on the globe ---------- */
 .pulse{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent;cursor:pointer}
 .pulse::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--heat);border:2px solid #fff;box-shadow:0 0 0 6px rgba(255,138,76,.25);animation:mk 2.4s infinite}
@@ -240,7 +254,7 @@ footer{padding:36px 0 60px;color:var(--muted);font-size:14px;border-top:1px soli
   .search{flex:1 1 auto;margin:0;padding:0 12px}
   .top-actions{gap:6px}
   .top-actions .btn{width:46px;padding:0}
-  .hero{left:16px;right:16px;bottom:84px;max-width:none}
+  .hero{left:16px;right:16px;bottom:116px;max-width:none}
   .hero::before{inset:-40px -16px -30px -16px}
   .hero h1{font-size:32px}
   .hero-lead{font-size:14px;margin-bottom:18px}
@@ -257,6 +271,8 @@ footer{padding:36px 0 60px;color:var(--muted);font-size:14px;border-top:1px soli
   .timeline{gap:8px;padding-right:14px}
   .timeline input{width:110px}
   body.drawer-open .timeline{left:50%}
+  .scroll-cue{bottom:68px}
+  body.drawer-open .scroll-cue{opacity:0;pointer-events:none}
   .maplibregl-ctrl-bottom-right{bottom:66px}
   body.drawer-open .maplibregl-ctrl-bottom-right{right:6px}
   .maplibregl-ctrl-bottom-right .maplibregl-ctrl-group{display:none}
